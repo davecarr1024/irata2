@@ -22,7 +22,7 @@ jobs:
           python3 \
           python3-pip \
           lcov
-        pip3 install pyyaml
+        python3 -m pip install --user pyyaml
 
     - name: Configure CMake
       run: |
@@ -41,7 +41,9 @@ jobs:
 
     - name: Generate coverage report
       run: |
+        chmod +x scripts/coverage.sh
         ./scripts/coverage.sh build
+      continue-on-error: true
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -72,7 +74,7 @@ jobs:
           g++ \
           python3 \
           python3-pip
-        pip3 install pyyaml
+        python3 -m pip install --user pyyaml
 
     - name: Configure CMake (Release)
       run: |

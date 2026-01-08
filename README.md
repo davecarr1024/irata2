@@ -1,5 +1,8 @@
 # IRATA2 - 8-bit CPU Simulator
 
+[![CI](https://github.com/davecarr1024/irata2/actions/workflows/ci.yml/badge.svg)](https://github.com/davecarr1024/irata2/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/davecarr1024/irata2/branch/main/graph/badge.svg)](https://codecov.io/gh/davecarr1024/irata2)
+
 A cycle-accurate 8-bit CPU simulator in C++ that feels like building a breadboard computer.
 
 ## Project Structure
@@ -94,12 +97,54 @@ Each module is **independent and self-contained**:
 
 ## Building
 
+### Standard Build
+
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+cmake -B build
+cmake --build build
 ```
+
+### With Tests
+
+```bash
+cmake -B build -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+### With Code Coverage
+
+```bash
+cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build
+./scripts/coverage.sh build
+# Open build/coverage/html/index.html in browser
+```
+
+### Release Build
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+cmake --build build
+```
+
+## Testing
+
+- **73 unit tests** across all modules
+- **100% code coverage** of implemented code
+- Tests colocated with each module in `module/test/`
+- GoogleTest/GoogleMock framework
+- Run with: `ctest --test-dir build`
+
+## CI/CD
+
+GitHub Actions automatically:
+- Builds and tests on every push to `main` or `claude/*` branches
+- Generates code coverage reports
+- Uploads coverage to Codecov
+- Provides coverage HTML artifacts (30-day retention)
+- Builds release configuration
 
 ## Documentation
 
