@@ -42,3 +42,9 @@ install(EXPORT irata2SimTargets
   NAMESPACE irata2::
   DESTINATION lib/cmake/irata2
 )
+
+# Testing
+option(BUILD_TESTING "Build tests" ON)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()

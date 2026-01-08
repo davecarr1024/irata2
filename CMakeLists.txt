@@ -11,6 +11,25 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Code coverage support
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+
+if(ENABLE_COVERAGE)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Code coverage enabled")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+  else()
+    message(WARNING "Code coverage not supported for this compiler")
+  endif()
+endif()
+
+# Testing
+option(BUILD_TESTING "Build tests" ON)
+if(BUILD_TESTING)
+  enable_testing()
+endif()
+
 # Add subdirectories for each module
 # Modules are built in dependency order
 
@@ -28,8 +47,3 @@ add_subdirectory(sim)
 
 # 5. Microcode module - depends on base, hdl, asm
 add_subdirectory(microcode)
-
-# Testing with GoogleTest (to be added)
-# enable_testing()
-# find_package(GTest REQUIRED)
-# add_subdirectory(test)

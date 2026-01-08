@@ -27,7 +27,7 @@ def generate_header(data: Dict[str, Any]) -> str:
         "#include <vector>",
         "#include <optional>",
         "",
-        "namespace irata2::asm {",
+        "namespace irata2::isa {",
         "",
     ]
 
@@ -60,7 +60,7 @@ def generate_header(data: Dict[str, Any]) -> str:
     lines.append("")
 
     lines.extend([
-        "}  // namespace irata2::asm",
+        "}  // namespace irata2::isa",
         "",
         "#endif  // IRATA2_ASM_ISA_H",
         ""
