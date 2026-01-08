@@ -1,6 +1,8 @@
 #ifndef IRATA2_SIM_CPU_H
 #define IRATA2_SIM_CPU_H
 
+#include <cstdint>
+
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
 #include "irata2/sim/component.h"

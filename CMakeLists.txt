@@ -40,6 +40,37 @@ target_link_libraries(irata2_sim PUBLIC
   irata2_hdl
 )
 
+# ASM module - ISA definitions (generated from YAML)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+set(ISA_YAML ${CMAKE_CURRENT_SOURCE_DIR}/asm/instructions.yaml)
+set(ISA_HEADER ${CMAKE_CURRENT_BINARY_DIR}/asm/include/irata2/asm/isa.h)
+set(ISA_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_isa.py)
+
+# Custom command to generate ISA header from YAML
+add_custom_command(
+  OUTPUT ${ISA_HEADER}
+  COMMAND ${Python3_EXECUTABLE} ${ISA_GENERATOR} ${ISA_YAML} ${ISA_HEADER}
+  DEPENDS ${ISA_YAML} ${ISA_GENERATOR}
+  COMMENT "Generating ISA header from instructions.yaml"
+  VERBATIM
+)
+
+# Custom target to ensure generation happens
+add_custom_target(generate_isa DEPENDS ${ISA_HEADER})
+
+# ASM library (interface, header-only)
+add_library(irata2_asm INTERFACE)
+target_include_directories(irata2_asm INTERFACE
+  ${CMAKE_CURRENT_BINARY_DIR}/asm/include
+)
+target_link_libraries(irata2_asm INTERFACE
+  irata2_base
+)
+
+# Ensure ISA is generated before using the library
+add_dependencies(irata2_asm generate_isa)
+
 # Microcode module (will be populated later)
 add_library(irata2_microcode INTERFACE)
 target_include_directories(irata2_microcode INTERFACE
@@ -48,6 +79,7 @@ target_include_directories(irata2_microcode INTERFACE
 target_link_libraries(irata2_microcode INTERFACE
   irata2_base
   irata2_hdl
+  irata2_asm
 )
 
 # Testing with GoogleTest (to be added)
