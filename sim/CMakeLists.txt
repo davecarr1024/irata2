@@ -1,0 +1,44 @@
+cmake_minimum_required(VERSION 3.20)
+
+# Simulator Module - Runtime execution
+# This module is self-contained and can be built independently
+
+# Simulator library (compiled)
+add_library(irata2_sim
+  src/cpu.cpp
+)
+add_library(irata2::sim ALIAS irata2_sim)
+
+target_include_directories(irata2_sim PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# Depend on base and hdl modules
+target_link_libraries(irata2_sim PUBLIC
+  irata2::base
+  irata2::hdl
+)
+
+# Require C++20
+target_compile_features(irata2_sim PUBLIC cxx_std_20)
+
+# Export configuration
+install(TARGETS irata2_sim
+  EXPORT irata2SimTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(DIRECTORY include/
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(EXPORT irata2SimTargets
+  FILE irata2SimTargets.cmake
+  NAMESPACE irata2::
+  DESTINATION lib/cmake/irata2
+)
