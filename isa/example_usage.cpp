@@ -2,9 +2,9 @@
 // This file demonstrates how to use the ISA definitions
 
 #include <iostream>
-#include "irata2/asm/isa.h"
+#include "irata2/isa/isa.h"
 
-using namespace irata2::asm;
+using namespace irata2::isa;
 
 void print_instruction(const InstructionInfo& inst) {
   std::cout << "Instruction: " << inst.mnemonic

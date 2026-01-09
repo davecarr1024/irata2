@@ -15,6 +15,9 @@ target_include_directories(irata2_base INTERFACE
 # Require C++20
 target_compile_features(irata2_base INTERFACE cxx_std_20)
 
+# Link with fmt for string formatting
+target_link_libraries(irata2_base INTERFACE fmt::fmt)
+
 # Export configuration
 install(TARGETS irata2_base
   EXPORT irata2BaseTargets

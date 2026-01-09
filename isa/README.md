@@ -1,13 +1,15 @@
 # ISA Module - IRATA2 Instruction Set Architecture
 
-The ASM module provides the single source of truth for the IRATA2 instruction set architecture. It uses a YAML definition file to generate C++ code, ensuring consistency across the simulator, assembler, and any other tools.
+The ISA module provides the single source of truth for the IRATA2 instruction set architecture. It uses a YAML definition file to generate C++ code, ensuring consistency across the simulator, assembler, and any other tools.
 
 ## Structure
 
 ```
-asm/
+isa/
 ├── instructions.yaml      # ISA definition (single source of truth)
-├── include/irata2/asm/   # Will contain generated isa.h (at build time)
+├── generate_isa.py        # Python code generator
+├── example_usage.cpp      # Example program
+├── test/                  # Unit tests
 └── README.md              # This file
 ```
 
@@ -54,7 +56,7 @@ instructions:
 
 ## Code Generation
 
-The Python script `tools/generate_isa.py` reads `instructions.yaml` and generates `isa.h` containing:
+The Python script `generate_isa.py` reads `instructions.yaml` and generates `isa.h` containing:
 
 1. **Enums**:
    - `AddressingMode` - All addressing mode codes
@@ -92,14 +94,18 @@ cd build
 make generate_isa
 ```
 
-The generated header will be at: `build/asm/include/irata2/asm/isa.h`
+The generated header will be at: `build/isa/include/irata2/isa/isa.h`
 
-## Usage Example
+## Usage
+
+```cmake
+target_link_libraries(your_target PRIVATE irata2::isa)
+```
 
 ```cpp
-#include "irata2/asm/isa.h"
+#include "irata2/isa/isa.h"
 
-using namespace irata2::asm;
+using namespace irata2::isa;
 
 // Lookup instruction by opcode
 auto inst = IsaInfo::GetInstruction(0xA0);  // LDA #immediate
@@ -130,7 +136,7 @@ if (mode) {
 
 ## Adding New Instructions
 
-1. Edit `asm/instructions.yaml`
+1. Edit `isa/instructions.yaml`
 2. Add your instruction with all required fields
 3. Rebuild the project - the code will be regenerated automatically
 

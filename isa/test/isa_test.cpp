@@ -1,14 +1,18 @@
-#include "irata2/asm/isa.h"
+#include "irata2/isa/isa.h"
 
 #include <gtest/gtest.h>
 
 using namespace irata2::isa;
 
 TEST(IsaTest, AddressingModeToString) {
-  EXPECT_EQ(ToString(AddressingMode::IMM), "Immediate");
-  EXPECT_EQ(ToString(AddressingMode::ABS), "Absolute");
-  EXPECT_EQ(ToString(AddressingMode::ZPG), "ZeroPage");
-  EXPECT_EQ(ToString(AddressingMode::IMP), "Implied");
+  const auto& modes = IsaInfo::GetAddressingModes();
+  ASSERT_FALSE(modes.empty());
+
+  for (const auto& mode : modes) {
+    EXPECT_EQ(ToString(mode.mode), mode.name);
+  }
+
+  EXPECT_EQ(ToString(static_cast<AddressingMode>(0x7F)), "Unknown");
 }
 
 TEST(IsaTest, StatusFlagToString) {
@@ -16,19 +20,32 @@ TEST(IsaTest, StatusFlagToString) {
   EXPECT_EQ(ToString(StatusFlag::N), "Negative");
   EXPECT_EQ(ToString(StatusFlag::C), "Carry");
   EXPECT_EQ(ToString(StatusFlag::V), "Overflow");
+  EXPECT_EQ(ToString(static_cast<StatusFlag>(0x7F)), "Unknown");
 }
 
 TEST(IsaTest, InstructionCategoryToString) {
-  EXPECT_EQ(ToString(InstructionCategory::Load), "Load");
-  EXPECT_EQ(ToString(InstructionCategory::Store), "Store");
   EXPECT_EQ(ToString(InstructionCategory::Arithmetic), "Arithmetic");
+  EXPECT_EQ(ToString(InstructionCategory::Branch), "Branch");
+  EXPECT_EQ(ToString(InstructionCategory::Compare), "Compare");
+  EXPECT_EQ(ToString(InstructionCategory::Jump), "Jump");
+  EXPECT_EQ(ToString(InstructionCategory::Load), "Load");
+  EXPECT_EQ(ToString(InstructionCategory::Logic), "Logic");
+  EXPECT_EQ(ToString(InstructionCategory::Stack), "Stack");
+  EXPECT_EQ(ToString(InstructionCategory::Store), "Store");
   EXPECT_EQ(ToString(InstructionCategory::System), "System");
+  EXPECT_EQ(ToString(InstructionCategory::Transfer), "Transfer");
+  EXPECT_EQ(ToString(static_cast<InstructionCategory>(0x7F)), "Unknown");
 }
 
 TEST(IsaTest, OpcodeToString) {
-  EXPECT_EQ(ToString(Opcode::LDA_IMM), "LDA_IMM");
-  EXPECT_EQ(ToString(Opcode::STA_ABS), "STA_ABS");
-  EXPECT_EQ(ToString(Opcode::HLT_IMP), "HLT_IMP");
+  const auto& instructions = IsaInfo::GetInstructions();
+  ASSERT_FALSE(instructions.empty());
+
+  for (const auto& inst : instructions) {
+    EXPECT_NE(ToString(inst.opcode), "Unknown");
+  }
+
+  EXPECT_EQ(ToString(static_cast<Opcode>(0x00)), "Unknown");
 }
 
 TEST(IsaTest, GetAddressingModes) {
@@ -88,6 +105,21 @@ TEST(IsaTest, GetInstructionInvalidOpcode) {
   EXPECT_FALSE(inst.has_value());
 }
 
+TEST(IsaTest, GetInstructionForAllOpcodes) {
+  const auto& instructions = IsaInfo::GetInstructions();
+  ASSERT_FALSE(instructions.empty());
+
+  for (const auto& inst : instructions) {
+    auto by_value = IsaInfo::GetInstruction(static_cast<uint8_t>(inst.opcode));
+    ASSERT_TRUE(by_value.has_value());
+    EXPECT_EQ(by_value->opcode, inst.opcode);
+
+    auto by_enum = IsaInfo::GetInstruction(inst.opcode);
+    ASSERT_TRUE(by_enum.has_value());
+    EXPECT_EQ(by_enum->mnemonic, inst.mnemonic);
+  }
+}
+
 TEST(IsaTest, GetAddressingModeByEnum) {
   auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMM);
   ASSERT_TRUE(mode.has_value());
@@ -96,6 +128,11 @@ TEST(IsaTest, GetAddressingModeByEnum) {
   EXPECT_EQ(mode->code, "IMM");
   EXPECT_EQ(mode->operand_bytes, 1);
   EXPECT_EQ(mode->syntax, "#$%02X");
+}
+
+TEST(IsaTest, GetAddressingModeInvalidEnum) {
+  auto mode = IsaInfo::GetAddressingMode(static_cast<AddressingMode>(0x7F));
+  EXPECT_FALSE(mode.has_value());
 }
 
 TEST(IsaTest, InstructionFlagsAffected) {

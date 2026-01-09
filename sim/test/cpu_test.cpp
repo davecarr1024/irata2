@@ -15,6 +15,17 @@ TEST(SimCpuTest, Construction) {
   EXPECT_EQ(sim.path(), "/cpu");
 }
 
+TEST(SimCpuTest, ConstAccessors) {
+  irata2::hdl::Cpu hdl;
+  const Cpu sim(hdl);
+
+  EXPECT_EQ(&sim.cpu(), &sim);
+  EXPECT_EQ(sim.path(), "/cpu");
+  EXPECT_EQ(sim.current_phase(), TickPhase::None);
+  EXPECT_FALSE(sim.halted());
+  EXPECT_EQ(sim.cycle_count(), 0);
+}
+
 TEST(SimCpuTest, InitialState) {
   irata2::hdl::Cpu hdl;
   Cpu sim(hdl);

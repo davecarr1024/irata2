@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-# ASM module tests
+# ISA module tests
 
 # Fetch GoogleTest if not already available
 include(FetchContent)
@@ -15,20 +15,20 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include(GoogleTest)
 
-# Test executable for asm module
-add_executable(asm_tests
+# Test executable for ISA module
+add_executable(isa_tests
   isa_test.cpp
 )
 
-target_link_libraries(asm_tests PRIVATE
+target_link_libraries(isa_tests PRIVATE
   GTest::gtest_main
   GTest::gmock
-  irata2::asm
+  irata2::isa
 )
 
 # Ensure ISA is generated before building tests
-add_dependencies(asm_tests generate_isa)
+add_dependencies(isa_tests generate_isa)
 
-target_compile_features(asm_tests PRIVATE cxx_std_20)
+target_compile_features(isa_tests PRIVATE cxx_std_20)
 
-gtest_discover_tests(asm_tests)
+gtest_discover_tests(isa_tests)

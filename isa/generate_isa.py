@@ -15,10 +15,10 @@ def generate_header(data: Dict[str, Any]) -> str:
 
     lines = [
         "// GENERATED CODE - DO NOT EDIT",
-        "// Generated from asm/instructions.yaml",
+        "// Generated from isa/instructions.yaml",
         "",
-        "#ifndef IRATA2_ASM_ISA_H",
-        "#define IRATA2_ASM_ISA_H",
+        "#ifndef IRATA2_ISA_ISA_H",
+        "#define IRATA2_ISA_ISA_H",
         "",
         "#include <cstdint>",
         "#include <string>",
@@ -62,7 +62,7 @@ def generate_header(data: Dict[str, Any]) -> str:
     lines.extend([
         "}  // namespace irata2::isa",
         "",
-        "#endif  // IRATA2_ASM_ISA_H",
+        "#endif  // IRATA2_ISA_ISA_H",
         ""
     ])
 

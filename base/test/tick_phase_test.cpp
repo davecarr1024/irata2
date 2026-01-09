@@ -27,3 +27,8 @@ TEST(TickPhaseTest, ToStringProcess) {
 TEST(TickPhaseTest, ToStringClear) {
   EXPECT_EQ(ToString(TickPhase::Clear), "Clear");
 }
+
+TEST(TickPhaseTest, ToStringUnknown) {
+  auto unknown = static_cast<TickPhase>(0x7F);
+  EXPECT_EQ(ToString(unknown), "Unknown");
+}

@@ -6,6 +6,26 @@
 
 using namespace irata2::sim;
 
+namespace {
+class DummyComponent final : public ComponentWithParent {
+ public:
+  DummyComponent(Component& parent, const std::string& name)
+      : ComponentWithParent(parent, name) {}
+};
+
+class TickComponent final : public Component {
+ public:
+  Cpu& cpu() override { return *cpu_; }
+  const Cpu& cpu() const override { return *cpu_; }
+  std::string path() const override { return "/tick"; }
+
+  explicit TickComponent(Cpu& cpu) : cpu_(&cpu) {}
+
+ private:
+  Cpu* cpu_;
+};
+}  // namespace
+
 TEST(SimComponentTest, CpuIsRoot) {
   irata2::hdl::Cpu hdl;
   Cpu sim(hdl);
@@ -18,4 +38,34 @@ TEST(SimComponentTest, CpuPath) {
   Cpu sim(hdl);
 
   EXPECT_EQ(sim.path(), "/cpu");
+}
+
+TEST(SimComponentTest, ComponentWithParentAccessors) {
+  irata2::hdl::Cpu hdl;
+  Cpu sim(hdl);
+  DummyComponent child(sim, "child");
+
+  EXPECT_EQ(child.name(), "child");
+  EXPECT_EQ(&child.parent(), &sim);
+  EXPECT_EQ(child.path(), "/cpu/child");
+  EXPECT_EQ(&child.cpu(), &sim);
+
+  const auto& const_child = child;
+  EXPECT_EQ(const_child.parent().path(), "/cpu");
+  EXPECT_EQ(const_child.cpu().path(), "/cpu");
+}
+
+TEST(SimComponentTest, DefaultTickMethodsAreCallable) {
+  irata2::hdl::Cpu hdl;
+  Cpu sim(hdl);
+  TickComponent component(sim);
+
+  component.TickControl();
+  component.TickWrite();
+  component.TickRead();
+  component.TickProcess();
+  component.TickClear();
+
+  Component* base = new TickComponent(sim);
+  delete base;
 }

@@ -31,7 +31,7 @@ The project is organized into independent, self-contained modules:
 ## Current Status
 
 - `base` is implemented and provides `Byte`, `Word`, and `TickPhase`.
-- `hdl` is currently a scaffold; the detailed implementation plan lives in `hdl/README.md`.
+- `hdl` is implemented with immutable components, buses, controls, and registers.
 - `sim` is a placeholder tick orchestrator that will mirror the HDL structure.
 - `microcode` is a placeholder awaiting DSL/IR/compiler work.
 
@@ -62,6 +62,17 @@ ctest --test-dir build --output-on-failure
 ## Building
 
 See [Building](#building-options) for all build options including code coverage and release builds.
+
+## Coverage
+
+```bash
+cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+./scripts/coverage.sh build
+```
+
+Coverage report output: `build/coverage/html/index.html`
 
 ### Building Options
 

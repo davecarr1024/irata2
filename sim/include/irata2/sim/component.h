@@ -14,7 +14,7 @@ class Cpu;
 // Simulator components have runtime state and tick behavior
 class Component {
  public:
-  virtual ~Component() = default;
+  virtual ~Component() = default;  // LCOV_EXCL_LINE
 
   // Every component can access the root CPU
   virtual Cpu& cpu() = 0;

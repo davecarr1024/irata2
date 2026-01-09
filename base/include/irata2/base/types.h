@@ -2,8 +2,9 @@
 #define IRATA2_BASE_TYPES_H
 
 #include <cstdint>
-#include <format>
 #include <string>
+
+#include <fmt/format.h>
 
 namespace irata2::base {
 
@@ -73,7 +74,7 @@ class Byte {
 
   // String representation
   std::string to_string() const {
-    return std::format("0x{:02X}", value_);
+    return fmt::format("0x{:02X}", value_);
   }
 
  private:
@@ -152,7 +153,7 @@ class Word {
 
   // String representation
   std::string to_string() const {
-    return std::format("0x{:04X}", value_);
+    return fmt::format("0x{:04X}", value_);
   }
 
  private:

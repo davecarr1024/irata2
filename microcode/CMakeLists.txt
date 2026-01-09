@@ -12,11 +12,11 @@ target_include_directories(irata2_microcode INTERFACE
   $<INSTALL_INTERFACE:include>
 )
 
-# Depend on base, hdl, and asm modules
+# Depend on base, hdl, and isa modules
 target_link_libraries(irata2_microcode INTERFACE
   irata2::base
   irata2::hdl
-  irata2::asm
+  irata2::isa
 )
 
 # Require C++20
