@@ -24,16 +24,7 @@ TEST(IsaTest, StatusFlagToString) {
 }
 
 TEST(IsaTest, InstructionCategoryToString) {
-  EXPECT_EQ(ToString(InstructionCategory::Arithmetic), "Arithmetic");
-  EXPECT_EQ(ToString(InstructionCategory::Branch), "Branch");
-  EXPECT_EQ(ToString(InstructionCategory::Compare), "Compare");
-  EXPECT_EQ(ToString(InstructionCategory::Jump), "Jump");
-  EXPECT_EQ(ToString(InstructionCategory::Load), "Load");
-  EXPECT_EQ(ToString(InstructionCategory::Logic), "Logic");
-  EXPECT_EQ(ToString(InstructionCategory::Stack), "Stack");
-  EXPECT_EQ(ToString(InstructionCategory::Store), "Store");
   EXPECT_EQ(ToString(InstructionCategory::System), "System");
-  EXPECT_EQ(ToString(InstructionCategory::Transfer), "Transfer");
   EXPECT_EQ(ToString(static_cast<InstructionCategory>(0x7F)), "Unknown");
 }
 
@@ -52,55 +43,43 @@ TEST(IsaTest, GetAddressingModes) {
   const auto& modes = IsaInfo::GetAddressingModes();
   EXPECT_FALSE(modes.empty());
 
-  // Find IMM mode
-  bool found_imm = false;
+  bool found_imp = false;
   for (const auto& mode : modes) {
-    if (mode.mode == AddressingMode::IMM) {
-      found_imm = true;
-      EXPECT_EQ(mode.name, "Immediate");
-      EXPECT_EQ(mode.code, "IMM");
-      EXPECT_EQ(mode.operand_bytes, 1);
+    if (mode.mode == AddressingMode::IMP) {
+      found_imp = true;
+      EXPECT_EQ(mode.name, "Implied");
+      EXPECT_EQ(mode.code, "IMP");
+      EXPECT_EQ(mode.operand_bytes, 0);
       break;
     }
   }
-  EXPECT_TRUE(found_imm);
+  EXPECT_TRUE(found_imp);
 }
 
 TEST(IsaTest, GetInstructions) {
   const auto& instructions = IsaInfo::GetInstructions();
-  EXPECT_FALSE(instructions.empty());
-
-  // Count LDA instructions (should have multiple addressing modes)
-  int lda_count = 0;
-  for (const auto& inst : instructions) {
-    if (inst.mnemonic == "LDA") {
-      lda_count++;
-    }
-  }
-  EXPECT_GT(lda_count, 1);  // Should have multiple LDA variants
+  EXPECT_EQ(instructions.size(), 3u);
 }
 
 TEST(IsaTest, GetInstructionByOpcodeValue) {
-  // LDA_IMM is 0xA0
-  auto inst = IsaInfo::GetInstruction(0xA0);
+  auto inst = IsaInfo::GetInstruction(0x01);
   ASSERT_TRUE(inst.has_value());
 
-  EXPECT_EQ(inst->mnemonic, "LDA");
-  EXPECT_EQ(inst->addressing_mode, AddressingMode::IMM);
-  EXPECT_EQ(inst->category, InstructionCategory::Load);
-  EXPECT_EQ(inst->cycles, 2);
+  EXPECT_EQ(inst->mnemonic, "HLT");
+  EXPECT_EQ(inst->addressing_mode, AddressingMode::IMP);
+  EXPECT_EQ(inst->category, InstructionCategory::System);
+  EXPECT_EQ(inst->cycles, 1);
 }
 
 TEST(IsaTest, GetInstructionByOpcodeEnum) {
-  auto inst = IsaInfo::GetInstruction(Opcode::LDA_IMM);
+  auto inst = IsaInfo::GetInstruction(Opcode::HLT_IMP);
   ASSERT_TRUE(inst.has_value());
 
-  EXPECT_EQ(inst->mnemonic, "LDA");
-  EXPECT_EQ(inst->addressing_mode, AddressingMode::IMM);
+  EXPECT_EQ(inst->mnemonic, "HLT");
+  EXPECT_EQ(inst->addressing_mode, AddressingMode::IMP);
 }
 
 TEST(IsaTest, GetInstructionInvalidOpcode) {
-  // 0x00 is not defined
   auto inst = IsaInfo::GetInstruction(0x00);
   EXPECT_FALSE(inst.has_value());
 }
@@ -121,13 +100,13 @@ TEST(IsaTest, GetInstructionForAllOpcodes) {
 }
 
 TEST(IsaTest, GetAddressingModeByEnum) {
-  auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMM);
+  auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMP);
   ASSERT_TRUE(mode.has_value());
 
-  EXPECT_EQ(mode->name, "Immediate");
-  EXPECT_EQ(mode->code, "IMM");
-  EXPECT_EQ(mode->operand_bytes, 1);
-  EXPECT_EQ(mode->syntax, "#$%02X");
+  EXPECT_EQ(mode->name, "Implied");
+  EXPECT_EQ(mode->code, "IMP");
+  EXPECT_EQ(mode->operand_bytes, 0);
+  EXPECT_EQ(mode->syntax, "");
 }
 
 TEST(IsaTest, GetAddressingModeInvalidEnum) {
@@ -136,42 +115,17 @@ TEST(IsaTest, GetAddressingModeInvalidEnum) {
 }
 
 TEST(IsaTest, InstructionFlagsAffected) {
-  // LDA affects Z and N flags
-  auto inst = IsaInfo::GetInstruction(Opcode::LDA_IMM);
+  auto inst = IsaInfo::GetInstruction(Opcode::NOP_IMP);
   ASSERT_TRUE(inst.has_value());
 
-  ASSERT_EQ(inst->flags_affected.size(), 2);
-  EXPECT_TRUE(std::find(inst->flags_affected.begin(), inst->flags_affected.end(),
-                        StatusFlag::Z) != inst->flags_affected.end());
-  EXPECT_TRUE(std::find(inst->flags_affected.begin(), inst->flags_affected.end(),
-                        StatusFlag::N) != inst->flags_affected.end());
+  EXPECT_TRUE(inst->flags_affected.empty());
 }
 
 TEST(IsaTest, SystemInstructions) {
-  // HLT is a system instruction
   auto inst = IsaInfo::GetInstruction(Opcode::HLT_IMP);
   ASSERT_TRUE(inst.has_value());
 
   EXPECT_EQ(inst->category, InstructionCategory::System);
   EXPECT_EQ(inst->addressing_mode, AddressingMode::IMP);
-  EXPECT_TRUE(inst->flags_affected.empty());  // System instructions don't affect flags
-}
-
-TEST(IsaTest, ArithmeticInstructions) {
-  // ADC affects Z, N, C, V flags
-  auto inst = IsaInfo::GetInstruction(Opcode::ADC_IMM);
-  ASSERT_TRUE(inst.has_value());
-
-  EXPECT_EQ(inst->category, InstructionCategory::Arithmetic);
-  EXPECT_EQ(inst->flags_affected.size(), 4);
-}
-
-TEST(IsaTest, BranchInstructions) {
-  // BEQ is a branch instruction
-  auto inst = IsaInfo::GetInstruction(Opcode::BEQ_REL);
-  ASSERT_TRUE(inst.has_value());
-
-  EXPECT_EQ(inst->category, InstructionCategory::Branch);
-  EXPECT_EQ(inst->addressing_mode, AddressingMode::REL);
-  EXPECT_TRUE(inst->flags_affected.empty());  // Branch instructions don't affect flags
+  EXPECT_TRUE(inst->flags_affected.empty());
 }

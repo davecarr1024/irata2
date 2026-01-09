@@ -22,11 +22,10 @@ Defines how instructions access memory and operands.
 
 ```yaml
 addressing_modes:
-  - name: Immediate
-    code: IMM
-    operands: 1
-    description: "8-bit immediate value"
-    syntax: "#$%02X"
+  - name: Implied
+    code: IMP
+    operands: 0
+    description: "No operands"
 ```
 
 ### 2. Status Flags
@@ -45,13 +44,13 @@ Complete instruction set with opcodes, addressing modes, and metadata.
 
 ```yaml
 instructions:
-  - mnemonic: LDA
-    opcode: 0xA0
-    addressing_mode: IMM
-    cycles: 2
-    description: "Load accumulator with immediate value"
-    category: Load
-    flags_affected: [Z, N]
+  - mnemonic: HLT
+    opcode: 0x01
+    addressing_mode: IMP
+    cycles: 1
+    description: "Halt execution"
+    category: System
+    flags_affected: []
 ```
 
 ## Code Generation
@@ -108,7 +107,7 @@ target_link_libraries(your_target PRIVATE irata2::isa)
 using namespace irata2::isa;
 
 // Lookup instruction by opcode
-auto inst = IsaInfo::GetInstruction(0xA0);  // LDA #immediate
+auto inst = IsaInfo::GetInstruction(0x01);  // HLT
 if (inst) {
   std::cout << "Mnemonic: " << inst->mnemonic << "\n";
   std::cout << "Addressing: " << ToString(inst->addressing_mode) << "\n";
@@ -117,17 +116,17 @@ if (inst) {
 }
 
 // Use opcode enum
-auto inst2 = IsaInfo::GetInstruction(Opcode::LDA_IMM);
+auto inst2 = IsaInfo::GetInstruction(Opcode::NOP_IMP);
 
 // Iterate all instructions
 for (const auto& inst : IsaInfo::GetInstructions()) {
-  if (inst.category == InstructionCategory::Load) {
-    std::cout << "Load instruction: " << inst.mnemonic << "\n";
+  if (inst.category == InstructionCategory::System) {
+    std::cout << "System instruction: " << inst.mnemonic << "\n";
   }
 }
 
 // Get addressing mode info
-auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMM);
+auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMP);
 if (mode) {
   std::cout << "Operand bytes: " << static_cast<int>(mode->operand_bytes) << "\n";
   std::cout << "Syntax: " << mode->syntax << "\n";
@@ -142,13 +141,13 @@ if (mode) {
 
 Example:
 ```yaml
-- mnemonic: LDA
-  opcode: 0xA0
-  addressing_mode: IMM
-  cycles: 2
-  description: "Load accumulator with immediate value"
-  category: Load
-  flags_affected: [Z, N]
+- mnemonic: HLT
+  opcode: 0x01
+  addressing_mode: IMP
+  cycles: 1
+  description: "Halt execution"
+  category: System
+  flags_affected: []
 ```
 
 ## Benefits

@@ -1,7 +1,7 @@
-#ifndef IRATA2_HDL_REGISTER_H
-#define IRATA2_HDL_REGISTER_H
+#ifndef IRATA2_HDL_LOCAL_REGISTER_H
+#define IRATA2_HDL_LOCAL_REGISTER_H
 
-#include "irata2/hdl/component_with_bus.h"
+#include "irata2/hdl/component_with_parent.h"
 #include "irata2/hdl/process_control.h"
 #include "irata2/hdl/traits.h"
 
@@ -10,19 +10,19 @@
 namespace irata2::hdl {
 
 template <typename Derived, typename ValueType>
-class Register : public ComponentWithBus<Derived, ValueType>, public RegisterTag {
+class LocalRegister : public ComponentWithParent<Derived>, public RegisterTag {
  public:
   using value_type = ValueType;
 
-  Register(std::string name, ComponentBase& parent, const Bus<ValueType>& bus)
-      : ComponentWithBus<Derived, ValueType>(std::move(name), parent, bus),
+  LocalRegister(std::string name, ComponentBase& parent)
+      : ComponentWithParent<Derived>(std::move(name), parent),
         reset_control_("reset", *this) {}
 
   const ProcessControl<true>& reset() const { return reset_control_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
-    ComponentWithBus<Derived, ValueType>::visit_impl(visitor);
+    visitor(static_cast<const Derived&>(*this));
     reset_control_.visit(visitor);
   }
 
@@ -32,4 +32,4 @@ class Register : public ComponentWithBus<Derived, ValueType>, public RegisterTag
 
 }  // namespace irata2::hdl
 
-#endif  // IRATA2_HDL_REGISTER_H
+#endif  // IRATA2_HDL_LOCAL_REGISTER_H

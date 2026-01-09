@@ -25,3 +25,26 @@ TEST(RegisterTest, ConstructionSetsNameAndPath) {
   EXPECT_EQ(reg.name(), "test");
   EXPECT_EQ(reg.path(), "/cpu/test");
 }
+
+TEST(RegisterTest, ExposesResetControl) {
+  Cpu cpu;
+  ByteBus bus("data", cpu);
+  TestRegister reg("test", cpu, bus);
+
+  EXPECT_EQ(reg.reset().phase(), irata2::base::TickPhase::Process);
+  EXPECT_TRUE(reg.reset().auto_reset());
+}
+
+TEST(RegisterTest, VisitIncludesResetControl) {
+  Cpu cpu;
+  ByteBus bus("data", cpu);
+  TestRegister reg("test", cpu, bus);
+
+  int visits = 0;
+  reg.visit([&](const auto& component) {
+    (void)component;
+    ++visits;
+  });
+
+  EXPECT_EQ(visits, 4);
+}

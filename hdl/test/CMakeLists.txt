@@ -19,6 +19,7 @@ include(GoogleTest)
 add_executable(hdl_tests
   bus_test.cpp
   byte_bus_test.cpp
+  byte_counter_test.cpp
   byte_register_test.cpp
   component_base_test.cpp
   component_test.cpp

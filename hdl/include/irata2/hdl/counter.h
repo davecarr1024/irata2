@@ -21,7 +21,7 @@ class Counter final : public Register<Counter<ValueType>, ValueType> {
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
-    ComponentWithBus<Counter<ValueType>, ValueType>::visit_impl(visitor);
+    Register<Counter<ValueType>, ValueType>::visit_impl(visitor);
     increment_control_.visit(visitor);
   }
 

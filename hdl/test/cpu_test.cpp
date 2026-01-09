@@ -1,6 +1,7 @@
 #include "irata2/hdl/cpu.h"
 #include "irata2/hdl/traits.h"
 
+#include <algorithm>
 #include <gtest/gtest.h>
 
 using namespace irata2::hdl;
@@ -19,6 +20,9 @@ TEST(HdlCpuTest, AccessorsReturnComponents) {
   EXPECT_EQ(cpu.x().path(), "/cpu/x");
   EXPECT_EQ(cpu.pc().path(), "/cpu/pc");
   EXPECT_EQ(cpu.mar().path(), "/cpu/mar");
+  EXPECT_EQ(cpu.controller().path(), "/cpu/controller");
+  EXPECT_EQ(cpu.halt().path(), "/cpu/halt");
+  EXPECT_EQ(cpu.crash().path(), "/cpu/crash");
 }
 
 namespace {
@@ -50,8 +54,39 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 1 + 2 + 4 + 9);
+  EXPECT_EQ(visitor.components, 30);
   EXPECT_EQ(visitor.buses, 2);
-  EXPECT_EQ(visitor.registers, 4);
-  EXPECT_EQ(visitor.controls, 9);
+  EXPECT_EQ(visitor.registers, 6);
+  EXPECT_EQ(visitor.controls, 20);
+}
+
+TEST(HdlCpuTest, ResolveControlFindsPaths) {
+  Cpu cpu;
+
+  EXPECT_EQ(cpu.ResolveControl("a.read"), &cpu.a().read());
+  EXPECT_EQ(cpu.ResolveControl("/cpu/a/read"), &cpu.a().read());
+  EXPECT_EQ(cpu.ResolveControl("controller.ir.write"), &cpu.controller().ir().write());
+  EXPECT_EQ(cpu.ResolveControl("controller.sc.increment"),
+            &cpu.controller().sc().increment());
+  EXPECT_EQ(cpu.ResolveControl("halt"), &cpu.halt());
+}
+
+TEST(HdlCpuTest, ResolveControlRejectsUnknownPath) {
+  Cpu cpu;
+  EXPECT_THROW(cpu.ResolveControl("nope.control"), PathResolutionError);
+}
+
+TEST(HdlCpuTest, ResolveControlRejectsEmptyPath) {
+  Cpu cpu;
+  EXPECT_THROW(cpu.ResolveControl(""), PathResolutionError);
+}
+
+TEST(HdlCpuTest, AllControlPathsIsSortedAndComplete) {
+  Cpu cpu;
+  auto paths = cpu.AllControlPaths();
+
+  EXPECT_TRUE(std::is_sorted(paths.begin(), paths.end()));
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/halt"), paths.end());
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/controller/ir/read"), paths.end());
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/controller/sc/reset"), paths.end());
 }

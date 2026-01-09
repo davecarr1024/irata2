@@ -7,12 +7,14 @@ cmake_minimum_required(VERSION 3.20)
 add_library(irata2_hdl
   src/bus.cpp
   src/byte_bus.cpp
+  src/byte_counter.cpp
   src/byte_register.cpp
   src/component.cpp
   src/component_base.cpp
   src/component_with_bus.cpp
   src/component_with_parent.cpp
   src/control.cpp
+  src/controller.cpp
   src/counter.cpp
   src/cpu.cpp
   src/process_control.cpp

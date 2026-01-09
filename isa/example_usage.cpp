@@ -28,41 +28,22 @@ int main() {
   std::cout << "=== IRATA2 ISA Example Usage ===\n\n";
 
   // Example 1: Look up instruction by opcode value
-  std::cout << "1. Looking up instruction by opcode value (0xA0):\n";
-  auto inst1 = IsaInfo::GetInstruction(0xA0);
+  std::cout << "1. Looking up instruction by opcode value (0x01):\n";
+  auto inst1 = IsaInfo::GetInstruction(0x01);
   if (inst1) {
     print_instruction(*inst1);
   }
 
   // Example 2: Use opcode enum
-  std::cout << "2. Looking up instruction by opcode enum (LDA_IMM):\n";
-  auto inst2 = IsaInfo::GetInstruction(Opcode::LDA_IMM);
+  std::cout << "2. Looking up instruction by opcode enum (NOP_IMP):\n";
+  auto inst2 = IsaInfo::GetInstruction(Opcode::NOP_IMP);
   if (inst2) {
     print_instruction(*inst2);
   }
 
-  // Example 3: List all Load instructions
-  std::cout << "3. All Load instructions:\n";
-  for (const auto& inst : IsaInfo::GetInstructions()) {
-    if (inst.category == InstructionCategory::Load) {
-      std::cout << "  " << inst.mnemonic << " "
-                << ToString(inst.addressing_mode) << "\n";
-    }
-  }
-  std::cout << "\n";
-
-  // Example 4: List all Branch instructions
-  std::cout << "4. All Branch instructions:\n";
-  for (const auto& inst : IsaInfo::GetInstructions()) {
-    if (inst.category == InstructionCategory::Branch) {
-      std::cout << "  " << inst.mnemonic << " - " << inst.description << "\n";
-    }
-  }
-  std::cout << "\n";
-
-  // Example 5: Get addressing mode information
-  std::cout << "5. Addressing mode information (IMM):\n";
-  auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMM);
+  // Example 3: Addressing mode information (IMP)
+  std::cout << "3. Addressing mode information (IMP):\n";
+  auto mode = IsaInfo::GetAddressingMode(AddressingMode::IMP);
   if (mode) {
     std::cout << "  Name: " << mode->name << "\n";
     std::cout << "  Code: " << mode->code << "\n";
@@ -72,19 +53,8 @@ int main() {
   }
   std::cout << "\n";
 
-  // Example 6: Count instructions by category
-  std::cout << "6. Instruction count by category:\n";
-  std::map<InstructionCategory, int> category_counts;
-  for (const auto& inst : IsaInfo::GetInstructions()) {
-    category_counts[inst.category]++;
-  }
-  for (const auto& [category, count] : category_counts) {
-    std::cout << "  " << ToString(category) << ": " << count << " instructions\n";
-  }
-  std::cout << "\n";
-
-  // Example 7: List all system instructions
-  std::cout << "7. System instructions:\n";
+  // Example 4: List all system instructions
+  std::cout << "4. System instructions:\n";
   for (const auto& inst : IsaInfo::GetInstructions()) {
     if (inst.category == InstructionCategory::System) {
       std::cout << "  0x" << std::hex << static_cast<int>(inst.opcode) << std::dec
