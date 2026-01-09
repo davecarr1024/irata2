@@ -1,5 +1,4 @@
 #include "irata2/sim/cpu.h"
-#include "irata2/hdl/cpu.h"
 #include "irata2/base/tick_phase.h"
 
 #include <gtest/gtest.h>
@@ -7,17 +6,22 @@
 using namespace irata2::sim;
 using namespace irata2::base;
 
+namespace {
+void SetSafeIr(Cpu& sim) {
+  sim.controller().ir().set_value(irata2::base::Byte{0x02});
+  sim.controller().sc().set_value(irata2::base::Byte{0});
+}
+}  // namespace
+
 TEST(SimCpuTest, Construction) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   EXPECT_EQ(&sim.cpu(), &sim);
   EXPECT_EQ(sim.path(), "/cpu");
 }
 
 TEST(SimCpuTest, ConstAccessors) {
-  irata2::hdl::Cpu hdl;
-  const Cpu sim(hdl);
+  const Cpu sim;
 
   EXPECT_EQ(&sim.cpu(), &sim);
   EXPECT_EQ(sim.path(), "/cpu");
@@ -27,8 +31,7 @@ TEST(SimCpuTest, ConstAccessors) {
 }
 
 TEST(SimCpuTest, InitialState) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_FALSE(sim.halted());
@@ -37,9 +40,9 @@ TEST(SimCpuTest, InitialState) {
 }
 
 TEST(SimCpuTest, TickUpdatesPhases) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   // Before tick
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_EQ(sim.cycle_count(), 0);
@@ -53,9 +56,9 @@ TEST(SimCpuTest, TickUpdatesPhases) {
 }
 
 TEST(SimCpuTest, MultipleTicks) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   for (int i = 0; i < 10; ++i) {
     EXPECT_EQ(sim.cycle_count(), i);
     sim.Tick();
@@ -65,8 +68,7 @@ TEST(SimCpuTest, MultipleTicks) {
 }
 
 TEST(SimCpuTest, HaltedCpuDoesNotTick) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   sim.set_halted(true);
   EXPECT_TRUE(sim.halted());
@@ -79,9 +81,9 @@ TEST(SimCpuTest, HaltedCpuDoesNotTick) {
 }
 
 TEST(SimCpuTest, HaltAndResume) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   // Run a few cycles
   sim.Tick();
   sim.Tick();
@@ -99,9 +101,9 @@ TEST(SimCpuTest, HaltAndResume) {
 }
 
 TEST(SimCpuTest, HaltControlStopsCpu) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   sim.halt().Assert();
   sim.Tick();
   EXPECT_TRUE(sim.halted());
@@ -111,9 +113,9 @@ TEST(SimCpuTest, HaltControlStopsCpu) {
 }
 
 TEST(SimCpuTest, CrashControlStopsCpu) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   sim.crash().Assert();
   sim.Tick();
   EXPECT_TRUE(sim.crashed());

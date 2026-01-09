@@ -1,7 +1,5 @@
 #include "irata2/sim/component.h"
 #include "irata2/sim/cpu.h"
-#include "irata2/hdl/cpu.h"
-
 #include <gtest/gtest.h>
 
 using namespace irata2::sim;
@@ -31,22 +29,19 @@ class TickComponent final : public Component {
 }  // namespace
 
 TEST(SimComponentTest, CpuIsRoot) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   EXPECT_EQ(&sim.cpu(), &sim);
 }
 
 TEST(SimComponentTest, CpuPath) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   EXPECT_EQ(sim.path(), "/cpu");
 }
 
 TEST(SimComponentTest, ComponentWithParentAccessors) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
   DummyComponent child(sim, "child");
 
   EXPECT_EQ(child.name(), "child");
@@ -60,8 +55,7 @@ TEST(SimComponentTest, ComponentWithParentAccessors) {
 }
 
 TEST(SimComponentTest, DefaultTickMethodsAreCallable) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
   TickComponent component(sim);
 
   component.TickControl();

@@ -2,11 +2,15 @@
 #define IRATA2_SIM_CPU_H
 
 #include <cstdint>
-
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
+#include "irata2/microcode/output/program.h"
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
@@ -23,7 +27,9 @@ namespace irata2::sim {
 // This has runtime state and orchestrates the five-phase tick model
 class Cpu : public Component {
  public:
-  explicit Cpu(const hdl::Cpu& hdl);
+  Cpu();
+  explicit Cpu(std::shared_ptr<const hdl::Cpu> hdl,
+               std::shared_ptr<const microcode::output::MicrocodeProgram> program);
 
   Cpu& cpu() override { return *this; }
   const Cpu& cpu() const override { return *this; }
@@ -44,6 +50,11 @@ class Cpu : public Component {
   uint64_t cycle_count() const { return cycle_count_; }
 
   bool crashed() const { return crashed_; }
+
+  const hdl::Cpu& hdl() const { return *hdl_; }
+  const microcode::output::MicrocodeProgram& microcode() const {
+    return *microcode_;
+  }
 
   ProcessControl<true>& halt() { return halt_control_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
@@ -68,13 +79,19 @@ class Cpu : public Component {
   Controller& controller() { return controller_; }
   const Controller& controller() const { return controller_; }
 
+  ControlBase* ResolveControl(std::string_view path);
+  const ControlBase* ResolveControl(std::string_view path) const;
+  std::vector<std::string> AllControlPaths() const;
+
   void RegisterChild(Component& child) override;
 
  private:
+  void IndexControls() const;
   void TickPhase(void (Component::*phase)());
   void TickProcess() override;
 
-  const hdl::Cpu& hdl_;
+  std::shared_ptr<const hdl::Cpu> hdl_;
+  std::shared_ptr<const microcode::output::MicrocodeProgram> microcode_;
   base::TickPhase current_phase_ = base::TickPhase::None;
   bool halted_ = false;
   bool crashed_ = false;
@@ -92,6 +109,10 @@ class Cpu : public Component {
   WordRegister mar_;
   StatusRegister status_;
   Controller controller_;
+
+  mutable bool controls_indexed_ = false;
+  mutable std::unordered_map<std::string, ControlBase*> controls_by_path_;
+  mutable std::vector<std::string> control_paths_;
 };
 
 }  // namespace irata2::sim

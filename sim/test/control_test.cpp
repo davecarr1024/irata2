@@ -1,14 +1,12 @@
 #include "irata2/sim/control.h"
 #include "irata2/sim/cpu.h"
-#include "irata2/hdl/cpu.h"
 
 #include <gtest/gtest.h>
 
 using namespace irata2::sim;
 
 TEST(SimControlTest, AutoResetClearsOnTickClear) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   ProcessControl<true> control("auto", sim);
   control.Assert();
@@ -19,8 +17,7 @@ TEST(SimControlTest, AutoResetClearsOnTickClear) {
 }
 
 TEST(SimControlTest, LatchedControlDoesNotAutoClear) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
   Control<irata2::base::TickPhase::Process, false> control("latched", sim);
   control.Assert();

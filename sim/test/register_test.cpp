@@ -1,15 +1,21 @@
 #include "irata2/sim/cpu.h"
 #include "irata2/sim/error.h"
-#include "irata2/hdl/cpu.h"
 
 #include <gtest/gtest.h>
 
 using namespace irata2::sim;
 
-TEST(SimRegisterTest, WritesAndReadsViaBus) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+namespace {
+void SetSafeIr(Cpu& sim) {
+  sim.controller().ir().set_value(irata2::base::Byte{0x02});
+  sim.controller().sc().set_value(irata2::base::Byte{0});
+}
+}  // namespace
 
+TEST(SimRegisterTest, WritesAndReadsViaBus) {
+  Cpu sim;
+
+  SetSafeIr(sim);
   sim.a().set_value(irata2::base::Byte{0x42});
   sim.a().write().Assert();
   sim.x().read().Assert();
@@ -22,9 +28,9 @@ TEST(SimRegisterTest, WritesAndReadsViaBus) {
 }
 
 TEST(SimRegisterTest, RejectsMultipleBusWriters) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   sim.a().set_value(irata2::base::Byte{0x10});
   sim.x().set_value(irata2::base::Byte{0x20});
   sim.a().write().Assert();
@@ -34,9 +40,9 @@ TEST(SimRegisterTest, RejectsMultipleBusWriters) {
 }
 
 TEST(SimRegisterTest, RejectsReadWithoutWriter) {
-  irata2::hdl::Cpu hdl;
-  Cpu sim(hdl);
+  Cpu sim;
 
+  SetSafeIr(sim);
   sim.a().read().Assert();
 
   EXPECT_THROW(sim.Tick(), SimError);

@@ -20,7 +20,9 @@ add_executable(sim_tests
   control_test.cpp
   counter_test.cpp
   component_test.cpp
+  controller_test.cpp
   cpu_test.cpp
+  initialization_test.cpp
   register_test.cpp
 )
 

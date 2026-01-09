@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.20)
 add_library(irata2_sim
   src/cpu.cpp
   src/controller.cpp
+  src/initialization.cpp
 )
 add_library(irata2::sim ALIAS irata2_sim)
 
@@ -19,6 +20,7 @@ target_include_directories(irata2_sim PUBLIC
 target_link_libraries(irata2_sim PUBLIC
   irata2::base
   irata2::hdl
+  irata2::microcode
 )
 
 # Require C++20

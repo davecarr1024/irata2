@@ -1,9 +1,18 @@
 #include "irata2/sim/cpu.h"
 
+#include "irata2/sim/error.h"
+#include "irata2/sim/initialization.h"
+
+#include <algorithm>
+
 namespace irata2::sim {
 
-Cpu::Cpu(const hdl::Cpu& hdl)
-    : hdl_(hdl),
+Cpu::Cpu() : Cpu(DefaultHdl(), DefaultMicrocodeProgram()) {}
+
+Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
+         std::shared_ptr<const microcode::output::MicrocodeProgram> program)
+    : hdl_(std::move(hdl)),
+      microcode_(std::move(program)),
       halt_control_("halt", *this),
       crash_control_("crash", *this),
       data_bus_("data_bus", *this),
@@ -14,6 +23,13 @@ Cpu::Cpu(const hdl::Cpu& hdl)
       mar_("mar", *this, address_bus_),
       status_("status", *this, data_bus_),
       controller_("controller", *this, data_bus_) {
+  if (!hdl_) {
+    throw SimError("cpu constructed without HDL");
+  }
+  if (!microcode_) {
+    throw SimError("cpu constructed without microcode program");
+  }
+
   RegisterChild(halt_control_);
   RegisterChild(crash_control_);
   RegisterChild(data_bus_);
@@ -53,10 +69,80 @@ Cpu::Cpu(const hdl::Cpu& hdl)
   RegisterChild(controller_.sc());
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
+
+  controller_.LoadProgram(microcode_);
 }
 
 void Cpu::RegisterChild(Component& child) {
   components_.push_back(&child);
+  controls_indexed_ = false;
+}
+
+namespace {
+std::string NormalizePath(std::string_view path) {
+  if (path.empty()) {
+    return {};
+  }
+
+  if (!path.empty() && path.front() == '/') {
+    return std::string(path);
+  }
+
+  std::string normalized;
+  normalized.reserve(path.size() + 5);
+  normalized = "/cpu/";
+  for (char ch : path) {
+    normalized.push_back(ch == '.' ? '/' : ch);
+  }
+  return normalized;
+}
+}  // namespace
+
+void Cpu::IndexControls() const {
+  if (controls_indexed_) {
+    return;
+  }
+
+  controls_by_path_.clear();
+  control_paths_.clear();
+
+  for (auto* component : components_) {
+    if (auto* control = dynamic_cast<ControlBase*>(component)) {
+      auto [it, inserted] =
+          controls_by_path_.emplace(component->path(), control);
+      if (!inserted) {
+        throw SimError("duplicate control path in sim: " + component->path());
+      }
+      control_paths_.push_back(component->path());
+    }
+  }
+
+  std::sort(control_paths_.begin(), control_paths_.end());
+  controls_indexed_ = true;
+}
+
+ControlBase* Cpu::ResolveControl(std::string_view path) {
+  return const_cast<ControlBase*>(
+      static_cast<const Cpu&>(*this).ResolveControl(path));
+}
+
+const ControlBase* Cpu::ResolveControl(std::string_view path) const {
+  const std::string normalized = NormalizePath(path);
+  if (normalized.empty()) {
+    throw SimError("control path is empty");
+  }
+
+  IndexControls();
+  const auto it = controls_by_path_.find(normalized);
+  if (it == controls_by_path_.end()) {
+    throw SimError("control path not found in sim: " + normalized);
+  }
+  return it->second;
+}
+
+std::vector<std::string> Cpu::AllControlPaths() const {
+  IndexControls();
+  return control_paths_;
 }
 
 void Cpu::TickPhase(void (Component::*phase)()) {
