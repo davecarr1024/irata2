@@ -20,8 +20,13 @@ class Component {
   virtual Cpu& cpu() = 0;
   virtual const Cpu& cpu() const = 0;
 
+  virtual base::TickPhase current_phase() const = 0;
+
   // Get component path for debugging
   virtual std::string path() const = 0;
+
+  // Register a child component with the root CPU for ticking.
+  virtual void RegisterChild(Component& child) { (void)child; }
 
   // Five-phase tick model
   // Components override the phases they participate in
@@ -47,9 +52,14 @@ class ComponentWithParent : public Component {
   Cpu& cpu() override { return parent_.cpu(); }
   const Cpu& cpu() const override { return parent_.cpu(); }
 
+  base::TickPhase current_phase() const override {
+    return parent_.current_phase();
+  }
+
   std::string path() const override {
     return parent_.path() + "/" + name_;
   }
+
 
  private:
   Component& parent_;

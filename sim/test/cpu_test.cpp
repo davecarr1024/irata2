@@ -32,6 +32,7 @@ TEST(SimCpuTest, InitialState) {
 
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_FALSE(sim.halted());
+  EXPECT_FALSE(sim.crashed());
   EXPECT_EQ(sim.cycle_count(), 0);
 }
 
@@ -95,4 +96,29 @@ TEST(SimCpuTest, HaltAndResume) {
   sim.set_halted(false);
   sim.Tick();
   EXPECT_EQ(sim.cycle_count(), 3);  // Incremented again
+}
+
+TEST(SimCpuTest, HaltControlStopsCpu) {
+  irata2::hdl::Cpu hdl;
+  Cpu sim(hdl);
+
+  sim.halt().Assert();
+  sim.Tick();
+  EXPECT_TRUE(sim.halted());
+
+  sim.Tick();
+  EXPECT_EQ(sim.cycle_count(), 1);
+}
+
+TEST(SimCpuTest, CrashControlStopsCpu) {
+  irata2::hdl::Cpu hdl;
+  Cpu sim(hdl);
+
+  sim.crash().Assert();
+  sim.Tick();
+  EXPECT_TRUE(sim.crashed());
+  EXPECT_TRUE(sim.halted());
+
+  sim.Tick();
+  EXPECT_EQ(sim.cycle_count(), 1);
 }

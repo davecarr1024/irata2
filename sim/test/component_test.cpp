@@ -17,7 +17,11 @@ class TickComponent final : public Component {
  public:
   Cpu& cpu() override { return *cpu_; }
   const Cpu& cpu() const override { return *cpu_; }
+  irata2::base::TickPhase current_phase() const override {
+    return cpu_->current_phase();
+  }
   std::string path() const override { return "/tick"; }
+  void RegisterChild(Component& child) override { (void)child; }
 
   explicit TickComponent(Cpu& cpu) : cpu_(&cpu) {}
 

@@ -3,9 +3,19 @@
 
 #include <cstdint>
 
+#include <vector>
+
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
+#include "irata2/sim/byte_bus.h"
+#include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
+#include "irata2/sim/control.h"
+#include "irata2/sim/controller.h"
+#include "irata2/sim/counter.h"
+#include "irata2/sim/status_register.h"
+#include "irata2/sim/word_bus.h"
+#include "irata2/sim/word_register.h"
 
 namespace irata2::sim {
 
@@ -21,7 +31,7 @@ class Cpu : public Component {
   std::string path() const override { return "/cpu"; }
 
   // Get current tick phase
-  base::TickPhase current_phase() const { return current_phase_; }
+  base::TickPhase current_phase() const override { return current_phase_; }
 
   // Execute one clock cycle (five phases)
   void Tick();
@@ -33,24 +43,55 @@ class Cpu : public Component {
   // Cycle count
   uint64_t cycle_count() const { return cycle_count_; }
 
-  // Component accessors will be added here as we build the system
-  // For example:
-  // ByteBus& data_bus() { return data_bus_; }
-  // const ByteBus& data_bus() const { return data_bus_; }
-  // ByteRegister& a() { return a_; }
-  // const ByteRegister& a() const { return a_; }
+  bool crashed() const { return crashed_; }
+
+  ProcessControl<true>& halt() { return halt_control_; }
+  const ProcessControl<true>& halt() const { return halt_control_; }
+  ProcessControl<true>& crash() { return crash_control_; }
+  const ProcessControl<true>& crash() const { return crash_control_; }
+
+  ByteBus& data_bus() { return data_bus_; }
+  const ByteBus& data_bus() const { return data_bus_; }
+  WordBus& address_bus() { return address_bus_; }
+  const WordBus& address_bus() const { return address_bus_; }
+
+  ByteRegister& a() { return a_; }
+  const ByteRegister& a() const { return a_; }
+  ByteRegister& x() { return x_; }
+  const ByteRegister& x() const { return x_; }
+  Counter<base::Word>& pc() { return pc_; }
+  const Counter<base::Word>& pc() const { return pc_; }
+  WordRegister& mar() { return mar_; }
+  const WordRegister& mar() const { return mar_; }
+  StatusRegister& status() { return status_; }
+  const StatusRegister& status() const { return status_; }
+  Controller& controller() { return controller_; }
+  const Controller& controller() const { return controller_; }
+
+  void RegisterChild(Component& child) override;
 
  private:
+  void TickPhase(void (Component::*phase)());
+  void TickProcess() override;
+
   const hdl::Cpu& hdl_;
   base::TickPhase current_phase_ = base::TickPhase::None;
   bool halted_ = false;
+  bool crashed_ = false;
   uint64_t cycle_count_ = 0;
 
-  // Component members will be added here
-  // ByteBus data_bus_;
-  // WordBus address_bus_;
-  // ByteRegister a_;
-  // Memory memory_;
+  std::vector<Component*> components_;
+
+  ProcessControl<true> halt_control_;
+  ProcessControl<true> crash_control_;
+  ByteBus data_bus_;
+  WordBus address_bus_;
+  ByteRegister a_;
+  ByteRegister x_;
+  Counter<base::Word> pc_;
+  WordRegister mar_;
+  StatusRegister status_;
+  Controller controller_;
 };
 
 }  // namespace irata2::sim

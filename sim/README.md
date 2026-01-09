@@ -53,9 +53,10 @@ The sim module currently provides:
 - Phase tracking
 - Cycle counting
 - Halt/resume functionality
+- Core component types (controls, buses, registers, counters)
+- Controller shell with IR and step counter
 
 Future additions:
-- Runtime bus/register state aligned with HDL
 - Microcode ROM decoding and control assertion
 - Memory access and fetch/decode wiring
 - Halt/crash termination semantics for integration tests

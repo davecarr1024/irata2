@@ -17,8 +17,11 @@ include(GoogleTest)
 
 # Test executable for sim module
 add_executable(sim_tests
+  control_test.cpp
+  counter_test.cpp
   component_test.cpp
   cpu_test.cpp
+  register_test.cpp
 )
 
 target_link_libraries(sim_tests PRIVATE
