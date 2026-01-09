@@ -5,11 +5,15 @@ cmake_minimum_required(VERSION 3.20)
 
 # Microcode library
 add_library(irata2_microcode
+  src/compiler/compiler.cpp
   src/compiler/fetch_transformer.cpp
   src/compiler/fetch_validator.cpp
   src/compiler/isa_coverage_validator.cpp
   src/compiler/sequence_transformer.cpp
   src/compiler/sequence_validator.cpp
+  src/encoder/control_encoder.cpp
+  src/encoder/instruction_encoder.cpp
+  src/encoder/status_encoder.cpp
   src/ir/builder.cpp
 )
 add_library(irata2::microcode ALIAS irata2_microcode)

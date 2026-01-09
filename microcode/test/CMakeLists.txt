@@ -16,11 +16,16 @@ include(GoogleTest)
 
 add_executable(microcode_tests
   builder_test.cpp
+  compiler_conflict_test.cpp
+  compiler_test.cpp
+  control_encoder_test.cpp
   fetch_transformer_test.cpp
   fetch_validator_test.cpp
   isa_coverage_validator_test.cpp
+  instruction_encoder_test.cpp
   sequence_transformer_test.cpp
   sequence_validator_test.cpp
+  status_encoder_test.cpp
 )
 
 target_link_libraries(microcode_tests PRIVATE

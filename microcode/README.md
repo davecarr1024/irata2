@@ -196,6 +196,32 @@ const InstructionSet& GetIrataInstructionSet();
 }  // namespace irata2::microcode::ir
 ```
 
+## Compilation Output: MicrocodeProgram
+
+The compiler emits a `MicrocodeProgram` that serves as the contract with the sim:
+
+```cpp
+namespace irata2::microcode::output {
+
+struct MicrocodeKey {
+  uint8_t opcode;
+  uint8_t step;
+  uint8_t status;
+};
+
+using MicrocodeTable = std::unordered_map<uint32_t, uint64_t>;
+
+struct MicrocodeProgram {
+  MicrocodeTable table;             // sparse (opcode, step, status) -> control word
+  std::vector<std::string> control_paths;  // stable, alphabetic control ordering
+  std::vector<StatusBitDefinition> status_bits;  // name + bit for status encoding
+};
+
+}  // namespace irata2::microcode::output
+```
+
+The simulator consumes `MicrocodeProgram` to burn the sparse table into instruction memory.
+
 ### Path Resolution at Load Time
 
 The code generator resolves all paths when parsing the YAML:
