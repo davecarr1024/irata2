@@ -20,6 +20,7 @@ add_library(irata2_hdl
   src/process_control.cpp
   src/read_control.cpp
   src/register.cpp
+  src/status.cpp
   src/word_bus.cpp
   src/word_register.cpp
   src/write_control.cpp

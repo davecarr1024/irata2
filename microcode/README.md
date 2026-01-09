@@ -2,6 +2,32 @@
 
 Microcode IR, compiler passes, and validation for CPU control. YAML codegen and ROM encoding are planned but not implemented yet.
 
+See `plan.md` for the vertical-slice roadmap that ties microcode to sim, assembler, and tests.
+
+## Design Note: Instruction Memory Encoding (Spark Moment)
+
+The microcode compiler will output a sparse table keyed by `(opcode, step, status)` that maps to a set of asserted controls. The simulator will then **burn** this sparse table into a fully-populated instruction memory (ROM) that represents the controller's brain in a hardware-ish way.
+
+Planned components:
+- **PartialStatus**: Represents a partially specified set of status flags (don’t-care bits).
+- **CompleteStatus**: Represents a fully specified set of status flags.
+- **StatusEncoder**: Expands `PartialStatus` into all matching `CompleteStatus` permutations and encodes `CompleteStatus` into a binary address field.
+- **ControlEncoder**: Assigns stable bit positions to controls and encodes/decodes control words (alphabetic by control path for stable ordering).
+- **InstructionEncoder**: Combines opcode, step, and encoded status into instruction-memory addressing.
+
+The microcode pipeline produces the sparse table; the simulator’s controller will use these encoders to build the ROM image that drives control-line assertions each tick.
+
+### Reference Example: pirata Burn-In Pattern
+
+The `pirata` simulator implements the intended burn-in flow:
+
+- `InstructionMemory.initialize(encoder)` generates a sparse microcode table.
+- The table is **burned into ROM chips** when addressable in 16 bits; control words are split across multiple ROMs (one byte per ROM).
+- If the address space exceeds 16-bit ROM addressing, it falls back to a sparse in-memory table.
+- The controller reads `(opcode, step, statuses)` each tick and asserts the decoded controls.
+
+This pattern is the model for IRATA2’s instruction memory and controller implementation.
+
 ## Overview
 
 The microcode module defines instruction behavior as sequences of control signal assertions. The current MVP focuses on the IR, fast-fail control lookup, and a minimal compiler pipeline. YAML codegen and ROM encoding are the next steps.
@@ -349,7 +375,7 @@ instructions:
 
 The HDL module must provide:
 
-- **Status register** (`SR`) with individual `Status` wires for each flag (Z, N, C, V) (planned)
+- **Status register** (`SR`) with 6502-style flags (N, V, U, B, D, I, Z, C), bus-connected for push/pop (planned)
 - **Controller components**: Instruction Register (`IR`), Sequence Counter (`SC`)
 - **Path resolution API**: Dot-notation lookup matching YAML syntax
 

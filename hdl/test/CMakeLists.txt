@@ -31,6 +31,7 @@ add_executable(hdl_tests
   process_control_test.cpp
   read_control_test.cpp
   register_test.cpp
+  status_bit_test.cpp
   traits_test.cpp
   word_bus_test.cpp
   word_register_test.cpp

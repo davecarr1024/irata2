@@ -50,7 +50,7 @@ instructions:
     flags_affected: []
 
   - mnemonic: CRS
-    opcode: 0x03
+    opcode: 0xFF
     addressing_mode: IMP
     cycles: 1
     description: "Crash (for testing)"

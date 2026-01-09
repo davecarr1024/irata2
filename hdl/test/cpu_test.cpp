@@ -20,6 +20,9 @@ TEST(HdlCpuTest, AccessorsReturnComponents) {
   EXPECT_EQ(cpu.x().path(), "/cpu/x");
   EXPECT_EQ(cpu.pc().path(), "/cpu/pc");
   EXPECT_EQ(cpu.mar().path(), "/cpu/mar");
+  EXPECT_EQ(cpu.status().path(), "/cpu/status");
+  EXPECT_EQ(cpu.status().zero().path(), "/cpu/status/zero");
+  EXPECT_EQ(cpu.status().carry().path(), "/cpu/status/carry");
   EXPECT_EQ(cpu.controller().path(), "/cpu/controller");
   EXPECT_EQ(cpu.halt().path(), "/cpu/halt");
   EXPECT_EQ(cpu.crash().path(), "/cpu/crash");
@@ -54,10 +57,10 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 30);
+  EXPECT_EQ(visitor.components, 42);
   EXPECT_EQ(visitor.buses, 2);
-  EXPECT_EQ(visitor.registers, 6);
-  EXPECT_EQ(visitor.controls, 20);
+  EXPECT_EQ(visitor.registers, 7);
+  EXPECT_EQ(visitor.controls, 23);
 }
 
 TEST(HdlCpuTest, ResolveControlFindsPaths) {

@@ -2,6 +2,8 @@
 
 The ISA module provides the single source of truth for the IRATA2 instruction set architecture. It uses a YAML definition file to generate C++ code, ensuring consistency across the simulator, assembler, and any other tools.
 
+Current MVP status: the instruction set is intentionally minimal (HLT/NOP/CRS) to support the vertical slice. Additional instructions and addressing modes will be added after the end-to-end test harness is in place.
+
 ## Structure
 
 ```

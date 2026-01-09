@@ -31,9 +31,12 @@ The project is organized into independent, self-contained modules:
 ## Current Status
 
 - `base` is implemented and provides `Byte`, `Word`, and `TickPhase`.
-- `hdl` is implemented with immutable components, buses, controls, and registers.
-- `sim` is a placeholder tick orchestrator that will mirror the HDL structure.
-- `microcode` is a placeholder awaiting DSL/IR/compiler work.
+- `hdl` is implemented with immutable components, buses, controls, and registers, including controller/IR/SC and halt/crash controls.
+- `isa` is reduced to the minimal MVP instruction set (HLT/NOP/CRS).
+- `microcode` has MVP IR + compiler passes/validators; YAML codegen and ROM encoding are next.
+- `sim` is a placeholder tick orchestrator; runtime components and microcode execution are next.
+
+See `plan.md` for the vertical-slice roadmap.
 
 ## Design Philosophy
 
@@ -45,8 +48,8 @@ The project is organized into independent, self-contained modules:
 
 ## Roadmap Notes
 
+- The vertical slice plan targets end-to-end `.asm` integration tests; see `plan.md`.
 - The design doc references an assembler module; it is not yet present in this repo.
-- HDL is the first major implementation milestone; simulator and microcode depend on it.
 
 ## Quick Start
 

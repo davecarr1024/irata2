@@ -17,6 +17,7 @@ Cpu::Cpu()
       x_("x", *this, data_bus_),
       pc_("pc", *this, address_bus_),
       mar_("mar", *this, address_bus_),
+      status_("status", *this, data_bus_),
       controller_("controller", *this, data_bus_) {}
 
 namespace {

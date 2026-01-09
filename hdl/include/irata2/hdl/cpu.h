@@ -8,6 +8,7 @@
 #include "irata2/hdl/controller.h"
 #include "irata2/hdl/counter.h"
 #include "irata2/hdl/process_control.h"
+#include "irata2/hdl/status_register.h"
 #include "irata2/hdl/word_bus.h"
 #include "irata2/hdl/word_register.h"
 
@@ -36,6 +37,7 @@ class Cpu final : public Component<Cpu> {
   const ByteRegister& x() const { return x_; }
   const Counter<base::Word>& pc() const { return pc_; }
   const WordRegister& mar() const { return mar_; }
+  const StatusRegister& status() const { return status_; }
   const Controller& controller() const { return controller_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
   const ProcessControl<true>& crash() const { return crash_control_; }
@@ -54,6 +56,7 @@ class Cpu final : public Component<Cpu> {
     x_.visit(visitor);
     pc_.visit(visitor);
     mar_.visit(visitor);
+    status_.visit(visitor);
     controller_.visit(visitor);
   }
 
@@ -68,6 +71,7 @@ class Cpu final : public Component<Cpu> {
   const ByteRegister x_;
   const Counter<base::Word> pc_;
   const WordRegister mar_;
+  const StatusRegister status_;
   const Controller controller_;
 
   mutable bool controls_indexed_ = false;

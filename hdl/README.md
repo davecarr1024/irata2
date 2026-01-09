@@ -22,13 +22,19 @@ Component<Derived> (CRTP base)
     │   ├── ByteBus
     │   └── WordBus
     ├── ComponentWithBus<Derived, ValueType>
-    ├── Control<Derived, ValueType, Phase, AutoReset>
+    ├── ControlBase (interface)
+    │   └── Control<Derived, ValueType, Phase, AutoReset>
     │   ├── WriteControl<ValueType>
     │   ├── ReadControl<ValueType>
     │   └── ProcessControl<AutoReset>
-    └── Register<Derived, ValueType>
-        ├── WordRegister
-        └── Counter<ValueType>
+    ├── Register<Derived, ValueType>
+    │   ├── ByteRegister
+    │   ├── WordRegister
+    │   └── Counter<ValueType>
+    ├── LocalRegister<Derived, ValueType>  (no bus)
+    │   └── LocalCounter<ValueType>
+    │       └── ByteCounter
+    └── Controller
 ```
 
 ## Key Concepts
@@ -101,11 +107,13 @@ class ComponentWithBus : public ComponentWithParent<Derived> {
 };
 ```
 
-Registers are one example of `ComponentWithBus`:
+Registers are one example of `ComponentWithBus` and include a reset control:
 
 ```cpp
 template<typename Derived, typename ValueType>
-class Register : public ComponentWithBus<Derived, ValueType> {};
+class Register : public ComponentWithBus<Derived, ValueType> {
+  ProcessControl<true> reset_control_;
+};
 ```
 
 ### CPU Structure
@@ -118,9 +126,36 @@ class Cpu final : public Component<Cpu> {
   WordBus address_bus_;
   ByteRegister a_;               // Accumulator
   Counter<base::Word> pc_;       // Program counter
+  Controller controller_;        // IR + SC
+  ByteRegister status_;          // SR (bus-connected)
+  StatusZero zero_;
+  StatusNegative negative_;
+  StatusCarry carry_;
+  StatusOverflow overflow_;
+  StatusInterruptDisable interrupt_disable_;
+  StatusDecimal decimal_;
+  StatusBreak break_;
+  StatusUnused unused_;
+  ProcessControl<true> halt_;     // Halt execution
+  ProcessControl<true> crash_;    // Crash execution
   // ...
 };
 ```
+
+### Status Register (SR)
+
+The status register is bus-connected for push/pop and exposes named status
+signals as views into specific bits. The 6502-style bit layout is used:
+
+```
+bit:  7   6   5   4   3   2   1   0
+name: N   V   U   B   D   I   Z   C
+```
+
+- `status` is the register name in HDL.
+- Status components are named with full words: `zero`, `negative`, `carry`,
+  `overflow`, `interrupt_disable`, `decimal`, `break`, `unused`.
+- Default SR value is `0x00`.
 
 ## Structural Inspection
 
@@ -142,6 +177,12 @@ Cpu cpu;
 ControlCounter counter;
 cpu.visit(counter);
 // counter.count has total control count
+```
+
+The CPU also provides path resolution for microcode:
+
+```cpp
+const auto* control = cpu.ResolveControl("controller.ir.write");
 ```
 
 ## Detailed Implementation Plan
