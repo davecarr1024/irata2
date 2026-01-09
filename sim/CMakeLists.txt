@@ -8,6 +8,10 @@ add_library(irata2_sim
   src/cpu.cpp
   src/controller.cpp
   src/initialization.cpp
+  src/memory/memory.cpp
+  src/memory/memory_address_register.cpp
+  src/memory/module.cpp
+  src/memory/region.cpp
 )
 add_library(irata2::sim ALIAS irata2_sim)
 

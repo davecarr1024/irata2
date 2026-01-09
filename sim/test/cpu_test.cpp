@@ -124,3 +124,25 @@ TEST(SimCpuTest, CrashControlStopsCpu) {
   sim.Tick();
   EXPECT_EQ(sim.cycle_count(), 1);
 }
+
+TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
+  Cpu sim;
+
+  SetSafeIr(sim);
+  sim.halt().Assert();
+  const auto result = sim.RunUntilHalt();
+
+  EXPECT_TRUE(result.halted);
+  EXPECT_FALSE(result.crashed);
+}
+
+TEST(SimCpuTest, RunUntilHaltReturnsCrashState) {
+  Cpu sim;
+
+  SetSafeIr(sim);
+  sim.crash().Assert();
+  const auto result = sim.RunUntilHalt();
+
+  EXPECT_TRUE(result.halted);
+  EXPECT_TRUE(result.crashed);
+}

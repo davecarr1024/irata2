@@ -10,7 +10,9 @@ namespace irata2::sim {
 Cpu::Cpu() : Cpu(DefaultHdl(), DefaultMicrocodeProgram()) {}
 
 Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
-         std::shared_ptr<const microcode::output::MicrocodeProgram> program)
+         std::shared_ptr<const microcode::output::MicrocodeProgram> program,
+         std::shared_ptr<memory::Module> cartridge_rom,
+         std::vector<memory::Region> extra_regions)
     : hdl_(std::move(hdl)),
       microcode_(std::move(program)),
       halt_control_("halt", *this),
@@ -20,9 +22,29 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
       pc_("pc", *this, address_bus_),
-      mar_("mar", *this, address_bus_),
       status_("status", *this, data_bus_),
-      controller_("controller", *this, data_bus_) {
+      controller_("controller", *this, data_bus_),
+      memory_("memory",
+              *this,
+              data_bus_,
+              address_bus_,
+              [&]() {
+                std::vector<memory::Region> regions;
+                regions.reserve(extra_regions.size() + 2);
+                regions.emplace_back("ram",
+                                     base::Word{0x0000},
+                                     memory::MakeRam(0x2000));
+                if (!cartridge_rom) {
+                  cartridge_rom = memory::MakeRom(0x8000);
+                }
+                regions.emplace_back("cartridge",
+                                     base::Word{0x8000},
+                                     cartridge_rom);
+                for (auto& region : extra_regions) {
+                  regions.push_back(std::move(region));
+                }
+                return regions;
+              }()) {
   if (!hdl_) {
     throw SimError("cpu constructed without HDL");
   }
@@ -51,11 +73,6 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(pc_.reset());
   RegisterChild(pc_.increment());
 
-  RegisterChild(mar_);
-  RegisterChild(mar_.write());
-  RegisterChild(mar_.read());
-  RegisterChild(mar_.reset());
-
   RegisterChild(status_);
   RegisterChild(status_.write());
   RegisterChild(status_.read());
@@ -69,6 +86,22 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.sc());
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
+
+  RegisterChild(memory_);
+  RegisterChild(memory_.write());
+  RegisterChild(memory_.read());
+  RegisterChild(memory_.mar());
+  RegisterChild(memory_.mar().write());
+  RegisterChild(memory_.mar().read());
+  RegisterChild(memory_.mar().reset());
+  RegisterChild(memory_.mar().low());
+  RegisterChild(memory_.mar().low().write());
+  RegisterChild(memory_.mar().low().read());
+  RegisterChild(memory_.mar().low().reset());
+  RegisterChild(memory_.mar().high());
+  RegisterChild(memory_.mar().high().write());
+  RegisterChild(memory_.mar().high().read());
+  RegisterChild(memory_.mar().high().reset());
 
   controller_.LoadProgram(microcode_);
 }
@@ -154,6 +187,13 @@ void Cpu::Tick() {
 
   current_phase_ = base::TickPhase::None;
   cycle_count_++;
+}
+
+Cpu::RunResult Cpu::RunUntilHalt() {
+  while (!halted_) {
+    Tick();
+  }
+  return {.halted = halted_, .crashed = crashed_};
 }
 
 void Cpu::TickProcess() {

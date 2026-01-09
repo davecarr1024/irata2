@@ -7,6 +7,8 @@
 #include "irata2/hdl/control.h"
 #include "irata2/hdl/counter.h"
 #include "irata2/hdl/cpu.h"
+#include "irata2/hdl/memory.h"
+#include "irata2/hdl/memory_address_register.h"
 #include "irata2/hdl/process_control.h"
 #include "irata2/hdl/read_control.h"
 #include "irata2/hdl/status.h"

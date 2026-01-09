@@ -17,9 +17,11 @@
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller.h"
 #include "irata2/sim/counter.h"
+#include "irata2/sim/memory/memory.h"
+#include "irata2/sim/memory/module.h"
+#include "irata2/sim/memory/region.h"
 #include "irata2/sim/status_register.h"
 #include "irata2/sim/word_bus.h"
-#include "irata2/sim/word_register.h"
 
 namespace irata2::sim {
 
@@ -27,9 +29,16 @@ namespace irata2::sim {
 // This has runtime state and orchestrates the five-phase tick model
 class Cpu : public Component {
  public:
+  struct RunResult {
+    bool halted = false;
+    bool crashed = false;
+  };
+
   Cpu();
   explicit Cpu(std::shared_ptr<const hdl::Cpu> hdl,
-               std::shared_ptr<const microcode::output::MicrocodeProgram> program);
+               std::shared_ptr<const microcode::output::MicrocodeProgram> program,
+               std::shared_ptr<memory::Module> cartridge_rom = nullptr,
+               std::vector<memory::Region> extra_regions = {});
 
   Cpu& cpu() override { return *this; }
   const Cpu& cpu() const override { return *this; }
@@ -41,6 +50,7 @@ class Cpu : public Component {
 
   // Execute one clock cycle (five phases)
   void Tick();
+  RunResult RunUntilHalt();
 
   // Halt state
   bool halted() const { return halted_; }
@@ -72,12 +82,12 @@ class Cpu : public Component {
   const ByteRegister& x() const { return x_; }
   Counter<base::Word>& pc() { return pc_; }
   const Counter<base::Word>& pc() const { return pc_; }
-  WordRegister& mar() { return mar_; }
-  const WordRegister& mar() const { return mar_; }
   StatusRegister& status() { return status_; }
   const StatusRegister& status() const { return status_; }
   Controller& controller() { return controller_; }
   const Controller& controller() const { return controller_; }
+  memory::Memory& memory() { return memory_; }
+  const memory::Memory& memory() const { return memory_; }
 
   ControlBase* ResolveControl(std::string_view path);
   const ControlBase* ResolveControl(std::string_view path) const;
@@ -106,9 +116,9 @@ class Cpu : public Component {
   ByteRegister a_;
   ByteRegister x_;
   Counter<base::Word> pc_;
-  WordRegister mar_;
   StatusRegister status_;
   Controller controller_;
+  memory::Memory memory_;
 
   mutable bool controls_indexed_ = false;
   mutable std::unordered_map<std::string, ControlBase*> controls_by_path_;

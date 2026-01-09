@@ -16,9 +16,9 @@ Cpu::Cpu()
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
       pc_("pc", *this, address_bus_),
-      mar_("mar", *this, address_bus_),
       status_("status", *this, data_bus_),
-      controller_("controller", *this, data_bus_) {}
+      controller_("controller", *this, data_bus_),
+      memory_("memory", *this, data_bus_, address_bus_) {}
 
 void Cpu::IndexControls() const {
   if (controls_indexed_) {

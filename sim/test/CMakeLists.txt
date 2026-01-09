@@ -23,6 +23,7 @@ add_executable(sim_tests
   controller_test.cpp
   cpu_test.cpp
   initialization_test.cpp
+  memory_test.cpp
   register_test.cpp
 )
 
