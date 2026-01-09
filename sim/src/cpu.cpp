@@ -78,26 +78,6 @@ void Cpu::RegisterChild(Component& child) {
   controls_indexed_ = false;
 }
 
-namespace {
-std::string NormalizePath(std::string_view path) {
-  if (path.empty()) {
-    return {};
-  }
-
-  if (!path.empty() && path.front() == '/') {
-    return std::string(path);
-  }
-
-  std::string normalized;
-  normalized.reserve(path.size() + 5);
-  normalized = "/cpu/";
-  for (char ch : path) {
-    normalized.push_back(ch == '.' ? '/' : ch);
-  }
-  return normalized;
-}
-}  // namespace
-
 void Cpu::IndexControls() const {
   if (controls_indexed_) {
     return;
@@ -127,15 +107,14 @@ ControlBase* Cpu::ResolveControl(std::string_view path) {
 }
 
 const ControlBase* Cpu::ResolveControl(std::string_view path) const {
-  const std::string normalized = NormalizePath(path);
-  if (normalized.empty()) {
+  if (path.empty()) {
     throw SimError("control path is empty");
   }
 
   IndexControls();
-  const auto it = controls_by_path_.find(normalized);
+  const auto it = controls_by_path_.find(std::string(path));
   if (it == controls_by_path_.end()) {
-    throw SimError("control path not found in sim: " + normalized);
+    throw SimError("control path not found in sim: " + std::string(path));
   }
   return it->second;
 }

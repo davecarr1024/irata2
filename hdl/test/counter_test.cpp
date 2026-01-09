@@ -1,7 +1,7 @@
 #include "irata2/base/tick_phase.h"
 #include "irata2/base/types.h"
 #include "irata2/hdl/counter.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/word_bus.h"
 
 #include <gtest/gtest.h>

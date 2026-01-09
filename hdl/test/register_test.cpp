@@ -1,6 +1,6 @@
 #include "irata2/base/types.h"
 #include "irata2/hdl/byte_bus.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/register.h"
 
 #include <gtest/gtest.h>
@@ -23,7 +23,7 @@ TEST(RegisterTest, ConstructionSetsNameAndPath) {
   TestRegister reg("test", cpu, bus);
 
   EXPECT_EQ(reg.name(), "test");
-  EXPECT_EQ(reg.path(), "/cpu/test");
+  EXPECT_EQ(reg.path(), "test");
 }
 
 TEST(RegisterTest, ExposesResetControl) {

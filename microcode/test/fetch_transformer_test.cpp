@@ -1,6 +1,6 @@
 #include "irata2/microcode/compiler/fetch_transformer.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 

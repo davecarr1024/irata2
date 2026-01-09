@@ -7,9 +7,13 @@ namespace irata2::hdl {
 namespace {
 std::string BuildPath(const ComponentBase* parent, const std::string& name) {
   if (parent == nullptr) {
-    return "/" + name;
+    return "";
   }
-  return parent->path() + "/" + name;
+  const auto& parent_path = parent->path();
+  if (parent_path.empty()) {
+    return name;
+  }
+  return parent_path + "." + name;
 }
 }  // namespace
 

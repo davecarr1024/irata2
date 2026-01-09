@@ -1,6 +1,6 @@
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/output/program.h"
 
 #include <memory>

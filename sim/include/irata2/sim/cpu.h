@@ -34,7 +34,7 @@ class Cpu : public Component {
   Cpu& cpu() override { return *this; }
   const Cpu& cpu() const override { return *this; }
 
-  std::string path() const override { return "/cpu"; }
+  std::string path() const override { return ""; }
 
   // Get current tick phase
   base::TickPhase current_phase() const override { return current_phase_; }

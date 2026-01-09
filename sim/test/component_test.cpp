@@ -1,5 +1,5 @@
 #include "irata2/sim/component.h"
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 #include <gtest/gtest.h>
 
 using namespace irata2::sim;
@@ -18,7 +18,7 @@ class TickComponent final : public Component {
   irata2::base::TickPhase current_phase() const override {
     return cpu_->current_phase();
   }
-  std::string path() const override { return "/tick"; }
+  std::string path() const override { return "tick"; }
   void RegisterChild(Component& child) override { (void)child; }
 
   explicit TickComponent(Cpu& cpu) : cpu_(&cpu) {}
@@ -37,7 +37,7 @@ TEST(SimComponentTest, CpuIsRoot) {
 TEST(SimComponentTest, CpuPath) {
   Cpu sim;
 
-  EXPECT_EQ(sim.path(), "/cpu");
+  EXPECT_EQ(sim.path(), "");
 }
 
 TEST(SimComponentTest, ComponentWithParentAccessors) {
@@ -46,12 +46,12 @@ TEST(SimComponentTest, ComponentWithParentAccessors) {
 
   EXPECT_EQ(child.name(), "child");
   EXPECT_EQ(&child.parent(), &sim);
-  EXPECT_EQ(child.path(), "/cpu/child");
+  EXPECT_EQ(child.path(), "child");
   EXPECT_EQ(&child.cpu(), &sim);
 
   const auto& const_child = child;
-  EXPECT_EQ(const_child.parent().path(), "/cpu");
-  EXPECT_EQ(const_child.cpu().path(), "/cpu");
+  EXPECT_EQ(const_child.parent().path(), "");
+  EXPECT_EQ(const_child.cpu().path(), "");
 }
 
 TEST(SimComponentTest, DefaultTickMethodsAreCallable) {

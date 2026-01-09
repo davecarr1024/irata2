@@ -1,4 +1,4 @@
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/status.h"
 
 #include <gtest/gtest.h>
@@ -15,7 +15,7 @@ TEST(StatusTest, ExposesRegisterAndBitIndex) {
 
 TEST(StatusTest, PathsUseStatusRegisterNames) {
   Cpu cpu;
-  EXPECT_EQ(cpu.status().path(), "/cpu/status");
-  EXPECT_EQ(cpu.status().zero().path(), "/cpu/status/zero");
-  EXPECT_EQ(cpu.status().negative().path(), "/cpu/status/negative");
+  EXPECT_EQ(cpu.status().path(), "status");
+  EXPECT_EQ(cpu.status().zero().path(), "status.zero");
+  EXPECT_EQ(cpu.status().negative().path(), "status.negative");
 }

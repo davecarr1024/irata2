@@ -60,13 +60,13 @@ microcode.yaml → generate_microcode.py → microcode_ir.cpp  (planned)
 
 ### Path Syntax
 
-Control paths use dot notation with implicit `/cpu` prefix. This syntax is shared between the YAML file and the HDL path resolution API.
+Control paths use dot notation with no root prefix. This syntax is shared between the YAML file and the HDL path resolution API.
 
 | YAML Path | HDL Path |
 |-----------|----------|
-| `a.read` | `/cpu/a/read` |
-| `memory.mar.low.write` | `/cpu/memory/mar/low/write` |
-| `pc.increment` | `/cpu/pc/increment` |
+| `a.read` | `a.read` |
+| `memory.mar.low.write` | `memory.mar.low.write` |
+| `pc.increment` | `pc.increment` |
 
 Path resolution happens when the generated C++ IR is instantiated using the `ir::Builder`. Invalid paths fail immediately with descriptive errors.
 
@@ -433,7 +433,7 @@ public:
 }  // namespace irata2::hdl
 ```
 
-The resolution walks the component tree using the dot-separated segments. The implicit `/cpu` prefix means all paths are relative to the CPU root.
+The resolution walks the component tree using the dot-separated segments, starting at the CPU root.
 
 ## Error Reporting
 

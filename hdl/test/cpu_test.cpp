@@ -1,4 +1,4 @@
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/traits.h"
 
 #include <algorithm>
@@ -9,23 +9,23 @@ using namespace irata2::hdl;
 TEST(HdlCpuTest, Construction) {
   Cpu cpu;
   EXPECT_EQ(&cpu.cpu(), &cpu);
-  EXPECT_EQ(cpu.path(), "/cpu");
+  EXPECT_EQ(cpu.path(), "");
 }
 
 TEST(HdlCpuTest, AccessorsReturnComponents) {
   Cpu cpu;
-  EXPECT_EQ(cpu.data_bus().path(), "/cpu/data_bus");
-  EXPECT_EQ(cpu.address_bus().path(), "/cpu/address_bus");
-  EXPECT_EQ(cpu.a().path(), "/cpu/a");
-  EXPECT_EQ(cpu.x().path(), "/cpu/x");
-  EXPECT_EQ(cpu.pc().path(), "/cpu/pc");
-  EXPECT_EQ(cpu.mar().path(), "/cpu/mar");
-  EXPECT_EQ(cpu.status().path(), "/cpu/status");
-  EXPECT_EQ(cpu.status().zero().path(), "/cpu/status/zero");
-  EXPECT_EQ(cpu.status().carry().path(), "/cpu/status/carry");
-  EXPECT_EQ(cpu.controller().path(), "/cpu/controller");
-  EXPECT_EQ(cpu.halt().path(), "/cpu/halt");
-  EXPECT_EQ(cpu.crash().path(), "/cpu/crash");
+  EXPECT_EQ(cpu.data_bus().path(), "data_bus");
+  EXPECT_EQ(cpu.address_bus().path(), "address_bus");
+  EXPECT_EQ(cpu.a().path(), "a");
+  EXPECT_EQ(cpu.x().path(), "x");
+  EXPECT_EQ(cpu.pc().path(), "pc");
+  EXPECT_EQ(cpu.mar().path(), "mar");
+  EXPECT_EQ(cpu.status().path(), "status");
+  EXPECT_EQ(cpu.status().zero().path(), "status.zero");
+  EXPECT_EQ(cpu.status().carry().path(), "status.carry");
+  EXPECT_EQ(cpu.controller().path(), "controller");
+  EXPECT_EQ(cpu.halt().path(), "halt");
+  EXPECT_EQ(cpu.crash().path(), "crash");
 }
 
 namespace {
@@ -67,7 +67,7 @@ TEST(HdlCpuTest, ResolveControlFindsPaths) {
   Cpu cpu;
 
   EXPECT_EQ(cpu.ResolveControl("a.read"), &cpu.a().read());
-  EXPECT_EQ(cpu.ResolveControl("/cpu/a/read"), &cpu.a().read());
+  EXPECT_EQ(cpu.ResolveControl("a.read"), &cpu.a().read());
   EXPECT_EQ(cpu.ResolveControl("controller.ir.write"), &cpu.controller().ir().write());
   EXPECT_EQ(cpu.ResolveControl("controller.sc.increment"),
             &cpu.controller().sc().increment());
@@ -89,7 +89,7 @@ TEST(HdlCpuTest, AllControlPathsIsSortedAndComplete) {
   auto paths = cpu.AllControlPaths();
 
   EXPECT_TRUE(std::is_sorted(paths.begin(), paths.end()));
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/halt"), paths.end());
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/controller/ir/read"), paths.end());
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "/cpu/controller/sc/reset"), paths.end());
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "halt"), paths.end());
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "controller.ir.read"), paths.end());
+  EXPECT_NE(std::find(paths.begin(), paths.end(), "controller.sc.reset"), paths.end());
 }

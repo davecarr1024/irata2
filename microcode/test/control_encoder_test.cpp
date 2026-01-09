@@ -1,7 +1,7 @@
 #include "irata2/microcode/encoder/control_encoder.h"
 
 #include "irata2/hdl/control.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/error.h"
 
 #include <algorithm>
@@ -27,7 +27,7 @@ TEST(ControlEncoderTest, EncodesControlBitsByPath) {
   ControlEncoder encoder(cpu);
 
   const auto& paths = encoder.control_paths();
-  const auto it = std::find(paths.begin(), paths.end(), "/cpu/halt");
+  const auto it = std::find(paths.begin(), paths.end(), "halt");
   ASSERT_NE(it, paths.end());
 
   const size_t index = static_cast<size_t>(it - paths.begin());
@@ -42,8 +42,8 @@ TEST(ControlEncoderTest, DecodesControlWord) {
   const uint64_t word = encoder.Encode({&cpu.halt(), &cpu.crash()});
   const auto decoded = encoder.Decode(word);
 
-  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "/cpu/halt"), decoded.end());
-  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "/cpu/crash"), decoded.end());
+  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "halt"), decoded.end());
+  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "crash"), decoded.end());
 }
 
 TEST(ControlEncoderTest, RejectsUnknownControl) {

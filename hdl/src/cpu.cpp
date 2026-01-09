@@ -20,26 +20,6 @@ Cpu::Cpu()
       status_("status", *this, data_bus_),
       controller_("controller", *this, data_bus_) {}
 
-namespace {
-std::string NormalizePath(std::string_view path) {
-  if (path.empty()) {
-    return {};
-  }
-
-  if (!path.empty() && path.front() == '/') {
-    return std::string(path);
-  }
-
-  std::string normalized;
-  normalized.reserve(path.size() + 5);
-  normalized = "/cpu/";
-  for (char ch : path) {
-    normalized.push_back(ch == '.' ? '/' : ch);
-  }
-  return normalized;
-}
-}  // namespace
-
 void Cpu::IndexControls() const {
   if (controls_indexed_) {
     return;
@@ -61,16 +41,15 @@ void Cpu::IndexControls() const {
 }
 
 const ControlBase* Cpu::ResolveControl(std::string_view path) const {
-  const std::string normalized = NormalizePath(path);
-  if (normalized.empty()) {
+  if (path.empty()) {
     throw PathResolutionError("control path is empty");
   }
 
   IndexControls();
-  auto it = controls_by_path_.find(normalized);
+  auto it = controls_by_path_.find(std::string(path));
   if (it == controls_by_path_.end()) {
     std::ostringstream message;
-    message << "control path not found: " << normalized;
+    message << "control path not found: " << path;
     throw PathResolutionError(message.str());
   }
 

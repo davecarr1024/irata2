@@ -1,4 +1,4 @@
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 #include "irata2/sim/error.h"
 
 #include <gtest/gtest.h>

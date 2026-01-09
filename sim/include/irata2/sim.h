@@ -1,0 +1,23 @@
+#ifndef IRATA2_SIM_H
+#define IRATA2_SIM_H
+
+#include "irata2/sim/bus.h"
+#include "irata2/sim/byte_bus.h"
+#include "irata2/sim/byte_register.h"
+#include "irata2/sim/component.h"
+#include "irata2/sim/control.h"
+#include "irata2/sim/controller.h"
+#include "irata2/sim/counter.h"
+#include "irata2/sim/cpu.h"
+#include "irata2/sim/error.h"
+#include "irata2/sim/initialization.h"
+#include "irata2/sim/local_counter.h"
+#include "irata2/sim/local_register.h"
+#include "irata2/sim/read_control.h"
+#include "irata2/sim/register.h"
+#include "irata2/sim/status_register.h"
+#include "irata2/sim/word_bus.h"
+#include "irata2/sim/word_register.h"
+#include "irata2/sim/write_control.h"
+
+#endif  // IRATA2_SIM_H

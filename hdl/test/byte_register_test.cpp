@@ -1,6 +1,6 @@
 #include "irata2/hdl/byte_bus.h"
 #include "irata2/hdl/byte_register.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 
@@ -11,6 +11,6 @@ TEST(ByteRegisterTest, ConstructionBindsBus) {
   ByteBus bus("data", cpu);
   ByteRegister reg("a", cpu, bus);
 
-  EXPECT_EQ(reg.path(), "/cpu/a");
+  EXPECT_EQ(reg.path(), "a");
   EXPECT_EQ(&reg.bus(), &bus);
 }

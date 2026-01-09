@@ -1,7 +1,7 @@
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 #include "irata2/sim/error.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/output/program.h"
 
 #include <memory>
@@ -23,7 +23,7 @@ std::shared_ptr<MicrocodeProgram> MakeProgramWithControls(
 
 TEST(SimControllerTest, AssertsHaltControlFromMicrocode) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
-  auto program = MakeProgramWithControls({"/cpu/halt"});
+  auto program = MakeProgramWithControls({"halt"});
   MicrocodeKey key{0x01, 0, 0};
   program->table[EncodeKey(key)] = 1;
 
@@ -37,7 +37,7 @@ TEST(SimControllerTest, AssertsHaltControlFromMicrocode) {
 
 TEST(SimControllerTest, RejectsMissingMicrocodeEntry) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
-  auto program = MakeProgramWithControls({"/cpu/halt"});
+  auto program = MakeProgramWithControls({"halt"});
 
   Cpu sim(hdl, program);
   sim.controller().ir().set_value(irata2::base::Byte{0x01});
@@ -48,14 +48,14 @@ TEST(SimControllerTest, RejectsMissingMicrocodeEntry) {
 
 TEST(SimControllerTest, RejectsUnknownControlPath) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
-  auto program = MakeProgramWithControls({"/cpu/unknown"});
+  auto program = MakeProgramWithControls({"unknown"});
 
   EXPECT_THROW(Cpu sim(hdl, program), SimError);
 }
 
 TEST(SimControllerTest, RejectsControlWordOverflow) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
-  auto program = MakeProgramWithControls({"/cpu/halt"});
+  auto program = MakeProgramWithControls({"halt"});
   MicrocodeKey key{0x01, 0, 0};
   program->table[EncodeKey(key)] = 2;
 

@@ -1,6 +1,6 @@
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/control.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 

@@ -1,5 +1,5 @@
 #include "irata2/hdl/byte_counter.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 

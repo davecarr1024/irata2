@@ -1,5 +1,5 @@
 #include "irata2/hdl/byte_bus.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 
@@ -9,6 +9,6 @@ TEST(ComponentWithParentTest, ParentReferenceIsAvailable) {
   Cpu cpu;
   ByteBus bus("data", cpu);
 
-  EXPECT_EQ(bus.parent().path(), "/cpu");
+  EXPECT_EQ(bus.parent().path(), "");
   EXPECT_EQ(bus.parent().name(), "cpu");
 }

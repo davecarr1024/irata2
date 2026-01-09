@@ -1,6 +1,6 @@
 #include "irata2/microcode/compiler/compiler.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/encoder/control_encoder.h"
 #include "irata2/microcode/encoder/status_encoder.h"
 #include "irata2/microcode/error.h"

@@ -1,6 +1,6 @@
 #include "irata2/microcode/compiler/sequence_validator.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/error.h"
 
 #include <gtest/gtest.h>

@@ -1,4 +1,4 @@
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 #include "irata2/base/tick_phase.h"
 
 #include <gtest/gtest.h>
@@ -17,14 +17,14 @@ TEST(SimCpuTest, Construction) {
   Cpu sim;
 
   EXPECT_EQ(&sim.cpu(), &sim);
-  EXPECT_EQ(sim.path(), "/cpu");
+  EXPECT_EQ(sim.path(), "");
 }
 
 TEST(SimCpuTest, ConstAccessors) {
   const Cpu sim;
 
   EXPECT_EQ(&sim.cpu(), &sim);
-  EXPECT_EQ(sim.path(), "/cpu");
+  EXPECT_EQ(sim.path(), "");
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_FALSE(sim.halted());
   EXPECT_EQ(sim.cycle_count(), 0);

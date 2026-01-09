@@ -1,7 +1,7 @@
 #include "irata2/base/types.h"
 #include "irata2/hdl/byte_bus.h"
 #include "irata2/hdl/component_with_bus.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 

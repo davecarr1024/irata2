@@ -233,7 +233,7 @@ target_link_libraries(your_target PRIVATE irata2::hdl)
 ```
 
 ```cpp
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 irata2::hdl::Cpu cpu;
 // Access components via strongly-typed accessors

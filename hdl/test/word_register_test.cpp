@@ -1,4 +1,4 @@
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/word_bus.h"
 #include "irata2/hdl/word_register.h"
 
@@ -11,6 +11,6 @@ TEST(WordRegisterTest, ConstructionBindsBus) {
   WordBus bus("address", cpu);
   WordRegister reg("mar", cpu, bus);
 
-  EXPECT_EQ(reg.path(), "/cpu/mar");
+  EXPECT_EQ(reg.path(), "mar");
   EXPECT_EQ(&reg.bus(), &bus);
 }

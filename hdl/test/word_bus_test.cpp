@@ -1,4 +1,4 @@
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/hdl/word_bus.h"
 
 #include <gtest/gtest.h>
@@ -10,5 +10,5 @@ TEST(WordBusTest, ConstructionSetsNameAndPath) {
   WordBus bus("address", cpu);
 
   EXPECT_EQ(bus.name(), "address");
-  EXPECT_EQ(bus.path(), "/cpu/address");
+  EXPECT_EQ(bus.path(), "address");
 }

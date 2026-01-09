@@ -1,5 +1,5 @@
 #include "irata2/hdl/byte_bus.h"
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 
 #include <gtest/gtest.h>
 
@@ -10,5 +10,5 @@ TEST(ByteBusTest, ConstructionSetsNameAndPath) {
   ByteBus bus("data", cpu);
 
   EXPECT_EQ(bus.name(), "data");
-  EXPECT_EQ(bus.path(), "/cpu/data");
+  EXPECT_EQ(bus.path(), "data");
 }

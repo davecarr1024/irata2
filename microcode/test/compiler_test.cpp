@@ -1,6 +1,6 @@
 #include "irata2/microcode/compiler/compiler.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/encoder/control_encoder.h"
 #include "irata2/microcode/encoder/status_encoder.h"
 #include "irata2/microcode/error.h"
@@ -65,9 +65,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   ASSERT_NE(it, program.table.end());
 
   const auto decoded = control_encoder.Decode(it->second);
-  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "/cpu/halt"), decoded.end());
+  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "halt"), decoded.end());
   EXPECT_NE(std::find(decoded.begin(), decoded.end(),
-                      "/cpu/controller/sc/reset"), decoded.end());
+                      "controller.sc.reset"), decoded.end());
 }
 
 TEST(CompilerTest, RejectsStepIndexOverflow) {

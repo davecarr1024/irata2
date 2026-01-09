@@ -97,8 +97,8 @@ target_link_libraries(your_target PRIVATE irata2::sim)
 ```
 
 ```cpp
-#include "irata2/hdl/cpu.h"
-#include "irata2/sim/cpu.h"
+#include "irata2/hdl.h"
+#include "irata2/sim.h"
 
 hdl::Cpu hdl;
 sim::Cpu cpu(hdl);

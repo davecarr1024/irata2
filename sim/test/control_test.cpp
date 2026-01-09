@@ -1,5 +1,5 @@
 #include "irata2/sim/control.h"
-#include "irata2/sim/cpu.h"
+#include "irata2/sim.h"
 
 #include <gtest/gtest.h>
 

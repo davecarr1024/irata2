@@ -1,6 +1,6 @@
 #include "irata2/microcode/ir/builder.h"
 
-#include "irata2/hdl/cpu.h"
+#include "irata2/hdl.h"
 #include "irata2/microcode/error.h"
 
 #include <gtest/gtest.h>
@@ -37,6 +37,6 @@ TEST(BuilderTest, FailsFastOnUnknownControl) {
   } catch (const MicrocodeError& error) {
     std::string message = error.what();
     EXPECT_NE(message.find("bad"), std::string::npos);
-    EXPECT_NE(message.find("/cpu/unknown/control"), std::string::npos);
+    EXPECT_NE(message.find("unknown.control"), std::string::npos);
   }
 }

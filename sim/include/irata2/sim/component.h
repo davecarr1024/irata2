@@ -57,7 +57,10 @@ class ComponentWithParent : public Component {
   }
 
   std::string path() const override {
-    return parent_.path() + "/" + name_;
+    if (parent_.path().empty()) {
+      return name_;
+    }
+    return parent_.path() + "." + name_;
   }
 
 

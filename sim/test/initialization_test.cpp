@@ -20,6 +20,6 @@ TEST(SimInitializationTest, DefaultMicrocodeIsShared) {
 TEST(SimInitializationTest, DefaultMicrocodeIncludesHaltControl) {
   const auto program = DefaultMicrocodeProgram();
   const auto& paths = program->control_paths;
-  const bool found = std::find(paths.begin(), paths.end(), "/cpu/halt") != paths.end();
+  const bool found = std::find(paths.begin(), paths.end(), "halt") != paths.end();
   EXPECT_TRUE(found);
 }
