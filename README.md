@@ -5,147 +5,88 @@
 
 A cycle-accurate 8-bit CPU simulator in C++ that feels like building a breadboard computer.
 
-## Project Structure
+## Vision
 
-```
-irata2/
-├── base/                      # Common base module with fundamental types
-│   ├── include/irata2/base/
-│   │   ├── types.h           # Byte and Word types
-│   │   └── tick_phase.h      # Five-phase tick model enum
-│   └── CMakeLists.txt        # Independent build configuration
-├── hdl/                       # Hardware Definition Language (structural metadata)
-│   ├── include/irata2/hdl/
-│   │   ├── component.h       # HDL component base classes
-│   │   └── cpu.h             # HDL CPU structure
-│   ├── src/
-│   │   └── cpu.cpp
-│   └── CMakeLists.txt        # Independent build configuration
-├── sim/                       # Runtime simulator
-│   ├── include/irata2/sim/
-│   │   ├── component.h       # Simulator component base classes
-│   │   └── cpu.h             # Simulator CPU with runtime state
-│   ├── src/
-│   │   └── cpu.cpp
-│   └── CMakeLists.txt        # Independent build configuration
-├── asm/                       # ISA module (YAML definition + code generation)
-│   ├── instructions.yaml     # ISA definition (single source of truth)
-│   ├── generate_isa.py       # Python code generator
-│   ├── example_usage.cpp     # Example program
-│   ├── README.md             # Module documentation
-│   └── CMakeLists.txt        # Independent build configuration
-├── microcode/                 # Microcode DSL, IR, compiler, encoder
-│   ├── include/irata2/microcode/
-│   └── CMakeLists.txt        # Independent build configuration
-├── assembler/                 # Python assembler (to be implemented)
-├── test/                      # Test harnesses, matchers, .asm programs
-└── CMakeLists.txt            # Root build configuration
-```
+Build a simulator where components compose like hardware modules. The system is testable, incremental, and provably correct at every step. The long-term dream: a vector graphics Asteroids game running on a 2600-style system with memory-mapped I/O, written entirely in assembly.
 
-## Module Organization
+## Architecture
 
-### Base Module (`irata2::base`)
-Common types and enums used across all modules:
-- `Byte` - 8-bit value type (0x00 - 0xFF)
-- `Word` - 16-bit value type (0x0000 - 0xFFFF)
-- `TickPhase` - Five-phase tick model enum
+The project is organized into independent, self-contained modules:
 
-### HDL Module (`irata2::hdl`)
-Immutable structural metadata representing the CPU architecture:
-- `Component` - Base class for all HDL components
-- `ComponentWithParent` - Base for non-root components
-- `Cpu` - Root HDL component
-
-### Simulator Module (`irata2::sim`)
-Runtime execution with mutable state:
-- `Component` - Base class with tick phases
-- `ComponentWithParent` - Base for non-root components
-- `Cpu` - Root simulator with five-phase tick orchestration
-
-### ASM Module (`irata2::asm`)
-ISA definition and code generation:
-- Single YAML file defines entire instruction set
-- Python generator creates type-safe C++ headers
-- Automatic code generation during build
-- See [asm/README.md](asm/README.md) for details
-
-### Microcode Module (`irata2::microcode`)
-Microcode DSL, IR, compiler, and encoder (to be implemented)
-
-## Modular Architecture
-
-Each module is **independent and self-contained**:
-- Has its own `CMakeLists.txt` with build configuration
-- Exports its own library (e.g., `irata2::base`, `irata2::hdl`)
-- Can be built independently or as part of the whole project
-- Declares dependencies explicitly via `target_link_libraries`
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| [base](base/) | Fundamental types (`Byte`, `Word`, `TickPhase`) | [base/README.md](base/README.md) |
+| [hdl](hdl/) | Hardware Definition Language - immutable structural metadata | [hdl/README.md](hdl/README.md) |
+| [isa](isa/) | Instruction Set Architecture definitions (YAML + code generation) | [isa/README.md](isa/README.md) |
+| [sim](sim/) | Runtime simulator with mutable state | [sim/README.md](sim/README.md) |
+| [microcode](microcode/) | Microcode DSL, IR, compiler, encoder | [microcode/README.md](microcode/README.md) |
 
 **Build order** (managed automatically by CMake):
 1. `base` - No dependencies
 2. `hdl` - Depends on `base`
-3. `asm` - Depends on `base` (includes code generation)
+3. `isa` - Depends on `base`
 4. `sim` - Depends on `base`, `hdl`
-5. `microcode` - Depends on `base`, `hdl`, `asm`
+5. `microcode` - Depends on `base`, `hdl`, `isa`
+
+## Current Status
+
+- `base` is implemented and provides `Byte`, `Word`, and `TickPhase`.
+- `hdl` is currently a scaffold; the detailed implementation plan lives in `hdl/README.md`.
+- `sim` is a placeholder tick orchestrator that will mirror the HDL structure.
+- `microcode` is a placeholder awaiting DSL/IR/compiler work.
 
 ## Design Philosophy
 
-- **Hardware-ish**: Components compose like hardware modules
-- **Strongly Typed**: Invalid states are unrepresentable
-- **Namespaced**: Each module in its own namespace
-- **Header-per-Class**: Each class has its own header file
-- **Testable**: 100% test coverage goal
+- **Hardware-ish**: Components compose like hardware modules with buses, registers, and controls
+- **Strongly Typed**: Invalid states are unrepresentable in the type system
+- **Compile-Time Safety**: CRTP templates for zero-cost abstractions and compile-time verification
+- **Immutable Structure**: HDL describes structure; simulation adds runtime state
+- **Testable**: 100% test coverage goal with GoogleTest
 
-## Building
+## Roadmap Notes
 
-### Standard Build
+- The design doc references an assembler module; it is not yet present in this repo.
+- HDL is the first major implementation milestone; simulator and microcode depend on it.
 
-```bash
-cmake -B build
-cmake --build build
-```
-
-### With Tests
+## Quick Start
 
 ```bash
+# Build with tests
 cmake -B build -DBUILD_TESTING=ON
 cmake --build build
+
+# Run tests
 ctest --test-dir build --output-on-failure
 ```
 
-### With Code Coverage
+## Building
+
+See [Building](#building-options) for all build options including code coverage and release builds.
+
+### Building Options
 
 ```bash
+# Standard build
+cmake -B build
+cmake --build build
+
+# With tests
+cmake -B build -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+
+# With code coverage
 cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
 cmake --build build
 ctest --test-dir build
 ./scripts/coverage.sh build
-# Open build/coverage/html/index.html in browser
-```
 
-### Release Build
-
-```bash
+# Release build
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build
 ```
 
-## Testing
-
-- **73 unit tests** across all modules
-- **100% code coverage** of implemented code
-- Tests colocated with each module in `module/test/`
-- GoogleTest/GoogleMock framework
-- Run with: `ctest --test-dir build`
-
-## CI/CD
-
-GitHub Actions automatically:
-- Builds and tests on every push to `main` or `claude/*` branches
-- Generates code coverage reports
-- Uploads coverage to Codecov
-- Provides coverage HTML artifacts (30-day retention)
-- Builds release configuration
-
 ## Documentation
 
-See [design.md](design.md) for detailed architecture and design decisions.
+- [design.md](design.md) - Detailed architecture and design decisions
+- Module-specific documentation in each module's README

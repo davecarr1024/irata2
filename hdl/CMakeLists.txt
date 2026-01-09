@@ -5,7 +5,22 @@ cmake_minimum_required(VERSION 3.20)
 
 # HDL library (compiled)
 add_library(irata2_hdl
+  src/bus.cpp
+  src/byte_bus.cpp
+  src/byte_register.cpp
+  src/component.cpp
+  src/component_base.cpp
+  src/component_with_bus.cpp
+  src/component_with_parent.cpp
+  src/control.cpp
+  src/counter.cpp
   src/cpu.cpp
+  src/process_control.cpp
+  src/read_control.cpp
+  src/register.cpp
+  src/word_bus.cpp
+  src/word_register.cpp
+  src/write_control.cpp
 )
 add_library(irata2::hdl ALIAS irata2_hdl)
 

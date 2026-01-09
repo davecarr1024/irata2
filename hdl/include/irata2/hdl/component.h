@@ -1,46 +1,29 @@
 #ifndef IRATA2_HDL_COMPONENT_H
 #define IRATA2_HDL_COMPONENT_H
 
-#include <string>
+#include "irata2/hdl/component_base.h"
+
+#include <utility>
 
 namespace irata2::hdl {
 
-// Forward declaration
-class Cpu;
-
-// Abstract base class for all HDL components
-// HDL components are immutable structural metadata
-class Component {
+template <typename Derived>
+class Component : public ComponentBase {
  public:
-  virtual ~Component() = default;
+  Derived& self() { return static_cast<Derived&>(*this); }
+  const Derived& self() const { return static_cast<const Derived&>(*this); }
 
-  // Every component can access the root CPU
-  virtual const Cpu& cpu() const = 0;
-
-  // Get component path for debugging
-  virtual std::string path() const = 0;
-};
-
-// Base class for all non-root HDL components
-// Non-root components have a parent reference
-class ComponentWithParent : public Component {
- public:
-  explicit ComponentWithParent(const Component& parent,
-                               const std::string& name)
-      : parent_(parent), name_(name) {}
-
-  const Component& parent() const { return parent_; }
-  const std::string& name() const { return name_; }
-
-  const Cpu& cpu() const override { return parent_.cpu(); }
-
-  std::string path() const override {
-    return parent_.path() + "/" + name_;
+  template <typename Visitor>
+  void visit(Visitor&& visitor) const {
+    self().visit_impl(std::forward<Visitor>(visitor));
   }
 
- private:
-  const Component& parent_;
-  const std::string name_;
+ protected:
+  Component(std::string name, const ComponentBase* parent, Cpu* cpu)
+      : ComponentBase(std::move(name), parent, cpu) {}
+
+  Component(std::string name, Cpu* cpu)
+      : ComponentBase(std::move(name), cpu) {}
 };
 
 }  // namespace irata2::hdl

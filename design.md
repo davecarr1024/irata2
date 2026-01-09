@@ -31,6 +31,7 @@ The component tree is **not a dynamic game engine**. It's a **single, purpose-bu
 - Invalid states are unrepresentable in the type system
 - Navigation is type-safe: `cpu().memory().mar()` not `get_child("/cpu/memory/mar")`
 - No generality unless needed for the IRATA instruction set
+- Parent links are type-erased to maximize component reuse across different owners
 
 ### Defense in Depth
 
@@ -223,7 +224,7 @@ public:
   virtual void TickClear() {}
 };
 
-// All non-root components
+// All non-root components (parent is type-erased for reuse)
 class ComponentWithParent : public Component {
 public:
   ComponentWithParent(Component& parent) : parent_(parent) {}
@@ -254,7 +255,7 @@ public:
 2. **Children reference parents** via `ComponentWithParent` base
 3. **Children reference siblings** via constructor parameters (references)
 4. **No pointers** to owned components (use references)
-5. **Root is always Cpu** (enforced by type system)
+5. **Root is always Cpu** (enforced by construction)
 
 **Construction Order**:
 ```cpp

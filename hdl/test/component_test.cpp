@@ -1,16 +1,19 @@
-#include "irata2/hdl/component.h"
+#include "irata2/hdl/byte_bus.h"
 #include "irata2/hdl/cpu.h"
 
 #include <gtest/gtest.h>
 
 using namespace irata2::hdl;
 
-TEST(HdlComponentTest, CpuIsRoot) {
+TEST(ComponentTest, VisitDispatchesToDerived) {
   Cpu cpu;
-  EXPECT_EQ(&cpu.cpu(), &cpu);
-}
+  ByteBus bus("data", cpu);
 
-TEST(HdlComponentTest, CpuPath) {
-  Cpu cpu;
-  EXPECT_EQ(cpu.path(), "/cpu");
+  int visits = 0;
+  bus.visit([&](const auto& component) {
+    (void)component;
+    ++visits;
+  });
+
+  EXPECT_EQ(visits, 1);
 }

@@ -1,32 +1,47 @@
 #ifndef IRATA2_HDL_CPU_H
 #define IRATA2_HDL_CPU_H
 
+#include "irata2/hdl/byte_bus.h"
+#include "irata2/hdl/byte_register.h"
 #include "irata2/hdl/component.h"
+#include "irata2/hdl/counter.h"
+#include "irata2/hdl/word_bus.h"
+#include "irata2/hdl/word_register.h"
+
+#include <utility>
 
 namespace irata2::hdl {
 
-// Root HDL component representing the CPU structure
-// This is immutable structural metadata - no runtime state
-class Cpu : public Component {
+class Cpu final : public Component<Cpu> {
  public:
   Cpu();
 
-  const Cpu& cpu() const override { return *this; }
+  const ByteBus& data_bus() const { return data_bus_; }
+  const WordBus& address_bus() const { return address_bus_; }
 
-  std::string path() const override { return "/cpu"; }
+  const ByteRegister& a() const { return a_; }
+  const ByteRegister& x() const { return x_; }
+  const Counter<base::Word>& pc() const { return pc_; }
+  const WordRegister& mar() const { return mar_; }
 
-  // Component accessors will be added here as we build the system
-  // For example:
-  // const ByteBus& data_bus() const { return data_bus_; }
-  // const ByteRegister& a() const { return a_; }
-  // const Memory& memory() const { return memory_; }
+  template <typename Visitor>
+  void visit_impl(Visitor&& visitor) const {
+    visitor(*this);
+    data_bus_.visit(visitor);
+    address_bus_.visit(visitor);
+    a_.visit(visitor);
+    x_.visit(visitor);
+    pc_.visit(visitor);
+    mar_.visit(visitor);
+  }
 
  private:
-  // Component members will be added here
-  // const ByteBus data_bus_;
-  // const WordBus address_bus_;
-  // const ByteRegister a_;
-  // const Memory memory_;
+  const ByteBus data_bus_;
+  const WordBus address_bus_;
+  const ByteRegister a_;
+  const ByteRegister x_;
+  const Counter<base::Word> pc_;
+  const WordRegister mar_;
 };
 
 }  // namespace irata2::hdl

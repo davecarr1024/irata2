@@ -17,8 +17,23 @@ include(GoogleTest)
 
 # Test executable for hdl module
 add_executable(hdl_tests
+  bus_test.cpp
+  byte_bus_test.cpp
+  byte_register_test.cpp
+  component_base_test.cpp
   component_test.cpp
+  component_with_bus_test.cpp
+  component_with_parent_test.cpp
+  control_test.cpp
+  counter_test.cpp
   cpu_test.cpp
+  process_control_test.cpp
+  read_control_test.cpp
+  register_test.cpp
+  traits_test.cpp
+  word_bus_test.cpp
+  word_register_test.cpp
+  write_control_test.cpp
 )
 
 target_link_libraries(hdl_tests PRIVATE
