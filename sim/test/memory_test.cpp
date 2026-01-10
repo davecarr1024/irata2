@@ -57,8 +57,8 @@ TEST(SimMemoryTest, WritesThroughBusToRam) {
 
   sim.memory().mar().set_value(irata2::base::Word{0x0001});
   sim.a().set_value(irata2::base::Byte{0x7E});
-  sim.a().write().Assert();
-  sim.memory().read().Assert();
+  test::AssertControl(sim.a().write());
+  test::AssertControl(sim.memory().read());
   sim.Tick();
 
   EXPECT_EQ(sim.memory().ReadAt(irata2::base::Word{0x0001}),
@@ -71,8 +71,8 @@ TEST(SimMemoryTest, ReadsThroughBusFromRam) {
   sim.memory().mar().set_value(irata2::base::Word{0x0002});
   sim.memory().WriteAt(irata2::base::Word{0x0002},
                        irata2::base::Byte{0x3C});
-  sim.memory().write().Assert();
-  sim.x().read().Assert();
+  test::AssertControl(sim.memory().write());
+  test::AssertControl(sim.x().read());
   sim.Tick();
 
   EXPECT_EQ(sim.x().value(), irata2::base::Byte{0x3C});
@@ -82,8 +82,8 @@ TEST(SimMemoryAddressRegisterTest, ReadsWordFromAddressBus) {
   Cpu sim = test::MakeTestCpu();
 
   sim.pc().set_value(irata2::base::Word{0x1234});
-  sim.pc().write().Assert();
-  sim.memory().mar().read().Assert();
+  test::AssertControl(sim.pc().write());
+  test::AssertControl(sim.memory().mar().read());
   sim.Tick();
 
   EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x1234});
@@ -93,13 +93,13 @@ TEST(SimMemoryAddressRegisterTest, ReadsLowHighFromDataBus) {
   Cpu sim = test::MakeTestCpu();
 
   sim.a().set_value(irata2::base::Byte{0xCD});
-  sim.a().write().Assert();
-  sim.memory().mar().low().read().Assert();
+  test::AssertControl(sim.a().write());
+  test::AssertControl(sim.memory().mar().low().read());
   sim.Tick();
 
   sim.a().set_value(irata2::base::Byte{0xAB});
-  sim.a().write().Assert();
-  sim.memory().mar().high().read().Assert();
+  test::AssertControl(sim.a().write());
+  test::AssertControl(sim.memory().mar().high().read());
   sim.Tick();
 
   EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0xABCD});

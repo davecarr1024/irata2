@@ -52,6 +52,9 @@ class Cpu : public Component {
   void Tick();
   RunResult RunUntilHalt();
 
+  // Testing-only phase override for direct control assertions.
+  void SetCurrentPhaseForTest(base::TickPhase phase);
+
   // Halt state
   bool halted() const { return halted_; }
   void set_halted(bool halted) { halted_ = halted; }

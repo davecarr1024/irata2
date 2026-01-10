@@ -14,10 +14,10 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 
 | Category | Status |
 |----------|--------|
-| Major Issues | 2 (Issues 3, 5) |
+| Major Issues | 1 (Issue 5) |
 | Minor Issues | 8 |
-| Design Compliance | ~90% |
-| Test Coverage | 88.6% lines, 98.0% functions (filtered) |
+| Design Compliance | ~92% |
+| Test Coverage | 88.7% lines, 98.0% functions (filtered) |
 | Module Separation | Excellent |
 
 ---
@@ -26,13 +26,13 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 
 | Design Goal | Status | Notes |
 |-------------|--------|-------|
-| Hardware-ish design | PARTIAL | Controls lack phase enforcement in sim |
+| Hardware-ish design | PASS | Phase validation enforced in sim controls |
 | CRTP for zero-cost dispatch | PASS | ControlInfo replaces ControlBase virtuals |
 | Immutable HDL structure | PASS | Mutable caches removed from HDL Cpu |
 | Strongly typed navigation | PASS | Path resolution moved to microcode |
 | Type-safe Byte/Word | PASS | Properly used throughout |
-| Five-phase tick model | PARTIAL | Phase validation missing in sim controls |
-| 100% test coverage | PARTIAL | 88.6% lines, 98.0% functions (filtered) |
+| Five-phase tick model | PASS | Phase validation enforced in sim controls |
+| 100% test coverage | PARTIAL | 88.7% lines, 98.0% functions (filtered) |
 | Clean module boundaries | PASS | Excellent separation of concerns |
 | No instruction logic in components | PASS | Components are dumb hardware |
 
@@ -102,6 +102,7 @@ Path resolution now lives in `microcode::ir::CpuPathResolver`.
 
 **Location**: [sim/include/irata2/sim/control.h](sim/include/irata2/sim/control.h)
 **Severity**: MEDIUM
+**Status**: RESOLVED
 **Design Violation**: "Controls can only be read during their assigned phase" (design.md:425)
 
 **Historical implementation (fixed)**:
@@ -123,7 +124,8 @@ This validation enables microcode optimizations mentioned in design.md (lines 42
 
 **Impact**: Silent bugs possible when controls accessed in wrong phase; optimizer opportunities lost.
 
-**Fix Plan**: See Issue 3 in [Fix Plan](#fix-plan) section.
+**Resolution**: `sim::ControlBase` now enforces phase validation on reads and
+control assertion. Tests cover invalid phase access.
 
 ---
 
@@ -376,6 +378,7 @@ private:
 
 #### Fix 6: Add Phase Validation to Simulator Controls
 **Effort**: 2-3 hours
+**Status**: DONE
 **Files**:
 - `sim/include/irata2/sim/control.h`
 - `sim/test/control_test.cpp`
@@ -407,7 +410,7 @@ private:
 | 1 | Fixes 1-3 (Singleton, ControlInfo, Immutability) | 5-8 hours | Must Have (Completed) |
 | 2 | Fix 4 (CpuPathResolver) | 2-3 hours | Must Have (Completed) |
 | 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have |
-| 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have |
+| 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Fix 6 completed) |
 | 5 | Fix 8 (Testing) | 2-3 hours | Must Have |
 | **Total** | | **15-23 hours** | |
 
@@ -421,7 +424,7 @@ private:
 6. **Fixes 6-7** (Sim) - Independent of HDL changes
 7. **Fix 8** (Testing) - Throughout
 
-Completed to date: Fixes 1-4.
+Completed to date: Fixes 1-4 and 6.
 
 ---
 
@@ -431,7 +434,7 @@ The IRATA2 codebase is **well-architected** with strong type safety, clean modul
 
 The most critical fixes (ControlBase CRTP refactor and mutable cache elimination) are now complete, restoring the foundational guarantees of zero-cost abstractions and immutability that the design relies on.
 
-Remaining alignment work focuses on simulator phase validation and sim-side path caching. After those updates, the codebase will fully align with its stated design philosophy: a hardware-ish, type-safe, testable CPU simulator with compile-time verified correctness.
+Remaining alignment work focuses on sim-side path caching. After that update, the codebase will fully align with its stated design philosophy: a hardware-ish, type-safe, testable CPU simulator with compile-time verified correctness.
 
 ---
 

@@ -198,6 +198,10 @@ Cpu::RunResult Cpu::RunUntilHalt() {
   return {.halted = halted_, .crashed = crashed_};
 }
 
+void Cpu::SetCurrentPhaseForTest(base::TickPhase phase) {
+  current_phase_ = phase;
+}
+
 void Cpu::TickProcess() {
   if (halt_control_.asserted()) {
     halted_ = true;

@@ -25,6 +25,28 @@ inline Cpu MakeTestCpu() {
   return Cpu(DefaultHdl(), MakeNoopProgram());
 }
 
+inline void SetPhase(Cpu& cpu, base::TickPhase phase) {
+  cpu.SetCurrentPhaseForTest(phase);
+}
+
+template <typename ControlType>
+void AssertControl(ControlType& control) {
+  SetPhase(control.cpu(), base::TickPhase::Control);
+  control.Assert();
+}
+
+template <typename ControlType>
+void ClearControl(ControlType& control) {
+  SetPhase(control.cpu(), base::TickPhase::Control);
+  control.Clear();
+}
+
+template <typename ControlType>
+bool IsAsserted(ControlType& control) {
+  SetPhase(control.cpu(), control.phase());
+  return control.asserted();
+}
+
 }  // namespace irata2::sim::test
 
 #endif  // IRATA2_SIM_TEST_HELPERS_H

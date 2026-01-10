@@ -10,14 +10,14 @@ TEST(SimRegisterTest, WritesAndReadsViaBus) {
   Cpu sim = test::MakeTestCpu();
 
   sim.a().set_value(irata2::base::Byte{0x42});
-  sim.a().write().Assert();
-  sim.x().read().Assert();
+  test::AssertControl(sim.a().write());
+  test::AssertControl(sim.x().read());
 
   sim.Tick();
 
   EXPECT_EQ(sim.x().value(), irata2::base::Byte{0x42});
-  EXPECT_FALSE(sim.a().write().asserted());
-  EXPECT_FALSE(sim.x().read().asserted());
+  EXPECT_FALSE(test::IsAsserted(sim.a().write()));
+  EXPECT_FALSE(test::IsAsserted(sim.x().read()));
 }
 
 TEST(SimRegisterTest, RejectsMultipleBusWriters) {
@@ -25,8 +25,8 @@ TEST(SimRegisterTest, RejectsMultipleBusWriters) {
 
   sim.a().set_value(irata2::base::Byte{0x10});
   sim.x().set_value(irata2::base::Byte{0x20});
-  sim.a().write().Assert();
-  sim.x().write().Assert();
+  test::AssertControl(sim.a().write());
+  test::AssertControl(sim.x().write());
 
   EXPECT_THROW(sim.Tick(), SimError);
 }
@@ -34,7 +34,7 @@ TEST(SimRegisterTest, RejectsMultipleBusWriters) {
 TEST(SimRegisterTest, RejectsReadWithoutWriter) {
   Cpu sim = test::MakeTestCpu();
 
-  sim.a().read().Assert();
+  test::AssertControl(sim.a().read());
 
   EXPECT_THROW(sim.Tick(), SimError);
 }

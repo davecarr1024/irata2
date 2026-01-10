@@ -94,7 +94,7 @@ TEST(SimCpuTest, HaltAndResume) {
 TEST(SimCpuTest, HaltControlStopsCpu) {
   Cpu sim = test::MakeTestCpu();
 
-  sim.halt().Assert();
+  test::AssertControl(sim.halt());
   sim.Tick();
   EXPECT_TRUE(sim.halted());
 
@@ -105,7 +105,7 @@ TEST(SimCpuTest, HaltControlStopsCpu) {
 TEST(SimCpuTest, CrashControlStopsCpu) {
   Cpu sim = test::MakeTestCpu();
 
-  sim.crash().Assert();
+  test::AssertControl(sim.crash());
   sim.Tick();
   EXPECT_TRUE(sim.crashed());
   EXPECT_TRUE(sim.halted());
@@ -117,7 +117,7 @@ TEST(SimCpuTest, CrashControlStopsCpu) {
 TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
   Cpu sim = test::MakeTestCpu();
 
-  sim.halt().Assert();
+  test::AssertControl(sim.halt());
   const auto result = sim.RunUntilHalt();
 
   EXPECT_TRUE(result.halted);
@@ -127,7 +127,7 @@ TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
 TEST(SimCpuTest, RunUntilHaltReturnsCrashState) {
   Cpu sim = test::MakeTestCpu();
 
-  sim.crash().Assert();
+  test::AssertControl(sim.crash());
   const auto result = sim.RunUntilHalt();
 
   EXPECT_TRUE(result.halted);
