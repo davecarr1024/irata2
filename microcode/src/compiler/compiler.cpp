@@ -17,9 +17,8 @@ Compiler::Compiler(encoder::ControlEncoder control_encoder,
 
 output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) const {
   fetch_transformer_.Run(instruction_set);
-  sequence_transformer_.Run(instruction_set);
-
   fetch_validator_.Run(instruction_set);
+  sequence_transformer_.Run(instruction_set);
   isa_coverage_validator_.Run(instruction_set);
   sequence_validator_.Run(instruction_set);
 

@@ -1,0 +1,22 @@
+# Microcode definition for MVP instructions
+
+fetch_preamble:
+  - [pc.write, memory.mar.read]
+  - [memory.write, controller.ir.read]
+  - [pc.increment]
+
+instructions:
+  HLT:
+    stages:
+      - steps:
+          - [halt]
+
+  NOP:
+    stages:
+      - steps:
+          - []
+
+  CRS:
+    stages:
+      - steps:
+          - [crash]

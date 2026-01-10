@@ -1,6 +1,6 @@
 # Microcode Module
 
-Microcode IR, compiler passes, and validation for CPU control. YAML codegen and ROM encoding are planned but not implemented yet.
+Microcode IR, compiler passes, and validation for CPU control. YAML codegen is implemented; ROM encoding remains planned.
 
 See `plan.md` for the vertical-slice roadmap that ties microcode to sim, assembler, and tests.
 
@@ -35,7 +35,7 @@ The microcode module defines instruction behavior as sequences of control signal
 ## Design Goals
 
 - **YAML-first definition**: Microcode is data, not code. The YAML file will be the source of truth.
-- **Build-time code generation**: `microcode.yaml` → `generate_microcode.py` → C++ IR instantiation (planned).
+- **Build-time code generation**: `microcode.yaml` → `generate_microcode.py` → C++ IR instantiation.
 - **Singleton initialization**: HDL and compiled microcode are instantiated once per binary run (planned).
 - **Multi-pass compilation**: Transforms add fetch/decode, validators catch errors, optimizers merge steps.
 - **No generality**: This system builds only the IRATA CPU. No pluggable architectures.
@@ -43,7 +43,7 @@ The microcode module defines instruction behavior as sequences of control signal
 ## System Overview
 
 ```
-microcode.yaml → generate_microcode.py → microcode_ir.cpp  (planned)
+microcode.yaml → generate_microcode.py → irata_instruction_set.cpp
                                               ↓
                             C++ Compiler Pipeline (once at startup)
                                               ↓

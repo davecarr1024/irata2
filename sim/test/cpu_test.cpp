@@ -1,4 +1,5 @@
 #include "irata2/sim.h"
+#include "test_helpers.h"
 #include "irata2/base/tick_phase.h"
 
 #include <gtest/gtest.h>
@@ -6,22 +7,15 @@
 using namespace irata2::sim;
 using namespace irata2::base;
 
-namespace {
-void SetSafeIr(Cpu& sim) {
-  sim.controller().ir().set_value(irata2::base::Byte{0x02});
-  sim.controller().sc().set_value(irata2::base::Byte{0});
-}
-}  // namespace
-
 TEST(SimCpuTest, Construction) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
   EXPECT_EQ(&sim.cpu(), &sim);
   EXPECT_EQ(sim.path(), "");
 }
 
 TEST(SimCpuTest, ConstAccessors) {
-  const Cpu sim;
+  const Cpu sim = test::MakeTestCpu();
 
   EXPECT_EQ(&sim.cpu(), &sim);
   EXPECT_EQ(sim.path(), "");
@@ -31,7 +25,7 @@ TEST(SimCpuTest, ConstAccessors) {
 }
 
 TEST(SimCpuTest, InitialState) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_FALSE(sim.halted());
@@ -40,9 +34,8 @@ TEST(SimCpuTest, InitialState) {
 }
 
 TEST(SimCpuTest, TickUpdatesPhases) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   // Before tick
   EXPECT_EQ(sim.current_phase(), TickPhase::None);
   EXPECT_EQ(sim.cycle_count(), 0);
@@ -56,9 +49,8 @@ TEST(SimCpuTest, TickUpdatesPhases) {
 }
 
 TEST(SimCpuTest, MultipleTicks) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   for (int i = 0; i < 10; ++i) {
     EXPECT_EQ(sim.cycle_count(), i);
     sim.Tick();
@@ -68,7 +60,7 @@ TEST(SimCpuTest, MultipleTicks) {
 }
 
 TEST(SimCpuTest, HaltedCpuDoesNotTick) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
   sim.set_halted(true);
   EXPECT_TRUE(sim.halted());
@@ -81,9 +73,8 @@ TEST(SimCpuTest, HaltedCpuDoesNotTick) {
 }
 
 TEST(SimCpuTest, HaltAndResume) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   // Run a few cycles
   sim.Tick();
   sim.Tick();
@@ -101,9 +92,8 @@ TEST(SimCpuTest, HaltAndResume) {
 }
 
 TEST(SimCpuTest, HaltControlStopsCpu) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.halt().Assert();
   sim.Tick();
   EXPECT_TRUE(sim.halted());
@@ -113,9 +103,8 @@ TEST(SimCpuTest, HaltControlStopsCpu) {
 }
 
 TEST(SimCpuTest, CrashControlStopsCpu) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.crash().Assert();
   sim.Tick();
   EXPECT_TRUE(sim.crashed());
@@ -126,9 +115,8 @@ TEST(SimCpuTest, CrashControlStopsCpu) {
 }
 
 TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.halt().Assert();
   const auto result = sim.RunUntilHalt();
 
@@ -137,9 +125,8 @@ TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
 }
 
 TEST(SimCpuTest, RunUntilHaltReturnsCrashState) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.crash().Assert();
   const auto result = sim.RunUntilHalt();
 

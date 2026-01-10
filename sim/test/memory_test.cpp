@@ -1,16 +1,10 @@
 #include "irata2/sim.h"
+#include "test_helpers.h"
 
 #include <gtest/gtest.h>
 
 using namespace irata2::sim;
 using namespace irata2::sim::memory;
-
-namespace {
-void SetSafeIr(Cpu& sim) {
-  sim.controller().ir().set_value(irata2::base::Byte{0x02});
-  sim.controller().sc().set_value(irata2::base::Byte{0});
-}
-}  // namespace
 
 TEST(SimMemoryModuleTest, RamReadWrite) {
   Ram ram(4, irata2::base::Byte{0x00});
@@ -35,7 +29,7 @@ TEST(SimMemoryRegionTest, RejectsMisalignedOffset) {
 }
 
 TEST(SimMemoryTest, RejectsOverlappingRegions) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
   std::vector<Region> regions;
   regions.emplace_back("one", irata2::base::Word{0x0000}, MakeRam(0x2000));
   regions.emplace_back("two", irata2::base::Word{0x1000}, MakeRam(0x1000));
@@ -46,22 +40,21 @@ TEST(SimMemoryTest, RejectsOverlappingRegions) {
 }
 
 TEST(SimMemoryTest, ReadUnmappedReturnsFF) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
   const auto value = sim.memory().ReadAt(irata2::base::Word{0x4000});
   EXPECT_EQ(value, irata2::base::Byte{0xFF});
 }
 
 TEST(SimMemoryTest, WriteUnmappedThrows) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
   EXPECT_THROW(sim.memory().WriteAt(irata2::base::Word{0x4000},
                                     irata2::base::Byte{0x12}),
                SimError);
 }
 
 TEST(SimMemoryTest, WritesThroughBusToRam) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.memory().mar().set_value(irata2::base::Word{0x0001});
   sim.a().set_value(irata2::base::Byte{0x7E});
   sim.a().write().Assert();
@@ -73,9 +66,8 @@ TEST(SimMemoryTest, WritesThroughBusToRam) {
 }
 
 TEST(SimMemoryTest, ReadsThroughBusFromRam) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.memory().mar().set_value(irata2::base::Word{0x0002});
   sim.memory().WriteAt(irata2::base::Word{0x0002},
                        irata2::base::Byte{0x3C});
@@ -87,9 +79,8 @@ TEST(SimMemoryTest, ReadsThroughBusFromRam) {
 }
 
 TEST(SimMemoryAddressRegisterTest, ReadsWordFromAddressBus) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.pc().set_value(irata2::base::Word{0x1234});
   sim.pc().write().Assert();
   sim.memory().mar().read().Assert();
@@ -99,9 +90,8 @@ TEST(SimMemoryAddressRegisterTest, ReadsWordFromAddressBus) {
 }
 
 TEST(SimMemoryAddressRegisterTest, ReadsLowHighFromDataBus) {
-  Cpu sim;
+  Cpu sim = test::MakeTestCpu();
 
-  SetSafeIr(sim);
   sim.a().set_value(irata2::base::Byte{0xCD});
   sim.a().write().Assert();
   sim.memory().mar().low().read().Assert();

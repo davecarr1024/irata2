@@ -1,15 +1,11 @@
 #include "irata2/sim/initialization.h"
 
 #include "irata2/microcode/compiler/compiler.h"
-#include "irata2/microcode/ir/builder.h"
+#include "irata2/microcode/ir/irata_instruction_set.h"
 
 namespace irata2::sim {
 
 namespace {
-using irata2::microcode::ir::Instruction;
-using irata2::microcode::ir::InstructionSet;
-using irata2::microcode::ir::InstructionVariant;
-using irata2::microcode::ir::Step;
 using irata2::microcode::output::MicrocodeProgram;
 using irata2::microcode::output::StatusBitDefinition;
 
@@ -27,29 +23,9 @@ std::vector<StatusBitDefinition> BuildStatusBits(const hdl::StatusRegister& stat
   };
 }
 
-Instruction MakeInstruction(isa::Opcode opcode,
-                            std::vector<const hdl::ControlBase*> controls) {
-  Instruction instruction;
-  instruction.opcode = opcode;
-  InstructionVariant variant;
-  Step step;
-  step.controls = std::move(controls);
-  variant.steps.push_back(std::move(step));
-  instruction.variants.push_back(std::move(variant));
-  return instruction;
-}
-
 MicrocodeProgram BuildMicrocodeProgram(const hdl::Cpu& hdl) {
-  microcode::ir::Builder builder(hdl);
-  InstructionSet instruction_set;
-  instruction_set.fetch_preamble = {};
-  instruction_set.instructions = {
-      MakeInstruction(isa::Opcode::HLT_IMP,
-                      {builder.RequireControl("halt", "HLT")}),
-      MakeInstruction(isa::Opcode::NOP_IMP, {}),
-      MakeInstruction(isa::Opcode::CRS_IMP,
-                      {builder.RequireControl("crash", "CRS")}),
-  };
+  microcode::ir::InstructionSet instruction_set =
+      microcode::ir::BuildIrataInstructionSet(hdl);
 
   microcode::encoder::ControlEncoder control_encoder(hdl);
   microcode::encoder::StatusEncoder status_encoder(BuildStatusBits(hdl.status()));
