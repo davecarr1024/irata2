@@ -1,11 +1,12 @@
 #include "irata2/sim.h"
 
+#include <cstdint>
 #include <iostream>
-#include <optional>
 
 namespace {
 void PrintUsage(const char* argv0) {
-  std::cerr << "Usage: " << argv0 << " [--expect-crash] [--max-cycles N] <cartridge.bin>\n";
+  std::cerr << "Usage: " << argv0
+            << " [--expect-crash] [--max-cycles N] <cartridge.bin>\n";
 }
 }  // namespace
 
@@ -16,7 +17,7 @@ int main(int argc, char** argv) {
   }
 
   bool expect_crash = false;
-  std::optional<uint64_t> max_cycles;
+  int64_t max_cycles = -1;
   std::string cartridge_path;
 
   for (int i = 1; i < argc; ++i) {
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
         PrintUsage(argv[0]);
         return 1;
       }
-      max_cycles = static_cast<uint64_t>(std::stoull(argv[++i]));
+      max_cycles = std::stoll(argv[++i]);
       continue;
     }
     if (cartridge_path.empty()) {
@@ -55,10 +56,14 @@ int main(int argc, char** argv) {
                          irata2::sim::DefaultMicrocodeProgram(),
                          std::move(rom));
     cpu.pc().set_value(cartridge.header.entry);
+    cpu.controller().sc().set_value(irata2::base::Byte{0});
+    cpu.controller().ir().set_value(cpu.memory().ReadAt(cartridge.header.entry));
 
     irata2::sim::Cpu::RunResult result;
-    if (max_cycles.has_value()) {
-      uint64_t remaining = max_cycles.value();
+    if (max_cycles < 0) {
+      result = cpu.RunUntilHalt();
+    } else {
+      uint64_t remaining = static_cast<uint64_t>(max_cycles);
       while (!cpu.halted() && remaining > 0) {
         cpu.Tick();
         --remaining;
@@ -68,8 +73,6 @@ int main(int argc, char** argv) {
       if (!result.halted) {
         return 4;
       }
-    } else {
-      result = cpu.RunUntilHalt();
     }
 
     if (expect_crash) {
