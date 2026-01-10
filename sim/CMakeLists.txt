@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # Simulator library (compiled)
 add_library(irata2_sim
+  src/cartridge.cpp
   src/cpu.cpp
   src/controller.cpp
   src/initialization.cpp
@@ -30,6 +31,13 @@ target_link_libraries(irata2_sim PUBLIC
 # Require C++20
 target_compile_features(irata2_sim PUBLIC cxx_std_20)
 
+# Simulator runner
+add_executable(irata2_run
+  src/run.cpp
+)
+target_link_libraries(irata2_run PRIVATE irata2::sim)
+target_compile_features(irata2_run PRIVATE cxx_std_20)
+
 # Export configuration
 install(TARGETS irata2_sim
   EXPORT irata2SimTargets
@@ -37,6 +45,10 @@ install(TARGETS irata2_sim
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
+)
+
+install(TARGETS irata2_run
+  RUNTIME DESTINATION bin
 )
 
 install(DIRECTORY include/

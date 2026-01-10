@@ -35,6 +35,7 @@ class Ram final : public Module {
 class Rom final : public Module {
  public:
   Rom(size_t size, base::Byte fill);
+  explicit Rom(std::vector<base::Byte> data);
 
   size_t size() const override { return data_.size(); }
   base::Byte Read(base::Word address) const override;
@@ -46,6 +47,7 @@ class Rom final : public Module {
 
 std::shared_ptr<Module> MakeRam(size_t size, base::Byte fill = base::Byte{0x00});
 std::shared_ptr<Module> MakeRom(size_t size, base::Byte fill = base::Byte{0xFF});
+std::shared_ptr<Module> MakeRom(std::vector<base::Byte> data);
 
 }  // namespace irata2::sim::memory
 

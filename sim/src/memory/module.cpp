@@ -40,6 +40,10 @@ Rom::Rom(size_t size, base::Byte fill) : data_(size, fill) {
   ValidateSize(size);
 }
 
+Rom::Rom(std::vector<base::Byte> data) : data_(std::move(data)) {
+  ValidateSize(data_.size());
+}
+
 base::Byte Rom::Read(base::Word address) const {
   const auto index = address.value();
   if (index >= data_.size()) {
@@ -63,6 +67,10 @@ std::shared_ptr<Module> MakeRam(size_t size, base::Byte fill) {
 
 std::shared_ptr<Module> MakeRom(size_t size, base::Byte fill) {
   return std::make_shared<Rom>(size, fill);
+}
+
+std::shared_ptr<Module> MakeRom(std::vector<base::Byte> data) {
+  return std::make_shared<Rom>(std::move(data));
 }
 
 }  // namespace irata2::sim::memory

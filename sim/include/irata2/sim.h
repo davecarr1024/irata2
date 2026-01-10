@@ -9,6 +9,7 @@
 #include "irata2/sim/controller.h"
 #include "irata2/sim/counter.h"
 #include "irata2/sim/cpu.h"
+#include "irata2/sim/cartridge.h"
 #include "irata2/sim/error.h"
 #include "irata2/sim/initialization.h"
 #include "irata2/sim/memory/memory.h"

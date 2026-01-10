@@ -104,6 +104,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().high().reset());
 
   controller_.LoadProgram(microcode_);
+  controller_.ir().set_value(base::Byte{0x02});
+  controller_.sc().set_value(base::Byte{0});
 }
 
 void Cpu::RegisterChild(Component& child) {

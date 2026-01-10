@@ -61,3 +61,8 @@ add_subdirectory(sim)
 
 # 6. Microcode module - depends on base, hdl, asm
 add_subdirectory(microcode)
+
+# 7. End-to-end tests (assembler + sim)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
