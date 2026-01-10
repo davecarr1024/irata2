@@ -36,7 +36,7 @@ The project is organized into independent, self-contained modules:
 - `microcode` has MVP IR + compiler passes/validators; YAML codegen and ROM encoding are next.
 - `sim` is a placeholder tick orchestrator; runtime components and microcode execution are next.
 
-See `plan.md` for the vertical-slice roadmap.
+See [docs/plan.md](docs/plan.md) for the vertical-slice roadmap.
 
 ## Design Philosophy
 
@@ -102,5 +102,7 @@ cmake --build build
 
 ## Documentation
 
-- [design.md](design.md) - Detailed architecture and design decisions
+- [docs/design.md](docs/design.md) - Detailed architecture and design decisions
+- [docs/plan.md](docs/plan.md) - Vertical slice roadmap
+- [docs/code-review.md](docs/code-review.md) - Code review report and fix plan
 - Module-specific documentation in each module's README

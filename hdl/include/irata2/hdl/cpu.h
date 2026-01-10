@@ -4,7 +4,6 @@
 #include "irata2/hdl/byte_bus.h"
 #include "irata2/hdl/byte_register.h"
 #include "irata2/hdl/component.h"
-#include "irata2/hdl/control_base.h"
 #include "irata2/hdl/controller.h"
 #include "irata2/hdl/counter.h"
 #include "irata2/hdl/memory.h"
@@ -13,20 +12,10 @@
 #include "irata2/hdl/word_bus.h"
 #include "irata2/hdl/word_register.h"
 
-#include <stdexcept>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-#include <vector>
-#include <utility>
-
 namespace irata2::hdl {
 
-class PathResolutionError final : public std::runtime_error {
- public:
-  using std::runtime_error::runtime_error;
-};
-
+/// Immutable HDL CPU structure. All navigation is strongly typed.
+/// Path resolution has been moved to microcode::ir::CpuPathResolver.
 class Cpu final : public Component<Cpu> {
  public:
   Cpu();
@@ -42,9 +31,6 @@ class Cpu final : public Component<Cpu> {
   const Memory& memory() const { return memory_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
   const ProcessControl<true>& crash() const { return crash_control_; }
-
-  const ControlBase* ResolveControl(std::string_view path) const;
-  std::vector<std::string> AllControlPaths() const;
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
@@ -62,8 +48,6 @@ class Cpu final : public Component<Cpu> {
   }
 
  private:
-  void IndexControls() const;
-
   const ProcessControl<true> halt_control_;
   const ProcessControl<true> crash_control_;
   const ByteBus data_bus_;
@@ -74,11 +58,10 @@ class Cpu final : public Component<Cpu> {
   const StatusRegister status_;
   const Controller controller_;
   const Memory memory_;
-
-  mutable bool controls_indexed_ = false;
-  mutable std::unordered_map<std::string, const ControlBase*> controls_by_path_;
-  mutable std::vector<std::string> control_paths_;
 };
+
+/// Thread-safe singleton access to the HDL CPU.
+const Cpu& GetCpu();
 
 }  // namespace irata2::hdl
 

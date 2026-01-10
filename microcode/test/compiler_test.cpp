@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
+using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
 using irata2::microcode::compiler::Compiler;
 using irata2::microcode::encoder::ControlEncoder;
@@ -31,7 +32,7 @@ Instruction MakeInstruction(Opcode opcode, std::vector<Step> steps) {
   return instruction;
 }
 
-Step MakeStep(std::initializer_list<const irata2::hdl::ControlBase*> controls) {
+Step MakeStep(std::initializer_list<const ControlInfo*> controls) {
   Step step;
   step.controls = {controls.begin(), controls.end()};
   return step;
@@ -41,20 +42,18 @@ Step MakeStep(std::initializer_list<const irata2::hdl::ControlBase*> controls) {
 TEST(CompilerTest, ProducesMicrocodeTable) {
   Cpu cpu;
   InstructionSet set;
-  set.instructions.push_back(MakeInstruction(Opcode::HLT_IMP,
-                                             {MakeStep({&cpu.halt()})}));
-  set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP,
-                                             {MakeStep({})}));
-  set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP,
-                                             {MakeStep({&cpu.crash()})}));
+  set.instructions.push_back(MakeInstruction(
+      Opcode::HLT_IMP, {MakeStep({&cpu.halt().control_info()})}));
+  set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(
+      Opcode::CRS_IMP, {MakeStep({&cpu.crash().control_info()})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
 
-  Compiler compiler(control_encoder,
-                    status_encoder,
-                    cpu.controller().sc().increment(),
-                    cpu.controller().sc().reset());
+  Compiler compiler(control_encoder, status_encoder,
+                    cpu.controller().sc().increment().control_info(),
+                    cpu.controller().sc().reset().control_info());
   const auto program = compiler.Compile(set);
 
   MicrocodeKey key;
@@ -66,24 +65,39 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
 
   const auto decoded = control_encoder.Decode(it->second);
   EXPECT_NE(std::find(decoded.begin(), decoded.end(), "halt"), decoded.end());
-  EXPECT_NE(std::find(decoded.begin(), decoded.end(),
-                      "controller.sc.reset"), decoded.end());
+  EXPECT_NE(std::find(decoded.begin(), decoded.end(), "controller.sc.reset"),
+            decoded.end());
 }
 
 TEST(CompilerTest, RejectsStepIndexOverflow) {
   Cpu cpu;
   InstructionSet set;
   std::vector<Step> steps(257);
-  set.instructions.push_back(MakeInstruction(Opcode::HLT_IMP, std::move(steps)));
+  set.instructions.push_back(
+      MakeInstruction(Opcode::HLT_IMP, std::move(steps)));
   set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
 
-  Compiler compiler(control_encoder,
-                    status_encoder,
-                    cpu.controller().sc().increment(),
-                    cpu.controller().sc().reset());
+  Compiler compiler(control_encoder, status_encoder,
+                    cpu.controller().sc().increment().control_info(),
+                    cpu.controller().sc().reset().control_info());
+  EXPECT_THROW(compiler.Compile(set), MicrocodeError);
+}
+
+TEST(CompilerTest, RejectsOpcodeOutOfRange) {
+  Cpu cpu;
+  InstructionSet set;
+  set.instructions.push_back(MakeInstruction(
+      static_cast<Opcode>(0x1FF), {MakeStep({})}));
+
+  ControlEncoder control_encoder(cpu);
+  StatusEncoder status_encoder({});
+
+  Compiler compiler(control_encoder, status_encoder,
+                    cpu.controller().sc().increment().control_info(),
+                    cpu.controller().sc().reset().control_info());
   EXPECT_THROW(compiler.Compile(set), MicrocodeError);
 }

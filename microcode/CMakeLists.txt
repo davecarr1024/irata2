@@ -34,6 +34,7 @@ add_library(irata2_microcode
   src/encoder/instruction_encoder.cpp
   src/encoder/status_encoder.cpp
   src/ir/builder.cpp
+  src/ir/cpu_path_resolver.cpp
   ${MICROCODE_GENERATED_CPP}
 )
 add_library(irata2::microcode ALIAS irata2_microcode)

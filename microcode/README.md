@@ -2,7 +2,7 @@
 
 Microcode IR, compiler passes, and validation for CPU control. YAML codegen is implemented; ROM encoding remains planned.
 
-See `plan.md` for the vertical-slice roadmap that ties microcode to sim, assembler, and tests.
+See [docs/plan.md](../docs/plan.md) for the vertical-slice roadmap that ties microcode to sim, assembler, and tests.
 
 ## Design Note: Instruction Memory Encoding (Spark Moment)
 
@@ -169,7 +169,7 @@ namespace irata2::microcode::ir {
 // A single CPU tick's worth of control assertions
 struct Step {
   int stage;
-  std::vector<const hdl::ControlBase*> controls;  // Resolved at codegen time
+  std::vector<const hdl::ControlInfo*> controls;  // Resolved at codegen time
 };
 
 // A single instruction variant (most have one with empty conditions)
@@ -228,9 +228,9 @@ The code generator resolves all paths when parsing the YAML:
 
 1. Parse YAML file (planned)
 2. For each control path string (e.g., `"a.read"`):
-   - Call `hdl::Cpu::ResolveControl("a.read")` via `ir::Builder`
+   - Call `ir::CpuPathResolver::RequireControl("a.read")` via `ir::Builder`
    - If resolution fails, abort with detailed error (see Error Reporting)
-   - Store the resolved `const hdl::ControlBase*` in the IR
+   - Store the resolved `const hdl::ControlInfo*` in the IR
 3. For each instruction name (e.g., `"LDA_IMM"`):
    - Call `isa::IsaInfo::GetInstruction("LDA_IMM")` (planned)
    - If not found, abort with error listing valid instruction names
@@ -403,37 +403,33 @@ The HDL module must provide:
 
 - **Status register** (`SR`) with 6502-style flags (N, V, U, B, D, I, Z, C), bus-connected for push/pop (planned)
 - **Controller components**: Instruction Register (`IR`), Sequence Counter (`SC`)
-- **Path resolution API**: Dot-notation lookup matching YAML syntax
+- **Path resolution support**: Controls expose stable `ControlInfo` with dot paths
 
-### HDL Path Resolution API (MVP implemented)
+### Microcode Path Resolution API (MVP implemented)
 
-The HDL must expose a path resolution interface that uses the same syntax as the microcode YAML:
+Path resolution lives in the microcode module and uses the HDL visitor to build
+an index of `ControlInfo` pointers:
 
 ```cpp
-namespace irata2::hdl {
+namespace irata2::microcode::ir {
 
-class Cpu {
+class CpuPathResolver {
 public:
-  // Resolve dot-notation path to control pointer
-  // Example: "a.read" → &a_.read_control_
-  // Throws PathResolutionError if not found
-  const ControlBase* ResolveControl(std::string_view path) const;
+  explicit CpuPathResolver(const hdl::Cpu& cpu);
+
+  // Resolve dot-notation path to control info
+  // Example: "a.read" -> &a_.read_control_.control_info()
+  const hdl::ControlInfo* RequireControl(std::string_view path,
+                                         std::string_view context) const;
 
   // List all valid control paths (for error messages)
-  std::vector<std::string> AllControlPaths() const;
-
-  // Resolve to status pointer (planned)
-  // Example: "status.Z" → &status_.zero_
-  const Status* ResolveStatus(std::string_view path) const;
-
-  // List all valid status paths (planned)
-  std::vector<std::string> AllStatusPaths() const;
+  const std::vector<std::string>& AllControlPaths() const;
 };
 
-}  // namespace irata2::hdl
+}  // namespace irata2::microcode::ir
 ```
 
-The resolution walks the component tree using the dot-separated segments, starting at the CPU root.
+The resolver indexes controls during construction and is used by `ir::Builder`.
 
 ## Error Reporting
 
@@ -525,16 +521,16 @@ Clear separation of responsibilities:
 | Module | Owns | Provides to Microcode |
 |--------|------|----------------------|
 | `base` | Byte, Word, TickPhase | Phase definitions for optimizer |
-| `hdl` | CPU structure, controls, buses | Path resolution API, control pointers |
+| `hdl` | CPU structure, controls, buses | ControlInfo metadata and stable paths |
 | `isa` | Instruction names, opcodes, addressing modes | Opcode lookup by canonical name |
 | `microcode` | Control sequences, compilation, encoding | Compiled ROM for sim |
 
-The microcode module **never** defines opcodes—it references ISA by name. The HDL module **never** knows about instruction semantics—it just provides structural metadata and path resolution.
+The microcode module **never** defines opcodes—it references ISA by name. The HDL module **never** knows about instruction semantics—it just provides structural metadata and stable control metadata.
 
 ## Dependencies
 
 - `irata2::base` - Byte/Word types, TickPhase
-- `irata2::hdl` - Control signal definitions, path resolution API
+- `irata2::hdl` - Control signal definitions and stable control metadata
 - `irata2::isa` - Instruction definitions, opcode lookup by name
 
 ## Files
@@ -548,6 +544,7 @@ microcode/
 │   ├── step.h
 │   └── instruction.h
 │   └── builder.h            # Fast-fail control lookup helper
+│   └── cpu_path_resolver.h  # Path-to-control index for DSL parsing
 ├── compiler/
 │   ├── compiler.h           # Multi-pass orchestrator
 │   ├── pass.h               # Base class for all passes
@@ -560,20 +557,19 @@ microcode/
 │   ├── encoder.h            # ROM generation
 │   ├── control_encoder.h
 │   └── status_encoder.h
-└── singleton.h              # GetHdlCpu(), GetMicrocodeROM()
+└── output/                  # Compiled ROM output types
 
 ## Current Status
 
 Implemented:
 - IR data structures, including fetch preamble and instruction variants
-- `ir::Builder` that resolves control paths via `hdl::Cpu::ResolveControl` with fast-fail errors
+- `ir::Builder` that resolves control paths via `ir::CpuPathResolver` with fast-fail errors
 - MVP compiler passes: `FetchTransformer`, `SequenceTransformer`
 - MVP validators: `FetchValidator`, `SequenceValidator`, `IsaCoverageValidator`
 - Unit tests covering builder and compiler MVP
 
 Next Steps:
-1. Add YAML definition file and `generate_microcode.py` to build C++ IR.
-2. Add status path resolution and status-aware variants.
-3. Implement bus/status validators, optimizers, and encoder/ROM.
-4. Wire singleton compilation into sim startup.
+1. Add status path resolution and status-aware variants.
+2. Implement bus/status validators, optimizers, and encoder/ROM.
+3. Wire singleton compilation into sim startup.
 ```

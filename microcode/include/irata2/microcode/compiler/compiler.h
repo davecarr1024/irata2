@@ -1,6 +1,7 @@
 #ifndef IRATA2_MICROCODE_COMPILER_COMPILER_H
 #define IRATA2_MICROCODE_COMPILER_COMPILER_H
 
+#include "irata2/hdl/control_info.h"
 #include "irata2/microcode/compiler/fetch_transformer.h"
 #include "irata2/microcode/compiler/fetch_validator.h"
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
@@ -17,8 +18,8 @@ class Compiler {
  public:
   Compiler(encoder::ControlEncoder control_encoder,
            encoder::StatusEncoder status_encoder,
-           const hdl::ControlBase& increment_control,
-           const hdl::ControlBase& reset_control);
+           const hdl::ControlInfo& increment_control,
+           const hdl::ControlInfo& reset_control);
 
   output::MicrocodeProgram Compile(ir::InstructionSet instruction_set) const;
 

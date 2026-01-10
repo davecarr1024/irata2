@@ -31,7 +31,7 @@ TEST(ControlEncoderTest, EncodesControlBitsByPath) {
   ASSERT_NE(it, paths.end());
 
   const size_t index = static_cast<size_t>(it - paths.begin());
-  const uint64_t word = encoder.Encode({&cpu.halt()});
+  const uint64_t word = encoder.Encode({&cpu.halt().control_info()});
   EXPECT_EQ(word, uint64_t{1} << index);
 }
 
@@ -39,7 +39,8 @@ TEST(ControlEncoderTest, DecodesControlWord) {
   Cpu cpu;
   ControlEncoder encoder(cpu);
 
-  const uint64_t word = encoder.Encode({&cpu.halt(), &cpu.crash()});
+  const uint64_t word =
+      encoder.Encode({&cpu.halt().control_info(), &cpu.crash().control_info()});
   const auto decoded = encoder.Decode(word);
 
   EXPECT_NE(std::find(decoded.begin(), decoded.end(), "halt"), decoded.end());
@@ -51,5 +52,5 @@ TEST(ControlEncoderTest, RejectsUnknownControl) {
   ControlEncoder encoder(cpu);
   ExtraControl extra("extra", cpu);
 
-  EXPECT_THROW(encoder.Encode({&extra}), MicrocodeError);
+  EXPECT_THROW(encoder.Encode({&extra.control_info()}), MicrocodeError);
 }

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
+using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
 using irata2::microcode::compiler::SequenceTransformer;
 using irata2::microcode::ir::Instruction;
@@ -14,7 +15,8 @@ using irata2::microcode::ir::Step;
 using irata2::isa::Opcode;
 
 namespace {
-Step MakeStep(int stage, std::initializer_list<const irata2::hdl::ControlBase*> controls) {
+Step MakeStep(int stage,
+              std::initializer_list<const ControlInfo*> controls) {
   Step step;
   step.stage = stage;
   step.controls = {controls.begin(), controls.end()};
@@ -30,10 +32,9 @@ Instruction MakeInstruction(Opcode opcode, std::vector<Step> steps) {
   return instruction;
 }
 
-bool ContainsControl(const Step& step, const irata2::hdl::ControlBase& control) {
-  return std::any_of(step.controls.begin(), step.controls.end(), [&](const auto* value) {
-    return value == &control;
-  });
+bool ContainsControl(const Step& step, const ControlInfo& control) {
+  return std::any_of(step.controls.begin(), step.controls.end(),
+                     [&](const auto* value) { return value == &control; });
 }
 }  // namespace
 
@@ -42,16 +43,20 @@ TEST(SequenceTransformerTest, AddsIncrementAndResetControls) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::HLT_IMP,
-      {MakeStep(1, {&cpu.halt()}), MakeStep(1, {&cpu.crash()})}));
+      {MakeStep(1, {&cpu.halt().control_info()}),
+       MakeStep(1, {&cpu.crash().control_info()})}));
 
-  SequenceTransformer transformer(cpu.controller().sc().increment(),
-                                  cpu.controller().sc().reset());
+  SequenceTransformer transformer(
+      cpu.controller().sc().increment().control_info(),
+      cpu.controller().sc().reset().control_info());
   transformer.Run(set);
 
   const auto& steps = set.instructions.front().variants.front().steps;
   ASSERT_EQ(steps.size(), 2u);
-  EXPECT_TRUE(ContainsControl(steps[0], cpu.controller().sc().increment()));
-  EXPECT_TRUE(ContainsControl(steps[1], cpu.controller().sc().reset()));
+  EXPECT_TRUE(
+      ContainsControl(steps[0], cpu.controller().sc().increment().control_info()));
+  EXPECT_TRUE(
+      ContainsControl(steps[1], cpu.controller().sc().reset().control_info()));
 }
 
 TEST(SequenceTransformerTest, DoesNotDuplicateControls) {
@@ -59,11 +64,12 @@ TEST(SequenceTransformerTest, DoesNotDuplicateControls) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::NOP_IMP,
-      {MakeStep(0, {&cpu.controller().sc().increment()}),
-       MakeStep(0, {&cpu.controller().sc().reset()})}));
+      {MakeStep(0, {&cpu.controller().sc().increment().control_info()}),
+       MakeStep(0, {&cpu.controller().sc().reset().control_info()})}));
 
-  SequenceTransformer transformer(cpu.controller().sc().increment(),
-                                  cpu.controller().sc().reset());
+  SequenceTransformer transformer(
+      cpu.controller().sc().increment().control_info(),
+      cpu.controller().sc().reset().control_info());
   transformer.Run(set);
 
   const auto& steps = set.instructions.front().variants.front().steps;
@@ -80,8 +86,9 @@ TEST(SequenceTransformerTest, SkipsEmptyVariants) {
   instruction.variants.push_back(std::move(variant));
   set.instructions.push_back(std::move(instruction));
 
-  SequenceTransformer transformer(cpu.controller().sc().increment(),
-                                  cpu.controller().sc().reset());
+  SequenceTransformer transformer(
+      cpu.controller().sc().increment().control_info(),
+      cpu.controller().sc().reset().control_info());
   transformer.Run(set);
 
   EXPECT_TRUE(set.instructions.front().variants.front().steps.empty());

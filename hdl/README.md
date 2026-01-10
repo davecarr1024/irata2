@@ -22,8 +22,7 @@ Component<Derived> (CRTP base)
     │   ├── ByteBus
     │   └── WordBus
     ├── ComponentWithBus<Derived, ValueType>
-    ├── ControlBase (interface)
-    │   └── Control<Derived, ValueType, Phase, AutoReset>
+    ├── Control<Derived, ValueType, Phase, AutoReset>
     │   ├── WriteControl<ValueType>
     │   ├── ReadControl<ValueType>
     │   └── ProcessControl<AutoReset>
@@ -93,6 +92,9 @@ class WriteControl
 Control template parameters:
 - `Phase`: Which tick phase this control operates in
 - `AutoReset`: Whether the control auto-clears after each tick
+
+Each control stores a `ControlInfo` with its precomputed properties
+(`phase`, `auto_reset`, and stable `path` string).
 
 ### Registers
 
@@ -179,10 +181,11 @@ cpu.visit(counter);
 // counter.count has total control count
 ```
 
-The CPU also provides path resolution for microcode:
+Path resolution for microcode is handled by the microcode module:
 
 ```cpp
-const auto* control = cpu.ResolveControl("controller.ir.write");
+irata2::microcode::ir::CpuPathResolver resolver(GetCpu());
+const auto* control = resolver.RequireControl("controller.ir.write", "example");
 ```
 
 ## Detailed Implementation Plan

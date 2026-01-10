@@ -7,8 +7,8 @@
 
 namespace irata2::microcode::compiler {
 
-SequenceValidator::SequenceValidator(const hdl::ControlBase& increment_control,
-                                     const hdl::ControlBase& reset_control)
+SequenceValidator::SequenceValidator(const hdl::ControlInfo& increment_control,
+                                     const hdl::ControlInfo& reset_control)
     : increment_control_(increment_control), reset_control_(reset_control) {}
 
 void SequenceValidator::Run(ir::InstructionSet& instruction_set) const {
@@ -21,10 +21,12 @@ void SequenceValidator::Run(ir::InstructionSet& instruction_set) const {
       for (size_t i = 0; i < variant.steps.size(); ++i) {
         const bool is_last = (i + 1 == variant.steps.size());
         const auto& controls = variant.steps[i].controls;
-        const hdl::ControlBase& expected = is_last ? reset_control_ : increment_control_;
+        const hdl::ControlInfo& expected =
+            is_last ? reset_control_ : increment_control_;
 
         const bool found = std::any_of(
-            controls.begin(), controls.end(), [&](const hdl::ControlBase* control) {
+            controls.begin(), controls.end(),
+            [&](const hdl::ControlInfo* control) {
               return control == &expected;
             });
 

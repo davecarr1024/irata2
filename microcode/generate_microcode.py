@@ -108,12 +108,14 @@ def main():
     lines = []
     lines.append("#include \"irata2/microcode/ir/irata_instruction_set.h\"")
     lines.append("#include \"irata2/microcode/ir/builder.h\"")
+    lines.append("#include \"irata2/microcode/ir/cpu_path_resolver.h\"")
     lines.append("#include \"irata2/isa/isa.h\"")
     lines.append("")
     lines.append("namespace irata2::microcode::ir {")
     lines.append("")
     lines.append("InstructionSet BuildIrataInstructionSet(const hdl::Cpu& cpu) {")
-    lines.append("  Builder builder(cpu);")
+    lines.append("  CpuPathResolver resolver(cpu);")
+    lines.append("  Builder builder(resolver);")
     lines.append("  InstructionSet instruction_set;")
     lines.append(emit_fetch_preamble(fetch_preamble))
 

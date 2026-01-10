@@ -1,10 +1,5 @@
 #include "irata2/hdl/cpu.h"
 
-#include "irata2/hdl/traits.h"
-
-#include <algorithm>
-#include <sstream>
-
 namespace irata2::hdl {
 
 Cpu::Cpu()
@@ -20,45 +15,10 @@ Cpu::Cpu()
       controller_("controller", *this, data_bus_),
       memory_("memory", *this, data_bus_, address_bus_) {}
 
-void Cpu::IndexControls() const {
-  if (controls_indexed_) {
-    return;
-  }
-
-  controls_by_path_.clear();
-  control_paths_.clear();
-
-  visit([&](const auto& component) {
-    using T = std::decay_t<decltype(component)>;
-    if constexpr (is_control_v<T>) {
-      controls_by_path_.emplace(component.path(), &component);
-      control_paths_.push_back(component.path());
-    }
-  });
-
-  std::sort(control_paths_.begin(), control_paths_.end());
-  controls_indexed_ = true;
-}
-
-const ControlBase* Cpu::ResolveControl(std::string_view path) const {
-  if (path.empty()) {
-    throw PathResolutionError("control path is empty");
-  }
-
-  IndexControls();
-  auto it = controls_by_path_.find(std::string(path));
-  if (it == controls_by_path_.end()) {
-    std::ostringstream message;
-    message << "control path not found: " << path;
-    throw PathResolutionError(message.str());
-  }
-
-  return it->second;
-}
-
-std::vector<std::string> Cpu::AllControlPaths() const {
-  IndexControls();
-  return control_paths_;
+const Cpu& GetCpu() {
+  // C++11 guarantees thread-safe initialization of static locals
+  static const Cpu instance;
+  return instance;
 }
 
 }  // namespace irata2::hdl

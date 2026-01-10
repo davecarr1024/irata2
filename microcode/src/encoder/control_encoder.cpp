@@ -1,13 +1,26 @@
 #include "irata2/microcode/encoder/control_encoder.h"
 
+#include "irata2/hdl/traits.h"
+
 #include <algorithm>
 #include <sstream>
 
 namespace irata2::microcode::encoder {
 
-ControlEncoder::ControlEncoder(const hdl::Cpu& cpu)
-    : control_paths_(cpu.AllControlPaths()) {
+ControlEncoder::ControlEncoder(const hdl::Cpu& cpu) {
+  // Build the control index via visitor traversal.
+  // Controls are indexed by their ControlInfo pointer, not by path string.
+  cpu.visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (hdl::is_control_v<T>) {
+      const auto& info = component.control_info();
+      control_paths_.emplace_back(info.path);
+    }
+  });
+
+  // Sort paths alphabetically for stable bit ordering
   std::sort(control_paths_.begin(), control_paths_.end());
+
   if (control_paths_.size() > 64) {
     std::ostringstream message;
     message << "too many controls for 64-bit control word: "
@@ -15,19 +28,34 @@ ControlEncoder::ControlEncoder(const hdl::Cpu& cpu)
     throw microcode::MicrocodeError(message.str());
   }
 
+  // Build the control_index_ by visiting again with sorted order
+  // Create a path-to-index map first
+  std::unordered_map<std::string, size_t> path_to_index;
   for (size_t i = 0; i < control_paths_.size(); ++i) {
-    control_index_by_path_.emplace(control_paths_[i], i);
+    path_to_index.emplace(control_paths_[i], i);
   }
+
+  // Now map ControlInfo pointers to indices
+  cpu.visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (hdl::is_control_v<T>) {
+      const auto& info = component.control_info();
+      auto it = path_to_index.find(std::string(info.path));
+      if (it != path_to_index.end()) {
+        control_index_.emplace(&info, it->second);
+      }
+    }
+  });
 }
 
 uint64_t ControlEncoder::Encode(
-    const std::vector<const hdl::ControlBase*>& controls) const {
+    const std::vector<const hdl::ControlInfo*>& controls) const {
   uint64_t word = 0;
-  for (const auto* control : controls) {
-    const auto it = control_index_by_path_.find(control->path());
-    if (it == control_index_by_path_.end()) {
+  for (const auto* info : controls) {
+    const auto it = control_index_.find(info);
+    if (it == control_index_.end()) {
       std::ostringstream message;
-      message << "control not registered: " << control->path();
+      message << "control not registered: " << info->path;
       throw microcode::MicrocodeError(message.str());
     }
     word |= (uint64_t{1} << it->second);

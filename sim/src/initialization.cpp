@@ -31,8 +31,8 @@ MicrocodeProgram BuildMicrocodeProgram(const hdl::Cpu& hdl) {
   microcode::encoder::StatusEncoder status_encoder(BuildStatusBits(hdl.status()));
   microcode::compiler::Compiler compiler(control_encoder,
                                          status_encoder,
-                                         hdl.controller().sc().increment(),
-                                         hdl.controller().sc().reset());
+                                         hdl.controller().sc().increment().control_info(),
+                                         hdl.controller().sc().reset().control_info());
   return compiler.Compile(std::move(instruction_set));
 }
 }  // namespace

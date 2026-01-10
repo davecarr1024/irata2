@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
 using irata2::microcode::MicrocodeError;
 using irata2::microcode::compiler::Compiler;
@@ -27,7 +28,8 @@ Instruction MakeInstruction(Opcode opcode,
   return instruction;
 }
 
-InstructionVariant MakeVariant(std::initializer_list<const irata2::hdl::ControlBase*> controls) {
+InstructionVariant MakeVariant(
+    std::initializer_list<const ControlInfo*> controls) {
   InstructionVariant variant;
   Step step;
   step.controls = {controls.begin(), controls.end()};
@@ -41,17 +43,19 @@ TEST(CompilerConflictTest, RejectsConflictingMicrocode) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::HLT_IMP,
-      {MakeVariant({&cpu.halt()}), MakeVariant({&cpu.crash()})}));
-  set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeVariant({})}));
-  set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP, {MakeVariant({})}));
+      {MakeVariant({&cpu.halt().control_info()}),
+       MakeVariant({&cpu.crash().control_info()})}));
+  set.instructions.push_back(
+      MakeInstruction(Opcode::NOP_IMP, {MakeVariant({})}));
+  set.instructions.push_back(
+      MakeInstruction(Opcode::CRS_IMP, {MakeVariant({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
 
-  Compiler compiler(control_encoder,
-                    status_encoder,
-                    cpu.controller().sc().increment(),
-                    cpu.controller().sc().reset());
+  Compiler compiler(control_encoder, status_encoder,
+                    cpu.controller().sc().increment().control_info(),
+                    cpu.controller().sc().reset().control_info());
 
   EXPECT_THROW(compiler.Compile(set), MicrocodeError);
 }

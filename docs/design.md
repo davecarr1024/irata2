@@ -53,6 +53,128 @@ Each layer catches different bug classes. Layers 1 and 2 catch bugs **before sim
 
 ---
 
+## HDL Architecture (Clarified)
+
+The HDL module has specific architectural requirements that ensure zero-cost abstractions and true immutability:
+
+### Singleton Pattern
+
+The HDL `Cpu` is a **singleton** managed internally by the HDL module:
+
+```cpp
+namespace hdl {
+  // Thread-safe lazy initialization
+  const Cpu& GetCpu();
+}
+```
+
+**Properties**:
+- Lazy initialization on first access
+- Thread-safe (for future multithreading support)
+- Single instance shared across all users
+- Direct construction is still available for tests, but production code should
+  prefer `GetCpu()`
+
+### CRTP-Only, No Virtual Dispatch
+
+**All HDL components use CRTP exclusively**. Virtual functions are prohibited in the HDL module.
+
+Controls encode their properties in the type system via template parameters and a `ControlInfo` struct:
+
+```cpp
+// Compile-time properties encoded in template parameters
+template <typename Derived, typename ValueType, base::TickPhase Phase, bool AutoReset>
+class Control : public ComponentWithParent<Derived>, public ControlTag {
+public:
+  static constexpr base::TickPhase kPhase = Phase;
+  static constexpr bool kAutoReset = AutoReset;
+
+  // Non-virtual access to pre-computed info
+  const ControlInfo& control_info() const { return control_info_; }
+
+private:
+  const ControlInfo control_info_;  // Populated at construction
+};
+
+// ControlInfo stores pre-computed values for runtime access
+struct ControlInfo {
+  base::TickPhase phase;
+  bool auto_reset;
+  std::string_view path;  // Points to ComponentBase::path_
+  // No virtuals - just data
+};
+```
+
+### Path Resolution Isolation
+
+String-based path resolution is **not part of the HDL Cpu class**. It exists only in the microcode module where it's needed for DSL parsing:
+
+```cpp
+namespace microcode {
+  // Owns the path-to-control index
+  // Only constructed once during microcode compilation
+  class CpuPathResolver {
+  public:
+    explicit CpuPathResolver(const hdl::Cpu& cpu);
+
+    const hdl::ControlInfo* RequireControl(std::string_view path,
+                                           std::string_view context) const;
+    const std::vector<std::string>& AllControlPaths() const;
+
+  private:
+    std::unordered_map<std::string, const hdl::ControlInfo*> controls_by_path_;
+  };
+}
+```
+
+**Path resolution flow**:
+1. Microcode DSL parser uses `CpuPathResolver` to convert path strings to `const ControlInfo*`
+2. Once parsed, all references are stored as `const ControlInfo*` pointers
+3. No further string lookups occur after DSL parsing
+
+### Parallel Visitor for Encoding
+
+Control encoding between HDL and Sim does **not use string path lookups**. Instead, it uses parallel visitor traversal:
+
+```cpp
+// HDL and Sim have identical tree structures
+// Traverse both in parallel to build the mapping
+template <typename HdlVisitor, typename SimVisitor>
+void ParallelTraverse(const hdl::Cpu& hdl, sim::Cpu& sim,
+                      HdlVisitor&& hdl_visitor, SimVisitor&& sim_visitor) {
+  // Both visitors visit components in the same order
+  // The structural match is verified at construction time
+}
+
+// Encoder uses parallel traversal to map HDL controls to Sim controls
+class ControlEncoder {
+public:
+  ControlEncoder(const hdl::Cpu& hdl, sim::Cpu& sim) {
+    // Build mapping via parallel traversal, not string lookup
+    size_t bit_index = 0;
+    hdl.visit([&](const auto& component) {
+      if constexpr (hdl::is_control_v<decltype(component)>) {
+        hdl_to_bit_[&component.control_info()] = bit_index++;
+      }
+    });
+    // Sim traversal builds the reverse mapping
+  }
+};
+```
+
+### Immutability Guarantees
+
+The HDL is **truly immutable**:
+
+- No `mutable` members
+- No lazy initialization
+- No state changes after construction
+- Safe to use from multiple threads without synchronization
+
+If any indexing or caching is needed, it belongs in a separate utility class (like `CpuPathResolver`) that is constructed once and owns its own state.
+
+---
+
 ## System Architecture
 
 ### The Three Representations

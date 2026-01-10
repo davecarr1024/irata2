@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
 using irata2::microcode::MicrocodeError;
 using irata2::microcode::compiler::SequenceValidator;
@@ -15,7 +16,8 @@ using irata2::microcode::ir::Step;
 using irata2::isa::Opcode;
 
 namespace {
-Step MakeStep(int stage, std::initializer_list<const irata2::hdl::ControlBase*> controls) {
+Step MakeStep(int stage,
+              std::initializer_list<const ControlInfo*> controls) {
   Step step;
   step.stage = stage;
   step.controls = {controls.begin(), controls.end()};
@@ -37,11 +39,11 @@ TEST(SequenceValidatorTest, AcceptsIncrementAndReset) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::HLT_IMP,
-      {MakeStep(1, {&cpu.controller().sc().increment()}),
-       MakeStep(1, {&cpu.controller().sc().reset()})}));
+      {MakeStep(1, {&cpu.controller().sc().increment().control_info()}),
+       MakeStep(1, {&cpu.controller().sc().reset().control_info()})}));
 
-  SequenceValidator validator(cpu.controller().sc().increment(),
-                              cpu.controller().sc().reset());
+  SequenceValidator validator(cpu.controller().sc().increment().control_info(),
+                              cpu.controller().sc().reset().control_info());
   EXPECT_NO_THROW(validator.Run(set));
 }
 
@@ -50,11 +52,11 @@ TEST(SequenceValidatorTest, RejectsMissingIncrement) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::HLT_IMP,
-      {MakeStep(1, {&cpu.halt()}),
-       MakeStep(1, {&cpu.controller().sc().reset()})}));
+      {MakeStep(1, {&cpu.halt().control_info()}),
+       MakeStep(1, {&cpu.controller().sc().reset().control_info()})}));
 
-  SequenceValidator validator(cpu.controller().sc().increment(),
-                              cpu.controller().sc().reset());
+  SequenceValidator validator(cpu.controller().sc().increment().control_info(),
+                              cpu.controller().sc().reset().control_info());
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -63,11 +65,11 @@ TEST(SequenceValidatorTest, RejectsMissingReset) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::NOP_IMP,
-      {MakeStep(1, {&cpu.controller().sc().increment()}),
-       MakeStep(1, {&cpu.halt()})}));
+      {MakeStep(1, {&cpu.controller().sc().increment().control_info()}),
+       MakeStep(1, {&cpu.halt().control_info()})}));
 
-  SequenceValidator validator(cpu.controller().sc().increment(),
-                              cpu.controller().sc().reset());
+  SequenceValidator validator(cpu.controller().sc().increment().control_info(),
+                              cpu.controller().sc().reset().control_info());
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -80,7 +82,7 @@ TEST(SequenceValidatorTest, SkipsEmptyVariants) {
   instruction.variants.push_back(std::move(variant));
   set.instructions.push_back(std::move(instruction));
 
-  SequenceValidator validator(cpu.controller().sc().increment(),
-                              cpu.controller().sc().reset());
+  SequenceValidator validator(cpu.controller().sc().increment().control_info(),
+                              cpu.controller().sc().reset().control_info());
   EXPECT_NO_THROW(validator.Run(set));
 }

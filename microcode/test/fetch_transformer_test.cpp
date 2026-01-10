@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
 using irata2::microcode::compiler::FetchTransformer;
 using irata2::microcode::ir::Instruction;
@@ -13,7 +14,8 @@ using irata2::microcode::ir::Step;
 using irata2::isa::Opcode;
 
 namespace {
-Step MakeStep(int stage, std::initializer_list<const irata2::hdl::ControlBase*> controls) {
+Step MakeStep(int stage,
+              std::initializer_list<const ControlInfo*> controls) {
   Step step;
   step.stage = stage;
   step.controls = {controls.begin(), controls.end()};
@@ -33,11 +35,12 @@ Instruction MakeInstruction(Opcode opcode, std::vector<Step> steps) {
 TEST(FetchTransformerTest, PrependsFetchPreambleAndRenumbersStages) {
   Cpu cpu;
   InstructionSet set;
-  set.fetch_preamble.push_back(MakeStep(0, {&cpu.a().read()}));
+  set.fetch_preamble.push_back(MakeStep(0, {&cpu.a().read().control_info()}));
 
   set.instructions.push_back(MakeInstruction(
       Opcode::HLT_IMP,
-      {MakeStep(0, {&cpu.halt()}), MakeStep(1, {&cpu.crash()})}));
+      {MakeStep(0, {&cpu.halt().control_info()}),
+       MakeStep(1, {&cpu.crash().control_info()})}));
 
   FetchTransformer transformer;
   transformer.Run(set);
@@ -47,7 +50,7 @@ TEST(FetchTransformerTest, PrependsFetchPreambleAndRenumbersStages) {
   EXPECT_EQ(steps[0].stage, 0);
   EXPECT_EQ(steps[1].stage, 1);
   EXPECT_EQ(steps[2].stage, 2);
-  EXPECT_EQ(steps[0].controls.front(), &cpu.a().read());
+  EXPECT_EQ(steps[0].controls.front(), &cpu.a().read().control_info());
 }
 
 TEST(FetchTransformerTest, LeavesStagesWhenNoPreamble) {
@@ -55,7 +58,8 @@ TEST(FetchTransformerTest, LeavesStagesWhenNoPreamble) {
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
       Opcode::NOP_IMP,
-      {MakeStep(0, {&cpu.a().read()}), MakeStep(1, {&cpu.a().write()})}));
+      {MakeStep(0, {&cpu.a().read().control_info()}),
+       MakeStep(1, {&cpu.a().write().control_info()})}));
 
   FetchTransformer transformer;
   transformer.Run(set);

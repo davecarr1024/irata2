@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 using namespace irata2::hdl;
+using irata2::base::TickPhase;
 
 TEST(HdlCpuTest, Construction) {
   Cpu cpu;
@@ -64,33 +65,16 @@ TEST(HdlCpuTest, VisitCountsComponents) {
   EXPECT_EQ(visitor.controls, 31);
 }
 
-TEST(HdlCpuTest, ResolveControlFindsPaths) {
-  Cpu cpu;
-
-  EXPECT_EQ(cpu.ResolveControl("a.read"), &cpu.a().read());
-  EXPECT_EQ(cpu.ResolveControl("a.read"), &cpu.a().read());
-  EXPECT_EQ(cpu.ResolveControl("controller.ir.write"), &cpu.controller().ir().write());
-  EXPECT_EQ(cpu.ResolveControl("controller.sc.increment"),
-            &cpu.controller().sc().increment());
-  EXPECT_EQ(cpu.ResolveControl("halt"), &cpu.halt());
+TEST(HdlCpuTest, GetCpuReturnsSingleton) {
+  const Cpu& cpu1 = GetCpu();
+  const Cpu& cpu2 = GetCpu();
+  EXPECT_EQ(&cpu1, &cpu2);
 }
 
-TEST(HdlCpuTest, ResolveControlRejectsUnknownPath) {
+TEST(HdlCpuTest, ControlInfoAccessible) {
   Cpu cpu;
-  EXPECT_THROW(cpu.ResolveControl("nope.control"), PathResolutionError);
-}
-
-TEST(HdlCpuTest, ResolveControlRejectsEmptyPath) {
-  Cpu cpu;
-  EXPECT_THROW(cpu.ResolveControl(""), PathResolutionError);
-}
-
-TEST(HdlCpuTest, AllControlPathsIsSortedAndComplete) {
-  Cpu cpu;
-  auto paths = cpu.AllControlPaths();
-
-  EXPECT_TRUE(std::is_sorted(paths.begin(), paths.end()));
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "halt"), paths.end());
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "controller.ir.read"), paths.end());
-  EXPECT_NE(std::find(paths.begin(), paths.end(), "controller.sc.reset"), paths.end());
+  const auto& halt_info = cpu.halt().control_info();
+  EXPECT_EQ(halt_info.phase, TickPhase::Process);
+  EXPECT_TRUE(halt_info.auto_reset);
+  EXPECT_EQ(halt_info.path, "halt");
 }

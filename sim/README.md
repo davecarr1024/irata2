@@ -60,7 +60,7 @@ Future additions:
 - Microcode ROM decoding and control assertion
 - Memory access and fetch/decode wiring
 - Halt/crash termination semantics for integration tests
-- End-to-end `.asm` test runner integration (see `plan.md`)
+- End-to-end `.asm` test runner integration (see [docs/plan.md](../docs/plan.md))
  - Status register (SR) with 6502-style flags, bus-connected for push/pop
 
 ## Design Note: Controller Instruction Memory

@@ -19,6 +19,7 @@ add_executable(microcode_tests
   compiler_conflict_test.cpp
   compiler_test.cpp
   control_encoder_test.cpp
+  cpu_path_resolver_test.cpp
   fetch_transformer_test.cpp
   fetch_validator_test.cpp
   isa_coverage_validator_test.cpp

@@ -2,6 +2,7 @@
 #define IRATA2_HDL_H
 
 #include "irata2/hdl/byte_bus.h"
+#include "irata2/hdl/control_info.h"
 #include "irata2/hdl/byte_counter.h"
 #include "irata2/hdl/byte_register.h"
 #include "irata2/hdl/control.h"
