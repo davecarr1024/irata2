@@ -1,0 +1,48 @@
+#ifndef IRATA2_ASSEMBLER_AST_H
+#define IRATA2_ASSEMBLER_AST_H
+
+#include <string>
+#include <variant>
+#include <vector>
+
+#include "irata2/assembler/span.h"
+
+namespace irata2::assembler {
+
+struct Operand {
+  enum class Kind { Number, Label };
+
+  Kind kind = Kind::Number;
+  uint32_t number = 0;
+  std::string label;
+  Span span;
+};
+
+struct LabelDecl {
+  std::string name;
+  Span span;
+};
+
+struct InstructionStmt {
+  std::string mnemonic;
+  std::vector<Operand> operands;
+  Span span;
+};
+
+struct DirectiveStmt {
+  enum class Type { Org, Byte };
+
+  Type type = Type::Org;
+  std::vector<Operand> operands;
+  Span span;
+};
+
+using Statement = std::variant<LabelDecl, InstructionStmt, DirectiveStmt>;
+
+struct Program {
+  std::vector<Statement> statements;
+};
+
+}  // namespace irata2::assembler
+
+#endif  // IRATA2_ASSEMBLER_AST_H

@@ -53,8 +53,11 @@ add_subdirectory(hdl)
 # 3. ISA module - depends on base (generates ISA from YAML)
 add_subdirectory(isa)
 
-# 4. Simulator module - depends on base, hdl
+# 4. Assembler module - depends on base, isa
+add_subdirectory(assembler)
+
+# 5. Simulator module - depends on base, hdl
 add_subdirectory(sim)
 
-# 5. Microcode module - depends on base, hdl, asm
+# 6. Microcode module - depends on base, hdl, asm
 add_subdirectory(microcode)
