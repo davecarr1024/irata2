@@ -25,7 +25,12 @@ if(ASM_FILES)
     add_custom_target(asm_${ASM_NAME} DEPENDS ${ASM_BIN} ${ASM_JSON})
     add_dependencies(asm_outputs asm_${ASM_NAME})
 
+    set(TEST_ARGS ${ASM_BIN})
+    if(ASM_NAME STREQUAL "crs")
+      set(TEST_ARGS --expect-crash ${ASM_BIN})
+    endif()
+
     add_test(NAME asm_${ASM_NAME}
-             COMMAND $<TARGET_FILE:irata2_run> ${ASM_BIN})
+             COMMAND $<TARGET_FILE:irata2_run> ${TEST_ARGS})
   endforeach()
 endif()
