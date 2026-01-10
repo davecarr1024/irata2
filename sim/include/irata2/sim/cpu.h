@@ -96,10 +96,10 @@ class Cpu : public Component {
   const ControlBase* ResolveControl(std::string_view path) const;
   std::vector<std::string> AllControlPaths() const;
 
-  void RegisterChild(Component& child) override;
+ void RegisterChild(Component& child) override;
 
  private:
-  void IndexControls() const;
+  void BuildControlIndex();
   void TickPhase(void (Component::*phase)());
   void TickProcess() override;
 
@@ -123,9 +123,8 @@ class Cpu : public Component {
   Controller controller_;
   memory::Memory memory_;
 
-  mutable bool controls_indexed_ = false;
-  mutable std::unordered_map<std::string, ControlBase*> controls_by_path_;
-  mutable std::vector<std::string> control_paths_;
+  std::unordered_map<std::string, ControlBase*> controls_by_path_;
+  std::vector<std::string> control_paths_;
 };
 
 }  // namespace irata2::sim

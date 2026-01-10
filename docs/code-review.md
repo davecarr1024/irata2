@@ -14,9 +14,9 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 
 | Category | Status |
 |----------|--------|
-| Major Issues | 1 (Issue 5) |
+| Major Issues | 0 |
 | Minor Issues | 8 |
-| Design Compliance | ~92% |
+| Design Compliance | ~94% |
 | Test Coverage | 88.7% lines, 98.0% functions (filtered) |
 | Module Separation | Excellent |
 
@@ -159,6 +159,7 @@ and HDL Cpu exposes only strongly typed accessors.
 
 **Location**: [sim/include/irata2/sim/cpu.h:110,123-125](sim/include/irata2/sim/cpu.h#L123-L125)
 **Severity**: MEDIUM
+**Status**: RESOLVED
 
 **Problem**:
 ```cpp
@@ -173,7 +174,8 @@ Same lazy initialization pattern as HDL, creating similar concerns about hidden 
 
 **Impact**: Inconsistent initialization timing; potential for bugs during concurrent access.
 
-**Fix Plan**: See Issue 5 in [Fix Plan](#fix-plan) section.
+**Resolution**: Control indexing is built once during CPU construction. The
+mutable cache and lazy indexing logic were removed.
 
 ---
 
@@ -387,6 +389,7 @@ private:
 
 #### Fix 7: Remove Mutable Caches from Simulator
 **Effort**: 1-2 hours
+**Status**: DONE
 **Files**:
 - `sim/include/irata2/sim/cpu.h`
 - `sim/src/cpu.cpp`
@@ -410,7 +413,7 @@ private:
 | 1 | Fixes 1-3 (Singleton, ControlInfo, Immutability) | 5-8 hours | Must Have (Completed) |
 | 2 | Fix 4 (CpuPathResolver) | 2-3 hours | Must Have (Completed) |
 | 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have |
-| 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Fix 6 completed) |
+| 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Completed) |
 | 5 | Fix 8 (Testing) | 2-3 hours | Must Have |
 | **Total** | | **15-23 hours** | |
 
@@ -424,7 +427,7 @@ private:
 6. **Fixes 6-7** (Sim) - Independent of HDL changes
 7. **Fix 8** (Testing) - Throughout
 
-Completed to date: Fixes 1-4 and 6.
+Completed to date: Fixes 1-4, 6, and 7.
 
 ---
 
@@ -434,7 +437,8 @@ The IRATA2 codebase is **well-architected** with strong type safety, clean modul
 
 The most critical fixes (ControlBase CRTP refactor and mutable cache elimination) are now complete, restoring the foundational guarantees of zero-cost abstractions and immutability that the design relies on.
 
-Remaining alignment work focuses on sim-side path caching. After that update, the codebase will fully align with its stated design philosophy: a hardware-ish, type-safe, testable CPU simulator with compile-time verified correctness.
+All major alignment items are complete. Remaining work is in the minor-issue
+backlog (bus read-after-write clarity, controller targets style, status wiring).
 
 ---
 

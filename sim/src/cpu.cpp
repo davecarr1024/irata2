@@ -103,6 +103,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().high().read());
   RegisterChild(memory_.mar().high().reset());
 
+  BuildControlIndex();
   controller_.LoadProgram(microcode_);
   controller_.ir().set_value(base::Byte{0x02});
   controller_.sc().set_value(base::Byte{0});
@@ -110,14 +111,9 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
 
 void Cpu::RegisterChild(Component& child) {
   components_.push_back(&child);
-  controls_indexed_ = false;
 }
 
-void Cpu::IndexControls() const {
-  if (controls_indexed_) {
-    return;
-  }
-
+void Cpu::BuildControlIndex() {
   controls_by_path_.clear();
   control_paths_.clear();
 
@@ -133,7 +129,6 @@ void Cpu::IndexControls() const {
   }
 
   std::sort(control_paths_.begin(), control_paths_.end());
-  controls_indexed_ = true;
 }
 
 ControlBase* Cpu::ResolveControl(std::string_view path) {
@@ -146,7 +141,6 @@ const ControlBase* Cpu::ResolveControl(std::string_view path) const {
     throw SimError("control path is empty");
   }
 
-  IndexControls();
   const auto it = controls_by_path_.find(std::string(path));
   if (it == controls_by_path_.end()) {
     throw SimError("control path not found in sim: " + std::string(path));
@@ -155,7 +149,6 @@ const ControlBase* Cpu::ResolveControl(std::string_view path) const {
 }
 
 std::vector<std::string> Cpu::AllControlPaths() const {
-  IndexControls();
   return control_paths_;
 }
 
