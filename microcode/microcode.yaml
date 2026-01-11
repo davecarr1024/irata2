@@ -1,7 +1,7 @@
 # Microcode definition for MVP instructions
 
 fetch_preamble:
-  - [pc.write, memory.mar.read]
+  - [pc.write, memory.mar.read, controller.ipc_latch]
   - [memory.write, controller.ir.read]
   - [pc.increment]
 

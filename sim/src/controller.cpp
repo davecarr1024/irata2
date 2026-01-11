@@ -10,10 +10,14 @@ namespace irata2::sim {
 
 Controller::Controller(std::string name,
                        Component& parent,
-                       Bus<base::Byte>& data_bus)
+                       Bus<base::Byte>& data_bus,
+                       Bus<base::Word>& address_bus)
     : ComponentWithParent(parent, std::move(name)),
       ir_("ir", *this, data_bus),
-      sc_("sc", *this) {}
+      sc_("sc", *this),
+      ipc_("ipc", *this),
+      ipc_latch_("ipc_latch", *this),
+      address_bus_(address_bus) {}
 
 void Controller::LoadProgram(
     std::shared_ptr<const microcode::output::MicrocodeProgram> program) {
@@ -110,6 +114,12 @@ void Controller::TickControl() {
   const uint8_t status = EncodeStatus();
   const uint64_t control_word = LookupControlWord(opcode, step, status);
   AssertControlWord(control_word);
+}
+
+void Controller::TickProcess() {
+  if (ipc_latch_.asserted()) {
+    ipc_.set_value(address_bus_.value());
+  }
 }
 
 }  // namespace irata2::sim

@@ -18,6 +18,7 @@
 #include "irata2/sim/memory/region.h"
 #include "irata2/sim/local_counter.h"
 #include "irata2/sim/local_register.h"
+#include "irata2/sim/latched_word_register.h"
 #include "irata2/sim/read_control.h"
 #include "irata2/sim/register.h"
 #include "irata2/sim/status_register.h"

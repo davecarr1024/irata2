@@ -96,3 +96,21 @@ TEST(SimControllerTest, RejectsControlWordOverflow) {
 
   EXPECT_THROW(sim.Tick(), SimError);
 }
+
+TEST(SimControllerTest, IpcLatchCapturesPreIncrementPc) {
+  auto hdl = std::make_shared<irata2::hdl::Cpu>();
+  auto program = MakeProgramWithControls(
+      *hdl,
+      {"pc.write", "pc.increment", "controller.ipc_latch"},
+      0x02);
+
+  Cpu sim(hdl, program);
+  sim.pc().set_value(irata2::base::Word{0x8000});
+  sim.controller().ir().set_value(irata2::base::Byte{0x02});
+  sim.controller().sc().set_value(irata2::base::Byte{0});
+
+  sim.Tick();
+
+  EXPECT_EQ(sim.pc().value().value(), 0x8001);
+  EXPECT_EQ(sim.controller().ipc().value().value(), 0x8000);
+}

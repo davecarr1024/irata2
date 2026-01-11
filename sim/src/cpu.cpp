@@ -24,7 +24,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       pc_("pc", *this, address_bus_),
       status_("status", *this, data_bus_),
       alu_("alu", *this, data_bus_, status_),
-      controller_("controller", *this, data_bus_),
+      controller_("controller", *this, data_bus_, address_bus_),
       memory_("memory",
               *this,
               data_bus_,
@@ -133,6 +133,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.sc());
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
+  RegisterChild(controller_.ipc());
+  RegisterChild(controller_.ipc_latch());
 
   RegisterChild(memory_);
   RegisterChild(memory_.write());
