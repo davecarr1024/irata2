@@ -54,10 +54,10 @@ The sim module currently provides:
 - Cycle counting
 - Halt/resume functionality
 - Core component types (controls, buses, registers, counters)
-- Controller shell with IR and step counter
+- Controller with IR/SC and control assertion from microcode programs
+- Memory model with ROM/RAM mapping and MAR
 
 Future additions:
-- Microcode ROM decoding and control assertion
 - Memory access and fetch/decode wiring
 - Halt/crash termination semantics for integration tests
 - End-to-end `.asm` test runner integration (see [docs/plan.md](../docs/plan.md))

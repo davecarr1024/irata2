@@ -33,8 +33,8 @@ The project is organized into independent, self-contained modules:
 - `base` is implemented and provides `Byte`, `Word`, and `TickPhase`.
 - `hdl` is implemented with immutable components, buses, controls, and registers, including controller/IR/SC and halt/crash controls.
 - `isa` is reduced to the minimal MVP instruction set (HLT/NOP/CRS).
-- `microcode` has MVP IR + compiler passes/validators; YAML codegen and ROM encoding are next.
-- `sim` is a placeholder tick orchestrator; runtime components and microcode execution are next.
+- `microcode` has MVP IR + compiler passes/validators, plus control/status encoding into microcode programs; YAML codegen and ROM image emission are next.
+- `sim` implements runtime components with control assertion from compiled microcode programs; fetch/decode wiring and instruction execution are next.
 
 See [docs/plan.md](docs/plan.md) for the vertical-slice roadmap.
 

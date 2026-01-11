@@ -106,7 +106,7 @@ Deliverables:
 - Status wiring strategy is pending (status controls + status validation).
 - Assembler interface (CLI + cartridge format) needs consensus.
   - Cartridge should be a fixed, minimal header + ROM image; debug symbols live in a sidecar file.
-  - ControlEncoder should use a stable sort order (alphabetic by control path) to map controls to bits.
+  - ControlEncoder should use HDL traversal order to map controls to bits.
 
 ## Ownership Boundaries
 

@@ -566,10 +566,12 @@ Implemented:
 - `ir::Builder` that resolves control paths via `ir::CpuPathResolver` with fast-fail errors
 - MVP compiler passes: `FetchTransformer`, `SequenceTransformer`
 - MVP validators: `FetchValidator`, `SequenceValidator`, `IsaCoverageValidator`
-- Unit tests covering builder and compiler MVP
+- Encoders for instruction keys, control bits, and status bits
+- `output::MicrocodeProgram` table for compiled control words
+- Unit tests covering builder, compiler, and encoders
 
 Next Steps:
-1. Add status path resolution and status-aware variants.
-2. Implement bus/status validators, optimizers, and encoder/ROM.
-3. Wire singleton compilation into sim startup.
+1. Add status-aware variants and status condition validation in the IR/compiler.
+2. Implement bus/status validators and optimizer passes.
+3. Emit ROM images for hardware-style instruction memories.
 ```
