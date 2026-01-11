@@ -7,10 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Standard build with tests
 cmake -B build -DBUILD_TESTING=ON
-cmake --build build
+cmake --build build --parallel
 
 # Run all tests
-ctest --test-dir build --output-on-failure
+ctest --test-dir build --output-on-failure -j 8
 
 # Run a single test binary
 ./build/base/test/base_tests
@@ -24,15 +24,19 @@ ctest --test-dir build --output-on-failure
 
 # Build with coverage
 cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
-cmake --build build
-ctest --test-dir build
+cmake --build build --parallel
+ctest --test-dir build -j 8
 ./scripts/coverage.sh build
 # Report at: build/coverage/html/index.html
 
 # Release build
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-cmake --build build
+cmake --build build --parallel
 ```
+
+Notes:
+- Prefer parallel builds/tests by default.
+- Run build + tests before committing when practical.
 
 ## Project Overview
 

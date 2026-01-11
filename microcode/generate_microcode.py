@@ -61,7 +61,8 @@ def emit_instruction(name, definition):
     lines = []
     lines.append("{")
     lines.append("  irata2::microcode::ir::Instruction instruction;")
-    lines.append(f"  instruction.opcode = irata2::isa::Opcode::{name_upper}_IMP;")
+    opcode_name = name_upper if "_" in name_upper else f"{name_upper}_IMP"
+    lines.append(f"  instruction.opcode = irata2::isa::Opcode::{opcode_name};")
 
     if "variants" in definition:
         variants = definition["variants"] or []

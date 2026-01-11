@@ -421,6 +421,10 @@ instructions:
           - [alu.result.write, a.read]
 ```
 
+Status flag handling follows a hardware-ish split:
+- ALU updates C/V via Status views.
+- Z/N are set by a `status.analyzer` register that microcode loads alongside writes.
+
 ## HDL Requirements (MVP implemented where noted)
 
 The HDL module must provide:

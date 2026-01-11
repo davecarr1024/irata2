@@ -1,6 +1,7 @@
 #ifndef IRATA2_HDL_CPU_H
 #define IRATA2_HDL_CPU_H
 
+#include "irata2/hdl/alu.h"
 #include "irata2/hdl/byte_bus.h"
 #include "irata2/hdl/byte_register.h"
 #include "irata2/hdl/component.h"
@@ -46,6 +47,7 @@ class Cpu final : public Component<Cpu> {
 
   const ByteRegister& a() const { return a_; }
   const ByteRegister& x() const { return x_; }
+  const Alu& alu() const { return alu_; }
   const Counter<base::Word>& pc() const { return pc_; }
   const StatusRegister& status() const { return status_; }
   const Controller& controller() const { return controller_; }
@@ -62,6 +64,7 @@ class Cpu final : public Component<Cpu> {
     address_bus_.visit(visitor);
     a_.visit(visitor);
     x_.visit(visitor);
+    alu_.visit(visitor);
     pc_.visit(visitor);
     status_.visit(visitor);
     controller_.visit(visitor);
@@ -75,6 +78,7 @@ class Cpu final : public Component<Cpu> {
   const WordBus address_bus_;
   const ByteRegister a_;
   const ByteRegister x_;
+  const Alu alu_;
   const Counter<base::Word> pc_;
   const StatusRegister status_;
   const Controller controller_;

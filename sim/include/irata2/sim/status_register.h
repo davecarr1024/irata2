@@ -8,6 +8,29 @@
 
 namespace irata2::sim {
 
+class StatusAnalyzer final : public ByteRegister {
+ public:
+  StatusAnalyzer(std::string name,
+                 Component& parent,
+                 Bus<base::Byte>& bus,
+                 Status& zero,
+                 Status& negative)
+      : ByteRegister(std::move(name), parent, bus),
+        zero_(zero),
+        negative_(negative) {}
+
+  void TickProcess() override {
+    ByteRegister::TickProcess();
+    const uint8_t value = this->value().value();
+    zero_.Set(value == 0);
+    negative_.Set((value & 0x80u) != 0);
+  }
+
+ private:
+  Status& zero_;
+  Status& negative_;
+};
+
 class StatusRegister final : public ByteRegister {
  public:
   StatusRegister(std::string name, Component& parent, Bus<base::Byte>& bus)
@@ -19,7 +42,8 @@ class StatusRegister final : public ByteRegister {
         decimal_("decimal", *this, *this, 3),
         interrupt_disable_("interrupt_disable", *this, *this, 2),
         zero_("zero", *this, *this, 1),
-        carry_("carry", *this, *this, 0) {}
+        carry_("carry", *this, *this, 0),
+        analyzer_("analyzer", *this, bus, zero_, negative_) {}
 
   Status& negative() { return negative_; }
   const Status& negative() const { return negative_; }
@@ -37,6 +61,8 @@ class StatusRegister final : public ByteRegister {
   const Status& zero() const { return zero_; }
   Status& carry() { return carry_; }
   const Status& carry() const { return carry_; }
+  StatusAnalyzer& analyzer() { return analyzer_; }
+  const StatusAnalyzer& analyzer() const { return analyzer_; }
 
  private:
   Status negative_;
@@ -47,6 +73,7 @@ class StatusRegister final : public ByteRegister {
   Status interrupt_disable_;
   Status zero_;
   Status carry_;
+  StatusAnalyzer analyzer_;
 };
 
 }  // namespace irata2::sim

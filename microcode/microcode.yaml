@@ -20,3 +20,38 @@ instructions:
     stages:
       - steps:
           - [crash]
+
+  LDA_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, a.read, status.analyzer.read, pc.increment]
+
+  CMP_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  JEQ_ABS:
+    variants:
+      - when: { zero: true }
+        stages:
+          - steps:
+              - [pc.write, memory.mar.read]
+              - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+              - [pc.write, memory.mar.read]
+              - [memory.write, memory.mar.high.read, pc.increment]
+              - [alu.result.write, memory.mar.low.read]
+              - [memory.mar.write, pc.read]
+      - when: { zero: false }
+        stages:
+          - steps:
+              - [pc.write, memory.mar.read]
+              - [memory.write, memory.mar.low.read, pc.increment]
+              - [pc.write, memory.mar.read]
+              - [memory.write, memory.mar.high.read, pc.increment]

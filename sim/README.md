@@ -88,6 +88,7 @@ The sim module currently provides:
 - Core component types (controls, buses, registers, counters)
 - Controller with IR/SC and control assertion from microcode programs
 - Memory model with ROM/RAM mapping and MAR
+- Status views for SR bits plus a status analyzer register for Z/N
 - `irata2_run` CLI for executing cartridges
 - End-to-end `.asm` test coverage (HLT/NOP/CRS) via `ctest`
 

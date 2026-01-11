@@ -47,6 +47,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(
       Opcode::CRS_IMP, {MakeStep({&cpu.crash().control_info()})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
@@ -77,6 +80,9 @@ TEST(CompilerTest, RejectsStepIndexOverflow) {
       MakeInstruction(Opcode::HLT_IMP, std::move(steps)));
   set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

@@ -11,6 +11,7 @@
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
 #include "irata2/microcode/output/program.h"
+#include "irata2/sim/alu.h"
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
@@ -122,6 +123,8 @@ class Cpu : public Component {
   const ByteRegister& a() const { return a_; }
   ByteRegister& x() { return x_; }
   const ByteRegister& x() const { return x_; }
+  Alu& alu() { return alu_; }
+  const Alu& alu() const { return alu_; }
   Counter<base::Word>& pc() { return pc_; }
   const Counter<base::Word>& pc() const { return pc_; }
   StatusRegister& status() { return status_; }
@@ -162,6 +165,7 @@ class Cpu : public Component {
   ByteRegister x_;
   Counter<base::Word> pc_;
   StatusRegister status_;
+  Alu alu_;
   Controller controller_;
   memory::Memory memory_;
 

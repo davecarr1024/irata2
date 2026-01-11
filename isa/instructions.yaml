@@ -8,6 +8,16 @@ addressing_modes:
     operands: 0
     description: "No operands"
 
+  - name: Immediate
+    code: IMM
+    operands: 1
+    description: "Immediate operand"
+
+  - name: Absolute
+    code: ABS
+    operands: 2
+    description: "Absolute 16-bit address"
+
 # Status Flags
 status_flags:
   - name: Zero
@@ -47,6 +57,30 @@ instructions:
     cycles: 1
     description: "No operation"
     category: System
+    flags_affected: []
+
+  - mnemonic: LDA
+    opcode: 0x10
+    addressing_mode: IMM
+    cycles: 2
+    description: "Load accumulator (immediate)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0x11
+    addressing_mode: IMM
+    cycles: 2
+    description: "Compare accumulator (immediate)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: JEQ
+    opcode: 0x12
+    addressing_mode: ABS
+    cycles: 3
+    description: "Jump if equal (absolute)"
+    category: Branch
     flags_affected: []
 
   - mnemonic: CRS

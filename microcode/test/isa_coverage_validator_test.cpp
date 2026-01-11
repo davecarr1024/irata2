@@ -23,6 +23,9 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::HLT_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_IMM));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_IMM));
+  set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS));
 
   IsaCoverageValidator validator;
   EXPECT_NO_THROW(validator.Run(set));

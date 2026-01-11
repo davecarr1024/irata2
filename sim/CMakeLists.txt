@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # Simulator library (compiled)
 add_library(irata2_sim
+  src/alu.cpp
   src/cartridge.cpp
   src/cpu.cpp
   src/controller.cpp

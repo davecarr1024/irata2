@@ -492,6 +492,20 @@ Every clock cycle executes five phases in strict order:
 └─────────────────────────────────────┘
 ```
 
+### Status Views and Analyzer
+
+Status flags are stored in a single status register (SR). Each flag is exposed
+as a named **Status** view component (e.g., `status.zero`, `status.carry`) that
+reads/writes the corresponding bit in SR. Other components interact with flags
+only through these Status views.
+
+To update Z/N consistently for non-ALU instructions (e.g., `LDA`), the design
+adds a **status analyzer** register (`status.analyzer`) connected to the data
+bus. Microcode writes the value to be analyzed into this register, and on every
+Process phase it sets Z/N via the Status views based on the analyzer's contents.
+
+The ALU updates C/V via Status views and does not directly set Z/N.
+
 **Phase Enforcement**:
 ```cpp
 class Cpu {

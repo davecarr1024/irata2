@@ -3,6 +3,7 @@
 
 #include "irata2/base/types.h"
 #include "irata2/hdl/register.h"
+#include "irata2/hdl/status_analyzer.h"
 #include "irata2/hdl/status.h"
 
 #include <utility>
@@ -20,7 +21,8 @@ class StatusRegister final : public Register<StatusRegister, base::Byte> {
         decimal_("decimal", *this, 3),
         interrupt_disable_("interrupt_disable", *this, 2),
         zero_("zero", *this, 1),
-        carry_("carry", *this, 0) {}
+        carry_("carry", *this, 0),
+        analyzer_("analyzer", *this, bus) {}
 
   const Status& negative() const { return negative_; }
   const Status& overflow() const { return overflow_; }
@@ -30,6 +32,7 @@ class StatusRegister final : public Register<StatusRegister, base::Byte> {
   const Status& interrupt_disable() const { return interrupt_disable_; }
   const Status& zero() const { return zero_; }
   const Status& carry() const { return carry_; }
+  const StatusAnalyzer& analyzer() const { return analyzer_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
@@ -42,6 +45,7 @@ class StatusRegister final : public Register<StatusRegister, base::Byte> {
     interrupt_disable_.visit(visitor);
     zero_.visit(visitor);
     carry_.visit(visitor);
+    analyzer_.visit(visitor);
   }
 
  private:
@@ -53,6 +57,7 @@ class StatusRegister final : public Register<StatusRegister, base::Byte> {
   const Status interrupt_disable_;
   const Status zero_;
   const Status carry_;
+  const StatusAnalyzer analyzer_;
 };
 
 }  // namespace irata2::hdl

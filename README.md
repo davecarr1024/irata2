@@ -71,10 +71,18 @@ See [docs/plan.md](docs/plan.md) for the vertical-slice roadmap.
 ```bash
 # Build with tests
 cmake -B build -DBUILD_TESTING=ON
-cmake --build build
+cmake --build build --parallel
 
 # Run tests
-ctest --test-dir build --output-on-failure
+ctest --test-dir build --output-on-failure -j 8
+```
+
+## Makefile Shortcuts
+
+```bash
+make configure
+make build
+make test
 ```
 
 ## Building
@@ -85,8 +93,8 @@ See [Building](#building-options) for all build options including code coverage 
 
 ```bash
 cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
-cmake --build build
-ctest --test-dir build --output-on-failure
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure -j 8
 ./scripts/coverage.sh build
 ```
 
@@ -97,22 +105,22 @@ Coverage report output: `build/coverage/html/index.html`
 ```bash
 # Standard build
 cmake -B build
-cmake --build build
+cmake --build build --parallel
 
 # With tests
 cmake -B build -DBUILD_TESTING=ON
-cmake --build build
-ctest --test-dir build --output-on-failure
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure -j 8
 
 # With code coverage
 cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
-cmake --build build
-ctest --test-dir build
+cmake --build build --parallel
+ctest --test-dir build -j 8
 ./scripts/coverage.sh build
 
 # Release build
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-cmake --build build
+cmake --build build --parallel
 ```
 
 ## Documentation

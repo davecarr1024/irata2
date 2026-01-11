@@ -59,10 +59,10 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 69);
+  EXPECT_EQ(visitor.components, 90);
   EXPECT_EQ(visitor.buses, 2);
-  EXPECT_EQ(visitor.registers, 9);
-  EXPECT_EQ(visitor.controls, 47);
+  EXPECT_EQ(visitor.registers, 12);
+  EXPECT_EQ(visitor.controls, 63);
 }
 
 TEST(HdlCpuTest, GetCpuReturnsSingleton) {

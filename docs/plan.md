@@ -2,6 +2,37 @@
 
 This plan targets a fast end-to-end slice: `.asm` tests assemble to cartridges, run in the simulator with compiled microcode, and pass on `HLT` / fail on `CRS`.
 
+## Next Milestone: LDA/CMP/JEQ Test Program
+
+Test program:
+
+```
+LDA #$12
+CMP #$12
+JEQ pass
+CRS
+pass: HLT
+```
+
+### Work Plan
+
+1. **ALU implementation + HDL wiring**
+   - Implement the ALU in `sim` (MVP: NOP + SUB) with opcode bits and status updates.
+   - Add matching HDL components (ALU registers + opcode controls) and wire them into the CPU tree.
+
+2. **ISA + assembler support**
+   - Add addressing modes for Immediate and Absolute.
+   - Add instructions: `LDA_IMM`, `CMP_IMM`, `JEQ_ABS`.
+   - Extend assembler encoding for instruction operands (immediate literal + relative branch).
+
+3. **Microcode**
+   - Add microcode steps for `LDA #imm`, `CMP #imm`, and `JEQ` variants.
+   - Wire ALU opcode bits for CMP (SUB) and update status flags for branch.
+
+4. **Test program**
+   - Add a new `.asm` test for the program above.
+   - Ensure `ctest` runs it alongside the existing HLT/NOP/CRS tests.
+
 ## Goals
 
 - End-to-end, self-hosted integration tests from `.asm` → cartridge → simulator → halt/crash.

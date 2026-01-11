@@ -10,6 +10,7 @@ Cpu::Cpu()
       address_bus_("address_bus", *this),
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
+      alu_("alu", *this, data_bus_),
       pc_("pc", *this, address_bus_),
       status_("status", *this, data_bus_),
       controller_("controller", *this, data_bus_),

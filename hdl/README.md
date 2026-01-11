@@ -180,6 +180,7 @@ name: N   V   U   B   D   I   Z   C
 - `status` is the register name in HDL.
 - Status components are named with full words: `zero`, `negative`, `carry`,
   `overflow`, `interrupt_disable`, `decimal`, `break`, `unused`.
+- `status.analyzer` is a bus-connected register used to compute Z/N flags.
 - Default SR value is `0x00`.
 
 ## Structural Inspection

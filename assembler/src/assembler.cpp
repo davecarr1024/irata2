@@ -29,6 +29,7 @@ struct Emittable {
   std::string text;
   enum class Kind { Instruction, Bytes } kind = Kind::Instruction;
   uint8_t opcode = 0;
+  uint8_t operand_bytes = 0;
   std::vector<Operand> operands;
 };
 
@@ -94,6 +95,10 @@ void RequireNumberOperand(const Operand& operand, const std::string& message) {
   if (operand.kind != Operand::Kind::Number) {
     throw AssemblerError(operand.span, message);
   }
+}
+
+size_t ExpectedOperands(uint8_t operand_bytes) {
+  return operand_bytes == 0 ? 0 : 1;
 }
 
 struct FirstPassResult {
@@ -174,9 +179,11 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
         throw AssemblerError(instruction->span, "unknown instruction mnemonic");
       }
 
-      if (info->addressing_mode == isa::AddressingMode::IMP) {
-        RequireOperandCount(*instruction, 0);
+      auto mode_info = isa::IsaInfo::GetAddressingMode(info->addressing_mode);
+      if (!mode_info) {
+        throw AssemblerError(instruction->span, "unknown addressing mode");
       }
+      RequireOperandCount(*instruction, ExpectedOperands(mode_info->operand_bytes));
 
       Emittable item;
       item.kind = Emittable::Kind::Instruction;
@@ -184,10 +191,12 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
       item.span = instruction->span;
       item.text = FormatInstructionText(*instruction);
       item.opcode = static_cast<uint8_t>(info->opcode);
+      item.operand_bytes = mode_info->operand_bytes;
       item.operands = instruction->operands;
       result.items.push_back(item);
 
-      cursor = AddOffset(cursor, 1, instruction->span);
+      cursor = AddOffset(cursor, static_cast<uint32_t>(1 + mode_info->operand_bytes),
+                         instruction->span);
       if (cursor.value() > result.max_address.value()) {
         result.max_address = cursor;
       }
@@ -216,6 +225,22 @@ uint8_t ResolveByteOperand(const Operand& operand,
     throw AssemblerError(operand.span, "label out of byte range");
   }
   return static_cast<uint8_t>(value);
+}
+
+uint16_t ResolveWordOperand(const Operand& operand,
+                            const std::unordered_map<std::string, base::Word>& symbols) {
+  if (operand.kind == Operand::Kind::Number) {
+    if (operand.number > 0xFFFFu) {
+      throw AssemblerError(operand.span, "word literal out of range");
+    }
+    return static_cast<uint16_t>(operand.number);
+  }
+
+  auto it = symbols.find(operand.label);
+  if (it == symbols.end()) {
+    throw AssemblerError(operand.span, "unknown label");
+  }
+  return static_cast<uint16_t>(it->second.value());
 }
 
 AssemblerResult Encode(const FirstPassResult& pass,
@@ -256,6 +281,40 @@ AssemblerResult Encode(const FirstPassResult& pass,
       debug_offsets.push_back(offset);
       debug_line_numbers.push_back(item.span.line);
       debug_column_numbers.push_back(item.span.column);
+      if (item.operand_bytes == 1) {
+        if (item.operands.empty()) {
+          throw AssemblerError(item.span, "missing operand");
+        }
+        uint8_t value = ResolveByteOperand(item.operands[0], pass.symbols);
+        if (offset + 1 >= rom.size()) {
+          throw AssemblerError(item.span, "address exceeds cartridge size");
+        }
+        rom[offset + 1] = value;
+        debug_lines.push_back(item.text);
+        debug_addresses.push_back(base::Word{static_cast<uint16_t>(address + 1)});
+        debug_offsets.push_back(offset + 1);
+        debug_line_numbers.push_back(item.span.line);
+        debug_column_numbers.push_back(item.span.column);
+      } else if (item.operand_bytes == 2) {
+        if (item.operands.empty()) {
+          throw AssemblerError(item.span, "missing operand");
+        }
+        uint16_t value = ResolveWordOperand(item.operands[0], pass.symbols);
+        if (offset + 2 >= rom.size()) {
+          throw AssemblerError(item.span, "address exceeds cartridge size");
+        }
+        rom[offset + 1] = static_cast<uint8_t>(value & 0xFFu);
+        rom[offset + 2] = static_cast<uint8_t>((value >> 8) & 0xFFu);
+        for (uint32_t i = 1; i <= 2; ++i) {
+          debug_lines.push_back(item.text);
+          debug_addresses.push_back(base::Word{static_cast<uint16_t>(address + i)});
+          debug_offsets.push_back(offset + i);
+          debug_line_numbers.push_back(item.span.line);
+          debug_column_numbers.push_back(item.span.column);
+        }
+      } else if (item.operand_bytes != 0) {
+        throw AssemblerError(item.span, "unsupported operand width");
+      }
       continue;
     }
 

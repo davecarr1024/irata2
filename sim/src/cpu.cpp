@@ -23,6 +23,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       x_("x", *this, data_bus_),
       pc_("pc", *this, address_bus_),
       status_("status", *this, data_bus_),
+      alu_("alu", *this, data_bus_, status_),
       controller_("controller", *this, data_bus_),
       memory_("memory",
               *this,
@@ -67,6 +68,24 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(x_.read());
   RegisterChild(x_.reset());
 
+  RegisterChild(alu_);
+  RegisterChild(alu_.lhs());
+  RegisterChild(alu_.lhs().write());
+  RegisterChild(alu_.lhs().read());
+  RegisterChild(alu_.lhs().reset());
+  RegisterChild(alu_.rhs());
+  RegisterChild(alu_.rhs().write());
+  RegisterChild(alu_.rhs().read());
+  RegisterChild(alu_.rhs().reset());
+  RegisterChild(alu_.result());
+  RegisterChild(alu_.result().write());
+  RegisterChild(alu_.result().read());
+  RegisterChild(alu_.result().reset());
+  RegisterChild(alu_.opcode_bit_0());
+  RegisterChild(alu_.opcode_bit_1());
+  RegisterChild(alu_.opcode_bit_2());
+  RegisterChild(alu_.opcode_bit_3());
+
   RegisterChild(pc_);
   RegisterChild(pc_.write());
   RegisterChild(pc_.read());
@@ -101,6 +120,10 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(status_.carry());
   RegisterChild(status_.carry().set());
   RegisterChild(status_.carry().clear());
+  RegisterChild(status_.analyzer());
+  RegisterChild(status_.analyzer().write());
+  RegisterChild(status_.analyzer().read());
+  RegisterChild(status_.analyzer().reset());
 
   RegisterChild(controller_);
   RegisterChild(controller_.ir());
