@@ -145,6 +145,18 @@ while (!cpu.halted()) {
 std::cout << "Executed " << cpu.cycle_count() << " cycles\n";
 ```
 
+## Debugging CLI
+
+The `irata2_run` helper can load debug sidecars and emit a failure dump:
+
+```bash
+irata2_run --debug program.json --trace-depth 64 program.bin
+```
+
+On unexpected crash/halt or timeout, the simulator prints a register/bus dump
+plus a trace of recent instructions. Use `--expect-crash` to mark a crash as
+expected or `--max-cycles N` to force a timeout.
+
 ## Files
 
 - `component.h` - Base classes for sim components

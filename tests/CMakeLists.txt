@@ -25,12 +25,21 @@ if(ASM_FILES)
     add_custom_target(asm_${ASM_NAME} DEPENDS ${ASM_BIN} ${ASM_JSON})
     add_dependencies(asm_outputs asm_${ASM_NAME})
 
-    set(TEST_ARGS ${ASM_BIN})
+    set(TEST_ARGS --debug ${ASM_JSON} ${ASM_BIN})
     if(ASM_NAME STREQUAL "crs")
-      set(TEST_ARGS --expect-crash ${ASM_BIN})
+      set(TEST_ARGS --expect-crash --debug ${ASM_JSON} ${ASM_BIN})
     endif()
 
     add_test(NAME asm_${ASM_NAME}
              COMMAND $<TARGET_FILE:irata2_run> ${TEST_ARGS})
+
+    if(ASM_NAME STREQUAL "crs")
+      add_test(NAME asm_${ASM_NAME}_debug_dump
+               COMMAND ${CMAKE_COMMAND}
+               -DRUNNER=$<TARGET_FILE:irata2_run>
+               -DDEBUG_JSON=${ASM_JSON}
+               -DCARTRIDGE=${ASM_BIN}
+               -P ${CMAKE_CURRENT_SOURCE_DIR}/expect_debug_dump.cmake)
+    endif()
   endforeach()
 endif()
