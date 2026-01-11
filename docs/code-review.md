@@ -8,14 +8,14 @@
 
 ## Executive Summary
 
-The IRATA2 codebase demonstrates **strong adherence to most design principles** with a solid foundation for a hardware-ish CPU simulator. The most critical architectural violations around control metadata and HDL immutability have been resolved; remaining issues are primarily in simulator phase enforcement and sim-side path caches.
+The IRATA2 codebase demonstrates **strong adherence to most design principles** with a solid foundation for a hardware-ish CPU simulator. All review items are now resolved; remaining work is roadmap expansion and continued coverage improvements.
 
 ### Summary Metrics
 
 | Category | Status |
 |----------|--------|
 | Major Issues | 0 |
-| Minor Issues | 8 |
+| Minor Issues | 0 |
 | Design Compliance | ~94% |
 | Test Coverage | 88.4% lines, 97.5% functions (filtered) |
 | Module Separation | Excellent |
@@ -444,8 +444,8 @@ The IRATA2 codebase is **well-architected** with strong type safety, clean modul
 
 The most critical fixes (ControlBase CRTP refactor and mutable cache elimination) are now complete, restoring the foundational guarantees of zero-cost abstractions and immutability that the design relies on.
 
-All major alignment items are complete. Remaining work is in the minor-issue
-backlog (bus read-after-write clarity, controller targets style, status wiring).
+All major alignment items are complete. Remaining work is roadmap-driven (ROM
+decoding, assembler integration, and instruction coverage expansion).
 
 ---
 
