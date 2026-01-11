@@ -7,13 +7,24 @@
 
 namespace irata2::hdl {
 
-/// Non-virtual struct that holds pre-computed control properties.
-/// This replaces the virtual ControlBase interface with a POD-like type.
-/// Each Control stores a ControlInfo member that is populated at construction.
+/**
+ * @brief Non-virtual metadata for HDL control signals.
+ *
+ * ControlInfo stores pre-computed control properties as a POD-like struct,
+ * eliminating virtual dispatch overhead. Each Control template instantiation
+ * creates a ControlInfo at construction time.
+ *
+ * This design enables zero-cost abstractions: control properties are known
+ * at compile-time via template parameters, and ControlInfo provides runtime
+ * access without vtable lookups.
+ *
+ * @see Control for the CRTP control template
+ * @see microcode::ir::CpuPathResolver for control lookup by path
+ */
 struct ControlInfo {
-  base::TickPhase phase;
-  bool auto_reset;
-  std::string_view path;  // Points to stable ComponentBase::path_
+  base::TickPhase phase;   ///< Phase during which this control is active
+  bool auto_reset;         ///< Whether control auto-clears after each tick
+  std::string_view path;   ///< Component path (points to stable storage)
 
   constexpr bool operator==(const ControlInfo& other) const {
     return phase == other.phase && auto_reset == other.auto_reset &&

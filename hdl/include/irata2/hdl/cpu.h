@@ -14,8 +14,29 @@
 
 namespace irata2::hdl {
 
-/// Immutable HDL CPU structure. All navigation is strongly typed.
-/// Path resolution has been moved to microcode::ir::CpuPathResolver.
+/**
+ * @brief Immutable CPU hardware structure definition (schematic).
+ *
+ * The Cpu class represents the complete hardware schematic as an immutable
+ * tree of components. All members are const and initialized at construction,
+ * making the HDL thread-safe and suitable for sharing across compilation units.
+ *
+ * This class contains no runtime state - it purely describes the hardware
+ * structure. For simulation with runtime state, see sim::Cpu.
+ *
+ * Navigation is strongly typed via accessor methods. String-based path
+ * resolution for microcode compilation lives in microcode::ir::CpuPathResolver.
+ *
+ * @code
+ * const auto& cpu = hdl::GetCpu();
+ * const auto& a_reg = cpu.a();           // Strongly typed
+ * const auto& write_ctrl = a_reg.write(); // Navigate to controls
+ * @endcode
+ *
+ * @see GetCpu() for thread-safe singleton access
+ * @see sim::Cpu for runtime simulator with mutable state
+ * @see microcode::ir::CpuPathResolver for string path resolution
+ */
 class Cpu final : public Component<Cpu> {
  public:
   Cpu();
@@ -60,7 +81,15 @@ class Cpu final : public Component<Cpu> {
   const Memory memory_;
 };
 
-/// Thread-safe singleton access to the HDL CPU.
+/**
+ * @brief Thread-safe singleton access to the HDL CPU.
+ *
+ * Returns a reference to the single immutable Cpu instance. Uses C++11
+ * static initialization guarantees for thread safety. The instance is
+ * created on first call and persists for program lifetime.
+ *
+ * @return Reference to the global immutable HDL Cpu
+ */
 const Cpu& GetCpu();
 
 }  // namespace irata2::hdl

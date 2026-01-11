@@ -25,13 +25,39 @@
 
 namespace irata2::sim {
 
-// Root simulator component representing the CPU runtime
-// This has runtime state and orchestrates the five-phase tick model
+/**
+ * @brief Runtime CPU simulator with mutable state.
+ *
+ * The sim::Cpu class is the root of the runtime simulation, containing all
+ * mutable component state and orchestrating the five-phase tick model.
+ * Unlike hdl::Cpu which is an immutable schematic, this class holds actual
+ * register values, bus states, and execution context.
+ *
+ * The CPU executes microcode programs by:
+ * 1. Loading a compiled MicrocodeProgram into the Controller
+ * 2. Running Tick() which executes the five-phase cycle
+ * 3. Checking halted() to detect program completion
+ *
+ * @code
+ * sim::Cpu cpu;  // Uses default HDL and microcode
+ * cpu.pc().set_value(base::Word{0x8000});  // Set entry point
+ * while (!cpu.halted()) {
+ *   cpu.Tick();
+ * }
+ * @endcode
+ *
+ * @see hdl::Cpu for the immutable hardware schematic
+ * @see base::TickPhase for the five-phase execution model
+ * @see Controller for microcode ROM execution
+ */
 class Cpu : public Component {
  public:
+  /**
+   * @brief Result of running until halt.
+   */
   struct RunResult {
-    bool halted = false;
-    bool crashed = false;
+    bool halted = false;   ///< True if CPU halted normally
+    bool crashed = false;  ///< True if crash control was asserted
   };
 
   Cpu();
@@ -45,14 +71,27 @@ class Cpu : public Component {
 
   std::string path() const override { return ""; }
 
-  // Get current tick phase
+  /// @brief Get current tick phase.
   base::TickPhase current_phase() const override { return current_phase_; }
 
-  // Execute one clock cycle (five phases)
+  /**
+   * @brief Execute one complete clock cycle (all five phases).
+   *
+   * Runs Control, Write, Read, Process, and Clear phases in order.
+   * Does nothing if halted() is true.
+   */
   void Tick();
+
+  /**
+   * @brief Run until the halt control is asserted.
+   * @return RunResult indicating how execution terminated
+   */
   RunResult RunUntilHalt();
 
-  // Testing-only phase override for direct control assertions.
+  /**
+   * @brief Override current phase for testing.
+   * @warning For unit tests only. Allows direct control assertions.
+   */
   void SetCurrentPhaseForTest(base::TickPhase phase);
 
   // Halt state

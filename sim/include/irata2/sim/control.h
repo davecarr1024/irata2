@@ -9,6 +9,30 @@
 
 namespace irata2::sim {
 
+/**
+ * @brief Base class for runtime control signals with phase validation.
+ *
+ * ControlBase provides phase-aware control signal semantics. Controls can
+ * only be asserted during the Control phase, and their asserted() state
+ * can only be read during their designated phase.
+ *
+ * This enforcement catches timing bugs that would be silent in real hardware,
+ * where out-of-phase reads would return stale or undefined values.
+ *
+ * @code
+ * // During Control phase:
+ * control.Assert();  // OK
+ *
+ * // During Write phase:
+ * control.Assert();  // Throws SimError!
+ *
+ * // During the control's designated phase:
+ * if (control.asserted()) { ... }  // OK
+ * @endcode
+ *
+ * @see Control for the typed template wrapper
+ * @see ProcessControl for Process-phase controls
+ */
 class ControlBase : public ComponentWithParent {
  public:
   ControlBase(std::string name,
@@ -60,6 +84,12 @@ class ControlBase : public ComponentWithParent {
   bool asserted_ = false;
 };
 
+/**
+ * @brief Typed control signal with compile-time phase and auto-reset.
+ *
+ * @tparam Phase The tick phase during which this control is readable
+ * @tparam AutoReset If true, control clears automatically in Clear phase
+ */
 template <base::TickPhase Phase, bool AutoReset>
 class Control : public ControlBase {
  public:
@@ -67,6 +97,14 @@ class Control : public ControlBase {
       : ControlBase(std::move(name), parent, Phase, AutoReset) {}
 };
 
+/**
+ * @brief Control signal readable during Process phase.
+ *
+ * Used for signals like halt and crash that are checked during
+ * the Process phase to update CPU state.
+ *
+ * @tparam AutoReset If true (default), control clears after each tick
+ */
 template <bool AutoReset = true>
 using ProcessControl = Control<base::TickPhase::Process, AutoReset>;
 

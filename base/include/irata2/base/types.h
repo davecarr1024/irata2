@@ -8,7 +8,21 @@
 
 namespace irata2::base {
 
-// 8-bit byte value (0x00 - 0xFF)
+/**
+ * @brief Strongly-typed 8-bit value (0x00 - 0xFF).
+ *
+ * Byte provides type safety for 8-bit values, preventing accidental
+ * mixing with raw integers or Word values. All arithmetic and bitwise
+ * operations are supported with overflow semantics matching uint8_t.
+ *
+ * @code
+ * Byte a{0x10};
+ * Byte b{0x20};
+ * Byte sum = a + b;  // 0x30
+ * @endcode
+ *
+ * @see Word for 16-bit values
+ */
 class Byte {
  public:
   constexpr Byte() : value_(0x00) {}
@@ -81,7 +95,22 @@ class Byte {
   uint8_t value_;
 };
 
-// 16-bit word value (0x0000 - 0xFFFF)
+/**
+ * @brief Strongly-typed 16-bit value (0x0000 - 0xFFFF).
+ *
+ * Word provides type safety for 16-bit values, commonly used for
+ * memory addresses in the CPU. Can be constructed from two Byte values
+ * (high, low) and decomposed back via high() and low() accessors.
+ *
+ * @code
+ * Word addr{0x8000};           // Direct construction
+ * Word addr2{Byte{0x80}, Byte{0x00}};  // From high/low bytes
+ * Byte hi = addr.high();       // 0x80
+ * Byte lo = addr.low();        // 0x00
+ * @endcode
+ *
+ * @see Byte for 8-bit values
+ */
 class Word {
  public:
   constexpr Word() : value_(0x0000) {}
