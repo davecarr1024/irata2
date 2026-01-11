@@ -88,11 +88,12 @@ The sim module currently provides:
 - Core component types (controls, buses, registers, counters)
 - Controller with IR/SC and control assertion from microcode programs
 - Memory model with ROM/RAM mapping and MAR
+- `irata2_run` CLI for executing cartridges
+- End-to-end `.asm` test coverage (HLT/NOP/CRS) via `ctest`
 
 Future additions:
-- Memory access and fetch/decode wiring
-- Halt/crash termination semantics for integration tests
-- End-to-end `.asm` test runner integration (see [docs/plan.md](../docs/plan.md))
+- Expanded instruction coverage beyond HLT/NOP/CRS
+- Additional addressing modes and branching
 - Status register (SR) wiring for push/pop (planned)
 
 ## Design Note: Controller Instruction Memory

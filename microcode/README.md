@@ -30,7 +30,7 @@ This pattern is the model for IRATA2’s instruction memory and controller imple
 
 ## Overview
 
-The microcode module defines instruction behavior as sequences of control signal assertions. The current MVP focuses on the IR, fast-fail control lookup, and a minimal compiler pipeline. YAML codegen and ROM encoding are the next steps.
+The microcode module defines instruction behavior as sequences of control signal assertions. The current MVP focuses on the IR, fast-fail control lookup, and a minimal compiler pipeline. YAML codegen is implemented; ROM encoding is the next step.
 
 ## Design Goals
 
@@ -96,7 +96,7 @@ Path resolution happens when the generated C++ IR is instantiated using the `ir:
 
 ### Instruction Names
 
-Instructions are referenced by their **canonical ISA name** (e.g., `LDA_IMM`, `BEQ`). The microcode system looks up opcodes from the ISA module—opcodes are never specified in the microcode YAML. (This lookup is planned for the YAML generator.)
+Instructions are referenced by their **canonical ISA name** (e.g., `LDA_IMM`, `BEQ`). The generator maps names to ISA opcode enums (implied mode for the MVP), so opcodes are never specified in the microcode YAML. Addressing-mode-aware lookup is the next step.
 
 This maintains clear module boundaries:
 - **ISA module**: Owns instruction definitions, opcodes, addressing modes

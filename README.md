@@ -48,8 +48,9 @@ graph LR
 - `base` is implemented and provides `Byte`, `Word`, and `TickPhase`.
 - `hdl` is implemented with immutable components, buses, controls, and registers, including controller/IR/SC and halt/crash controls.
 - `isa` is reduced to the minimal MVP instruction set (HLT/NOP/CRS).
-- `microcode` has MVP IR + compiler passes/validators, plus control/status encoding into microcode programs; YAML codegen and ROM image emission are next.
-- `sim` implements runtime components with control assertion from compiled microcode programs; fetch/decode wiring and instruction execution are next.
+- `microcode` has MVP IR + compiler passes/validators, plus YAML codegen for HLT/NOP/CRS; ROM image emission is next.
+- `sim` runs the MVP instruction set end-to-end via microcode (HLT/NOP/CRS), including fetch/decode and halt/crash semantics.
+- `assembler` supports labels, `.org`, `.byte`, and implied-mode instructions; it emits a cartridge binary plus debug JSON for tests.
 
 See [docs/plan.md](docs/plan.md) for the vertical-slice roadmap.
 
@@ -64,7 +65,6 @@ See [docs/plan.md](docs/plan.md) for the vertical-slice roadmap.
 ## Roadmap Notes
 
 - The vertical slice plan targets end-to-end `.asm` integration tests; see `plan.md`.
-- The design doc references an assembler module; it is not yet present in this repo.
 
 ## Quick Start
 
@@ -119,5 +119,4 @@ cmake --build build
 
 - [docs/design.md](docs/design.md) - Detailed architecture and design decisions
 - [docs/plan.md](docs/plan.md) - Vertical slice roadmap
-- [docs/code-review.md](docs/code-review.md) - Code review report and fix plan
 - Module-specific documentation in each module's README

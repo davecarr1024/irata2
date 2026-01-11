@@ -8,6 +8,13 @@ This plan targets a fast end-to-end slice: `.asm` tests assemble to cartridges, 
 - Minimal, working CPU as quickly as possible; add features vertically after the slice works.
 - Clear module boundaries: ISA defines opcodes, microcode defines behavior, HDL defines structure, sim runs it.
 
+## Current Status (2026-01-11)
+
+- End-to-end `.asm` tests exist in `tests/` (HLT, NOP, CRS) and run via `ctest`.
+- `irata2_asm` assembles to a cartridge binary plus debug JSON.
+- `irata2_run` loads the cartridge and returns pass/fail based on HLT/CRS.
+- Microcode YAML codegen for the MVP instruction set is in place; ROM encoding remains next.
+
 ## Scope of the Vertical Slice
 
 - ISA: minimal `HLT`, `NOP`, `CRS` instruction set.
@@ -21,8 +28,10 @@ This plan targets a fast end-to-end slice: `.asm` tests assemble to cartridges, 
 
 ### Phase 0: Vertical Slice Harness
 
+Status: DONE (MVP)
+
 Deliverables:
-- `tests/` directory with `.asm` programs and metadata for expected outcomes.
+- `tests/` directory with `.asm` programs and expected outcomes encoded in test args.
 - Assembler CLI that outputs a cartridge binary + debug info.
 - Test runner (C++ or Python) that:
   - Discovers `.asm` files.
@@ -33,7 +42,7 @@ Deliverables:
 Notes:
 - Prefer adding CMake wiring so `ctest` discovers and runs these integration tests.
 - Keep the harness stable so it can be reused for later features.
-- Default `.org` is `0x8000` for all programs until directives are supported.
+- Default `.org` is `0x8000` for all programs; `.org` and `.byte` directives are supported.
 - Cartridge ROM image is `0x0000-0x7FFF` and is mapped to CPU `0x8000-0xFFFF` by the sim memory module.
 
 ### Phase 1: Microcode System Completion
@@ -64,6 +73,8 @@ Notes:
 
 ### Phase 3: Assembler MVP
 
+Status: DONE (MVP)
+
 Deliverables:
 - Assembler pipeline that:
   - Loads ISA definition.
@@ -75,6 +86,8 @@ Notes:
 - Start with implied-only instruction encoding (HLT/NOP/CRS), then extend addressing modes.
 
 ### Phase 4: Integration Tests
+
+Status: DONE (MVP)
 
 Deliverables:
 - `.asm` programs for positive halt paths and negative crash paths.
