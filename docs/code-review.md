@@ -399,11 +399,11 @@ private:
 
 #### Fix 8: Add Comprehensive Tests
 **Effort**: 2-3 hours
+**Status**: DONE
 **Files**:
-- `hdl/test/singleton_test.cpp` (new)
-- `hdl/test/control_info_test.cpp` (new)
-- `microcode/test/ir/cpu_path_resolver_test.cpp` (new)
-- `sim/test/phase_validation_test.cpp` (new)
+- `hdl/test/cpu_test.cpp` (expanded)
+- `microcode/test/cpu_path_resolver_test.cpp` (new)
+- `sim/test/control_test.cpp` (expanded)
 
 ---
 
@@ -415,7 +415,7 @@ private:
 | 2 | Fix 4 (CpuPathResolver) | 2-3 hours | Must Have (Completed) |
 | 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have (Completed) |
 | 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Completed) |
-| 5 | Fix 8 (Testing) | 2-3 hours | Must Have |
+| 5 | Fix 8 (Testing) | 2-3 hours | Must Have (Completed) |
 | **Total** | | **15-23 hours** | |
 
 ### Implementation Order
@@ -428,7 +428,7 @@ private:
 6. **Fixes 6-7** (Sim) - Independent of HDL changes
 7. **Fix 8** (Testing) - Throughout
 
-Completed to date: Fixes 1-7.
+Completed to date: Fixes 1-8.
 
 ---
 
