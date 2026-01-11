@@ -14,6 +14,7 @@ direction. Individual projects live in `docs/projects/`.
 ## Active Project Ideas
 
 - Debugging support in assembler + sim: see `docs/projects/debugging-support.md` (complete)
+- Logging improvements for sim debugging: see `docs/projects/logging-improvements.md`
 - ISA expansion in batches: see `docs/projects/isa-expansion.md`
 - Microcode debug visibility: see `docs/projects/microcode-debugging.md`
 - Microcode compiler improvements: see `docs/projects/microcode-compiler-improvements.md`
@@ -21,11 +22,15 @@ direction. Individual projects live in `docs/projects/`.
 
 ## Planned Project Order (Defensive)
 
+This ordering is intentionally conservative to maximize stability and reduce
+risk as the ISA grows.
+
 1. ~~Debugging support (assembler + sim)~~ - **Complete**.
-2. Microcode compiler improvements (validators, optimizers) to harden correctness early.
-3. Microcode debug visibility for control path transparency.
-4. Program tooling and cartridge inspection for safer workflows.
-5. ISA expansion in batches - **Deferred** until tooling supports safe vertical growth.
+2. Logging improvements for sim debugging (observability baseline).
+3. Microcode compiler improvements (validators, optimizers) to harden correctness early.
+4. Microcode debug visibility for control path transparency.
+5. Program tooling and cartridge inspection for safer workflows.
+6. ISA expansion in batches - **Deferred** until tooling supports safe vertical growth.
 
 ## Next Overall Steps
 
