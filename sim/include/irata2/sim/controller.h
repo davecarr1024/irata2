@@ -33,12 +33,13 @@ class Controller final : public ComponentWithParent {
 
  private:
   uint64_t LookupControlWord(uint8_t opcode, uint8_t step, uint8_t status) const;
+  void AssertControlWord(uint64_t control_word);
   uint8_t EncodeStatus() const;
 
   ByteRegister ir_;
   LocalCounter<base::Byte> sc_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> program_;
-  std::vector<ControlBase*> control_targets_;
+  std::vector<ControlBase*> control_lines_;
 };
 
 }  // namespace irata2::sim

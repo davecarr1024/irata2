@@ -36,8 +36,8 @@ void Controller::LoadProgram(
   }
 
   program_ = std::move(program);
-  control_targets_.clear();
-  control_targets_.reserve(program_->control_paths.size());
+  control_lines_.clear();
+  control_lines_.reserve(program_->control_paths.size());
 
   const auto& control_order = cpu().ControlOrder();
   if (control_order.size() != program_->control_paths.size()) {
@@ -50,7 +50,7 @@ void Controller::LoadProgram(
     if (control->path() != expected) {
       throw SimError("control path order mismatch: " + expected);
     }
-    control_targets_.push_back(const_cast<ControlBase*>(control));
+    control_lines_.push_back(const_cast<ControlBase*>(control));
   }
 }
 
@@ -85,6 +85,21 @@ uint64_t Controller::LookupControlWord(uint8_t opcode,
   return it->second;
 }
 
+void Controller::AssertControlWord(uint64_t control_word) {
+  if (control_lines_.size() < 64) {
+    const uint64_t overflow = control_word >> control_lines_.size();
+    if (overflow != 0) {
+      throw SimError("control word sets bits outside control table");
+    }
+  }
+
+  for (size_t i = 0; i < control_lines_.size(); ++i) {
+    if ((control_word >> i) & 1U) {
+      control_lines_[i]->Assert();
+    }
+  }
+}
+
 void Controller::TickControl() {
   if (!program_) {
     throw SimError("controller has no microcode program");
@@ -94,19 +109,7 @@ void Controller::TickControl() {
   const uint8_t step = sc_.value().value();
   const uint8_t status = EncodeStatus();
   const uint64_t control_word = LookupControlWord(opcode, step, status);
-
-  if (control_targets_.size() < 64) {
-    const uint64_t overflow = control_word >> control_targets_.size();
-    if (overflow != 0) {
-      throw SimError("control word sets bits outside control table");
-    }
-  }
-
-  for (size_t i = 0; i < control_targets_.size(); ++i) {
-    if ((control_word >> i) & 1U) {
-      control_targets_[i]->Assert();
-    }
-  }
+  AssertControlWord(control_word);
 }
 
 }  // namespace irata2::sim

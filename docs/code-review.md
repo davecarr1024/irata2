@@ -194,8 +194,10 @@ clearer, while still validating phase correctness and single-writer behavior.
 
 **Location**: [sim/include/irata2/sim/controller.h](sim/include/irata2/sim/controller.h)
 **Severity**: LOW
+**Status**: RESOLVED
 
-The controller uses a `control_targets_` map for control assertion, which works but could be more hardware-ish. Consider using the ROM-based approach described in design.md.
+The controller now stores control lines in HDL traversal order and asserts
+them directly from control words, matching the hardware-ish ROM model.
 
 ### Issue 8: Incomplete Status Register Wiring
 
