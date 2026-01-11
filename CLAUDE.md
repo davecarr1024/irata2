@@ -37,6 +37,7 @@ cmake --build build --parallel
 Notes:
 - Prefer parallel builds/tests by default.
 - Run build + tests before committing when practical.
+- After pushing commits, watch CI and report failures.
 
 ## Project Overview
 
