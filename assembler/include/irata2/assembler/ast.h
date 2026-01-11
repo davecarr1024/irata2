@@ -1,6 +1,7 @@
 #ifndef IRATA2_ASSEMBLER_AST_H
 #define IRATA2_ASSEMBLER_AST_H
 
+#include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>

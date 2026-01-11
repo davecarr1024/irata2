@@ -34,6 +34,9 @@ jobs:
       - name: Install Doxygen and Graphviz
         run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
 
+      - name: Create documentation output directory
+        run: mkdir -p build/docs
+
       - name: Generate Documentation
         run: doxygen docs/Doxyfile
 
