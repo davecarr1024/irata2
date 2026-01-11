@@ -185,8 +185,10 @@ mutable cache and lazy indexing logic were removed.
 
 **Location**: [sim/include/irata2/sim/bus.h](sim/include/irata2/sim/bus.h)
 **Severity**: LOW
+**Status**: RESOLVED
 
-The bus correctly validates phases and throws if reading before writing, but doesn't explicitly track that both operations happened in the same tick. Current implementation is correct but could be clearer.
+The bus now tracks writes per tick explicitly to make read-after-write intent
+clearer, while still validating phase correctness and single-writer behavior.
 
 ### Issue 7: Controller Control Targets Pattern
 

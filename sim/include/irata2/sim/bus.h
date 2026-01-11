@@ -33,18 +33,19 @@ class Bus : public ComponentWithParent {
     if (current_phase() != base::TickPhase::Write) {
       throw SimError("bus write outside write phase: " + path());
     }
-    if (!writer_path_.empty()) {
+    if (wrote_this_tick_) {
       throw SimError("bus already written: " + path());
     }
     value_ = value;
     writer_path_ = std::string(writer_path);
+    wrote_this_tick_ = true;
   }
 
   ValueType Read(std::string_view reader_path) const {
     if (current_phase() != base::TickPhase::Read) {
       throw SimError("bus read outside read phase: " + path());
     }
-    if (!value_) {
+    if (!wrote_this_tick_ || !value_) {
       throw SimError("bus read before write: " + std::string(reader_path));
     }
     return *value_;
@@ -53,11 +54,13 @@ class Bus : public ComponentWithParent {
   void TickClear() override {
     value_.reset();
     writer_path_.clear();
+    wrote_this_tick_ = false;
   }
 
  private:
   std::optional<ValueType> value_;
   std::string writer_path_;
+  bool wrote_this_tick_ = false;
 };
 
 }  // namespace irata2::sim
