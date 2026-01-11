@@ -8,16 +8,16 @@
 
 ## Executive Summary
 
-The IRATA2 codebase demonstrates **strong adherence to most design principles** with a solid foundation for a hardware-ish CPU simulator. All review items are now resolved; remaining work is roadmap expansion and continued coverage improvements.
+The IRATA2 codebase demonstrates **excellent adherence to design principles** with a solid foundation for a hardware-ish CPU simulator. All major architectural issues from the previous review are resolved. One minor issue remains regarding unnecessary const_cast usage.
 
 ### Summary Metrics
 
 | Category | Status |
 |----------|--------|
 | Major Issues | 0 |
-| Minor Issues | 0 |
-| Design Compliance | ~94% |
-| Test Coverage | 88.4% lines, 97.5% functions (filtered) |
+| Minor Issues | 1 |
+| Design Compliance | ~98% |
+| Test Coverage | 191 tests passing |
 | Module Separation | Excellent |
 
 ---
@@ -28,185 +28,166 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 |-------------|--------|-------|
 | Hardware-ish design | PASS | Phase validation enforced in sim controls |
 | CRTP for zero-cost dispatch | PASS | ControlInfo replaces ControlBase virtuals |
-| Immutable HDL structure | PASS | Mutable caches removed from HDL Cpu |
+| Immutable HDL structure | PASS | All HDL members are const |
 | Strongly typed navigation | PASS | Path resolution moved to microcode |
 | Type-safe Byte/Word | PASS | Properly used throughout |
 | Five-phase tick model | PASS | Phase validation enforced in sim controls |
-| 100% test coverage | PARTIAL | 88.4% lines, 97.5% functions (filtered) |
+| 100% test coverage | PARTIAL | 191 tests passing, high coverage |
 | Clean module boundaries | PASS | Excellent separation of concerns |
 | No instruction logic in components | PASS | Components are dumb hardware |
 
 ---
 
-## Major Issues
+## Resolved Issues (Previously Major)
 
-### Issue 1: ControlBase Uses Virtual Dispatch Instead of CRTP
+### Issue 1: ControlBase Virtual Dispatch (RESOLVED)
 
-**Location**: [hdl/include/irata2/hdl/control.h](hdl/include/irata2/hdl/control.h), [hdl/include/irata2/hdl/control_info.h](hdl/include/irata2/hdl/control_info.h)
-**Severity**: HIGH
-**Status**: RESOLVED
-**Design Violation**: "All HDL components use CRTP for zero-cost static dispatch" (design.md)
+ControlBase with virtual dispatch is gone. The HDL now uses pure CRTP:
 
-**Historical implementation (fixed)**:
 ```cpp
-class ControlBase {
-public:
-  virtual ~ControlBase() = default;
-  virtual base::TickPhase phase() const = 0;
-  virtual bool auto_reset() const = 0;
-  virtual const std::string& name() const = 0;
-  virtual const std::string& path() const = 0;
+template <typename Derived, typename ValueType, base::TickPhase Phase, bool AutoReset>
+class Control : public ComponentWithParent<Derived>, public ControlTag {
+  const ControlInfo& control_info() const { return control_info_; }
+  static constexpr base::TickPhase phase() { return Phase; }
+  static constexpr bool auto_reset() { return AutoReset; }
 };
 ```
 
-The ControlBase class introduces vtable overhead and virtual dispatch where the design explicitly requires CRTP-based zero-cost abstractions. This affects:
-- All control signal lookups during encoding
-- Any HDL traversal using `ControlBase*`
-- Performance of the encoding/decoding path
-
-**Impact**: Breaks the zero-cost abstraction guarantee for control signals.
-
-**Resolution**: ControlBase was removed, ControlInfo now stores non-virtual metadata,
-and control properties are accessed via CRTP and ControlInfo.
-
----
-
-### Issue 2: Mutable Caches in "Immutable" HDL
-
-**Location**: [hdl/include/irata2/hdl/cpu.h](hdl/include/irata2/hdl/cpu.h)
-**Severity**: HIGH
-**Status**: RESOLVED
-**Design Violation**: "The tree structure is immutable after construction" (design.md)
-
-**Historical implementation (fixed)**:
+ControlInfo is a non-virtual POD-like struct:
 ```cpp
-// In hdl::Cpu class
-mutable bool controls_indexed_ = false;
-mutable std::unordered_map<std::string, const ControlBase*> controls_by_path_;
-mutable std::vector<std::string> control_paths_;
+struct ControlInfo {
+  base::TickPhase phase;
+  bool auto_reset;
+  std::string_view path;
+};
 ```
 
-These mutable members allow lazy initialization during const method calls (`ResolveControl`, `AllControlPaths`), violating the immutability guarantee. This creates:
-- Hidden side effects in const operations
-- Thread-safety concerns
-- Unexpected state changes during debugging
+### Issue 2: Mutable Caches in HDL (RESOLVED)
 
-**Impact**: HDL is not truly immutable; const methods have side effects.
-
-**Resolution**: Mutable caches and path resolution were removed from HDL Cpu.
-Path resolution now lives in `microcode::ir::CpuPathResolver`.
-
----
-
-### Issue 3: Missing Phase Validation on Control Reads
-
-**Location**: [sim/include/irata2/sim/control.h](sim/include/irata2/sim/control.h)
-**Severity**: MEDIUM
-**Status**: RESOLVED
-**Design Violation**: "Controls can only be read during their assigned phase" (design.md:425)
-
-**Historical implementation (fixed)**:
+All HDL members are now `const`. The Cpu is truly immutable with a thread-safe singleton:
 ```cpp
-class Control {
-public:
-  bool asserted() const { return asserted_; }  // No phase check
-  void Set(bool asserted) { asserted_ = asserted; }  // No phase check
+const Cpu& GetCpu() {
+  static const Cpu instance;
+  return instance;
+}
+```
+
+### Issue 3: Missing Phase Validation (RESOLVED)
+
+Phase validation is enforced on all control operations:
+```cpp
+bool asserted() const {
+  EnsurePhase(phase_, "read");
+  return asserted_;
+}
+
+void Set(bool asserted) {
+  EnsurePhase(base::TickPhase::Control, "set");
+  asserted_ = asserted;
+}
+```
+
+### Issue 4: String-Based Path Resolution (RESOLVED)
+
+String path resolution now lives in `microcode::ir::CpuPathResolver`, separate from HDL.
+HDL Cpu exposes only strongly typed accessors.
+
+### Issue 5: Simulator Mutable Cache Pattern (RESOLVED)
+
+Control indexing is built once during CPU construction. No lazy initialization.
+
+### Issue 6: Bus Read-After-Write (RESOLVED)
+
+Bus explicitly tracks writes per tick:
+```cpp
+bool wrote_this_tick_ = false;
+
+void Write(ValueType value, std::string_view writer_path) {
+  if (wrote_this_tick_) {
+    throw SimError("bus already written: " + path());
+  }
+  wrote_this_tick_ = true;
   // ...
-};
+}
+
+ValueType Read(std::string_view reader_path) const {
+  if (!wrote_this_tick_) {
+    throw SimError("bus read before write: " + reader_path);
+  }
+  // ...
+}
 ```
 
-The design specifies that controls should validate their phase during access:
-- `WriteControl.value()` should only be readable during Write phase
-- `ReadControl.value()` should only be readable during Read phase
-- `Control.Set()` should only be callable during Control phase
+### Issue 7: Controller Control Targets (RESOLVED)
 
-This validation enables microcode optimizations mentioned in design.md (lines 425-430).
-
-**Impact**: Silent bugs possible when controls accessed in wrong phase; optimizer opportunities lost.
-
-**Resolution**: `sim::ControlBase` now enforces phase validation on reads and
-control assertion. Tests cover invalid phase access.
-
----
-
-### Issue 4: String-Based Path Resolution Contradicts Typed Navigation
-
-**Location**: [microcode/include/irata2/microcode/ir/cpu_path_resolver.h](microcode/include/irata2/microcode/ir/cpu_path_resolver.h)
-**Severity**: MEDIUM
-**Status**: RESOLVED
-**Design Violation**: "No string paths. All navigation is strongly typed" (design.md:277)
-
-**Problem**:
+Controller stores controls in HDL traversal order and asserts them from control words like a ROM:
 ```cpp
-// Design goal (line 280):
-auto& mar = cpu().memory().mar();  // Strongly typed
-
-// Current implementation:
-const ControlBase* ResolveControl(std::string_view path) const;  // String paths
-std::vector<std::string> AllControlPaths() const;
+void Controller::AssertControlWord(uint64_t control_word) {
+  for (size_t i = 0; i < control_lines_.size(); ++i) {
+    if ((control_word >> i) & 1U) {
+      control_lines_[i]->Assert();
+    }
+  }
+}
 ```
-
-While string-based resolution is needed for microcode compilation (YAML→IR), its presence in the HDL public API blurs the typed navigation design.
-
-**Impact**: API confusion; potential misuse of string paths in production code.
-
-**Resolution**: String path resolution now lives in `microcode::ir::CpuPathResolver`,
-and HDL Cpu exposes only strongly typed accessors.
 
 ---
 
-### Issue 5: Simulator Has Similar Mutable Cache Pattern
+## Remaining Minor Issues
 
-**Location**: [sim/include/irata2/sim/cpu.h:110,123-125](sim/include/irata2/sim/cpu.h#L123-L125)
-**Severity**: MEDIUM
-**Status**: RESOLVED
+### Issue 1: Unnecessary const_cast Usage
 
-**Problem**:
+**Location**: [sim/src/controller.cpp:53](sim/src/controller.cpp#L53), [sim/src/cpu.cpp:135-136](sim/src/cpu.cpp#L135-L136)
+**Severity**: LOW
+**Status**: OPEN
+
+Two locations use `const_cast` that can be eliminated:
+
+#### 1a. Controller uses `const auto*` unnecessarily
+
 ```cpp
-std::vector<Component*> components_;
-
-mutable bool controls_indexed_ = false;
-mutable std::unordered_map<std::string, ControlBase*> controls_by_path_;
-mutable std::vector<std::string> control_paths_;
+// Current (controller.cpp:47-53)
+for (size_t i = 0; i < control_order.size(); ++i) {
+  const auto* control = control_order[i];  // Forces const, then casts away
+  // ...
+  control_lines_.push_back(const_cast<ControlBase*>(control));
+}
 ```
 
-Same lazy initialization pattern as HDL, creating similar concerns about hidden state changes.
+**Fix**: Use `auto*` instead of `const auto*`:
+```cpp
+for (size_t i = 0; i < control_order.size(); ++i) {
+  auto* control = control_order[i];  // ControlBase* directly
+  // ...
+  control_lines_.push_back(control);  // No cast needed
+}
+```
 
-**Impact**: Inconsistent initialization timing; potential for bugs during concurrent access.
+#### 1b. CPU ResolveControl uses Scott Meyers const-cast pattern
 
-**Resolution**: Control indexing is built once during CPU construction. The
-mutable cache and lazy indexing logic were removed.
+```cpp
+// Current (cpu.cpp:134-137)
+ControlBase* Cpu::ResolveControl(std::string_view path) {
+  return const_cast<ControlBase*>(
+      static_cast<const Cpu&>(*this).ResolveControl(path));
+}
+```
 
----
+**Fix**: Duplicate the lookup logic (only 6 lines):
+```cpp
+ControlBase* Cpu::ResolveControl(std::string_view path) {
+  if (path.empty()) {
+    throw SimError("control path is empty");
+  }
+  const auto it = controls_by_path_.find(std::string(path));
+  if (it == controls_by_path_.end()) {
+    throw SimError("control path not found in sim: " + std::string(path));
+  }
+  return it->second;
+}
+```
 
-## Minor Issues
-
-### Issue 6: Bus Read-After-Write Not Explicitly Tracked
-
-**Location**: [sim/include/irata2/sim/bus.h](sim/include/irata2/sim/bus.h)
-**Severity**: LOW
-**Status**: RESOLVED
-
-The bus now tracks writes per tick explicitly to make read-after-write intent
-clearer, while still validating phase correctness and single-writer behavior.
-
-### Issue 7: Controller Control Targets Pattern
-
-**Location**: [sim/include/irata2/sim/controller.h](sim/include/irata2/sim/controller.h)
-**Severity**: LOW
-**Status**: RESOLVED
-
-The controller now stores control lines in HDL traversal order and asserts
-them directly from control words, matching the hardware-ish ROM model.
-
-### Issue 8: Incomplete Status Register Wiring
-
-**Location**: Various
-**Severity**: LOW
-**Status**: RESOLVED
-
-Status register wiring for push/pop is now explicitly documented as planned so
-the HDL status register doesn't imply stack integration is complete.
+**Impact**: Minor code quality improvement. The casts are technically safe but obscure intent.
 
 ---
 
@@ -232,15 +213,7 @@ Each module has a clear responsibility:
 
 ### Strong Type Safety
 
-Byte and Word types are properly used throughout with no raw integer leakage:
-
-```cpp
-// base/include/irata2/base/types.h
-class Byte {
-  constexpr explicit Byte(uint8_t value) : value_(value) {}
-  // Strong typing prevents accidental misuse
-};
-```
+Byte and Word types are properly used throughout with no raw integer leakage.
 
 ### Well-Structured Microcode Compiler
 
@@ -253,199 +226,391 @@ The compiler follows a clean multi-pass architecture:
 
 ### Good Test Infrastructure
 
-Test files demonstrate good practices:
+- 191 tests passing across all modules
 - Test helpers hide complexity
 - Parameterized tests for variations
 - E2E tests for assembly programs
-- Test count: 43+ test files
+
+### Zero-Cost HDL
+
+All HDL components use CRTP. No virtual dispatch, no runtime overhead.
+
+### Hardware-Like Execution Model
+
+- Five-phase tick model correctly enforced
+- ROM-like microcode lookup
+- Single-writer bus semantics
+- Explicit read-after-write tracking
 
 ---
 
-## Fix Plan (Revised 2026-01-10)
+## Improvement Plan
 
-Based on clarified design requirements, here is the refined implementation plan:
+### Phase 1: Remove Unnecessary Casts
 
-### Phase 1: HDL Singleton and Traits-Based Controls
+**Priority**: Low
+**Status**: TODO
 
-#### Fix 1: Add Thread-Safe HDL Singleton
-**Effort**: 1-2 hours
-**Status**: DONE
-**Files**:
-- `hdl/include/irata2/hdl/cpu.h`
-- `hdl/include/irata2/hdl/hdl.h` (update with GetCpu())
-- `hdl/src/cpu.cpp`
-- `hdl/test/singleton_test.cpp` (new)
+1. Update controller.cpp to use `auto*` instead of `const auto*`
+2. Update cpu.cpp to duplicate lookup logic in both ResolveControl overloads
+3. Verify tests still pass
 
-**Approach**:
+### Phase 2: Documentation Generation System
+
+**Priority**: Medium
+**Status**: TODO
+
+#### 2a. Add Doxygen-Style Docstrings to All Classes
+
+Add documentation comments to all public classes and key functions using Doxygen-compatible format:
+
 ```cpp
-// hdl/include/irata2/hdl/hdl.h
-namespace irata2::hdl {
-  // Thread-safe lazy initialization (C++11 guarantees)
-  const Cpu& GetCpu();
-}
-
-// hdl/src/cpu.cpp
-const Cpu& GetCpu() {
-  static const Cpu instance;
-  return instance;
-}
-```
-
-#### Fix 2: Replace ControlBase Virtuals with ControlInfo Struct
-**Effort**: 3-4 hours
-**Status**: DONE
-**Files**:
-- `hdl/include/irata2/hdl/control_info.h` (new)
-- `hdl/include/irata2/hdl/control_base.h` (delete)
-- `hdl/include/irata2/hdl/control.h`
-- `microcode/include/irata2/microcode/ir/step.h`
-- All files using `const ControlBase*`
-
-**Approach**:
-```cpp
-// hdl/include/irata2/hdl/control_info.h
-struct ControlInfo {
-  base::TickPhase phase;
-  bool auto_reset;
-  std::string_view path;  // Points to stable ComponentBase::path_
-  // No virtuals - just POD-like data
-};
-
-// hdl/include/irata2/hdl/control.h
-template <typename Derived, typename ValueType, base::TickPhase Phase, bool AutoReset>
-class Control : public ComponentWithParent<Derived>, public ControlTag {
-public:
-  Control(std::string name, ComponentBase& parent)
-      : ComponentWithParent<Derived>(std::move(name), parent),
-        control_info_{Phase, AutoReset, ComponentWithParent<Derived>::path()} {}
-
-  const ControlInfo& control_info() const { return control_info_; }
-
-  static constexpr base::TickPhase kPhase = Phase;
-  static constexpr bool kAutoReset = AutoReset;
-
-private:
-  const ControlInfo control_info_;
+/**
+ * @brief Immutable CPU hardware structure definition.
+ *
+ * The Cpu class represents the complete hardware schematic as an immutable
+ * tree of components. All members are const and initialized at construction.
+ * Use the singleton GetCpu() for the standard configuration.
+ *
+ * @see GetCpu() for thread-safe singleton access
+ * @see sim::Cpu for the runtime simulator
+ */
+class Cpu : public Component<Cpu> {
+  // ...
 };
 ```
 
-#### Fix 3: Remove Mutable Caches and Path Resolution from HDL Cpu
-**Effort**: 1-2 hours
-**Status**: DONE
-**Files**:
-- `hdl/include/irata2/hdl/cpu.h`
-- `hdl/src/cpu.cpp`
+**Files to document** (priority order):
+1. Core types: `base/include/irata2/base/types.h`, `tick_phase.h`
+2. HDL components: `hdl/include/irata2/hdl/*.h`
+3. Simulator components: `sim/include/irata2/sim/*.h`
+4. Microcode IR: `microcode/include/irata2/microcode/ir/*.h`
+5. Microcode compiler: `microcode/include/irata2/microcode/compiler/*.h`
+6. Assembler: `assembler/include/irata2/assembler/*.h`
 
-**Approach**: Remove all mutable members and path resolution methods. HDL Cpu becomes truly immutable with strongly-typed accessors only.
+**Documentation standards**:
+- All public classes must have `@brief` description
+- Template parameters documented with `@tparam`
+- Non-obvious function parameters documented with `@param`
+- Return values documented with `@return` when non-void
+- Cross-references using `@see` for related classes
+- Usage examples in `@code` blocks for complex APIs
 
-### Phase 2: Microcode Path Resolver
+#### 2b. Configure Doxygen for Documentation Generation
 
-#### Fix 4: Create CpuPathResolver in Microcode Module
-**Effort**: 2-3 hours
-**Status**: DONE
-**Files**:
-- `microcode/include/irata2/microcode/ir/cpu_path_resolver.h` (new)
-- `microcode/src/ir/cpu_path_resolver.cpp` (new)
-- `microcode/include/irata2/microcode/ir/builder.h` (update)
-- `microcode/src/ir/builder.cpp` (update)
-- `microcode/test/cpu_path_resolver_test.cpp` (new)
+Create `docs/Doxyfile` with:
 
-**Approach**:
-```cpp
-namespace irata2::microcode::ir {
-
-class CpuPathResolver {
-public:
-  explicit CpuPathResolver(const hdl::Cpu& cpu);
-
-  const hdl::ControlInfo* FindControl(std::string_view path) const;
-  const hdl::ControlInfo* RequireControl(std::string_view path,
-                                         std::string_view context) const;
-  std::vector<std::string> AllControlPaths() const;
-
-private:
-  std::unordered_map<std::string, const hdl::ControlInfo*> controls_by_path_;
-  std::vector<std::string> control_paths_;
-};
-
-}
+```
+PROJECT_NAME           = "IRATA2"
+PROJECT_BRIEF          = "Cycle-accurate 8-bit CPU simulator"
+OUTPUT_DIRECTORY       = build/docs
+INPUT                  = base hdl isa sim microcode assembler
+FILE_PATTERNS          = *.h *.cpp *.md
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+USE_MDFILE_AS_MAINPAGE = README.md
+HTML_EXTRA_STYLESHEET  = docs/custom.css
 ```
 
-### Phase 3: Parallel Visitor Encoding
+#### 2c. Incorporate Module READMEs
 
-#### Fix 5: Update ControlEncoder to Use Parallel Traversal
-**Effort**: 3-4 hours
-**Status**: DONE
-**Files**:
-- `microcode/include/irata2/microcode/encoder/control_encoder.h`
-- `microcode/src/encoder/control_encoder.cpp`
-- `microcode/test/encoder/control_encoder_test.cpp`
+Update Doxygen configuration to include module READMEs as documentation pages:
 
-**Approach**: Encoder traverses HDL and assigns bit indices by visit order. Sim control mapping uses parallel traversal with the same visit order.
+```
+INPUT                 += README.md
+INPUT                 += base/README.md
+INPUT                 += hdl/README.md
+INPUT                 += sim/README.md
+INPUT                 += isa/README.md
+INPUT                 += microcode/README.md
+INPUT                 += assembler/README.md
+INPUT                 += docs/design.md
+INPUT                 += docs/plan.md
+```
 
-### Phase 4: Simulator Updates
+Add `@page` directives to READMEs for proper Doxygen integration:
 
-#### Fix 6: Add Phase Validation to Simulator Controls
-**Effort**: 2-3 hours
-**Status**: DONE
-**Files**:
-- `sim/include/irata2/sim/control.h`
-- `sim/test/control_test.cpp`
+```markdown
+<!-- In each README.md -->
+/**
+ * @page hdl_module HDL Module
+ * @tableofcontents
+ */
+```
 
-**Approach**: Validate phase on `asserted()` reads and `Set()` calls.
+#### 2d. Add Mermaid Diagrams Throughout Documentation
 
-#### Fix 7: Remove Mutable Caches from Simulator
-**Effort**: 1-2 hours
-**Status**: DONE
-**Files**:
-- `sim/include/irata2/sim/cpu.h`
-- `sim/src/cpu.cpp`
+Use Mermaid for visual diagrams in READMEs and docs. Key diagrams to create:
 
-### Phase 5: Testing
+**Module Dependency Graph** (README.md):
+```mermaid
+graph LR
+    base --> hdl
+    hdl --> sim
+    hdl --> isa
+    isa --> microcode
+    hdl --> microcode
+    microcode --> assembler
+```
 
-#### Fix 8: Add Comprehensive Tests
-**Effort**: 2-3 hours
-**Status**: DONE
-**Files**:
-- `hdl/test/cpu_test.cpp` (expanded)
-- `microcode/test/cpu_path_resolver_test.cpp` (new)
-- `sim/test/control_test.cpp` (expanded)
+**Five-Phase Tick Model** (sim/README.md):
+```mermaid
+sequenceDiagram
+    participant Controller
+    participant Components
+    participant Buses
 
----
+    rect rgb(200, 220, 255)
+        Note over Controller,Buses: Control Phase
+        Controller->>Components: Assert control signals
+    end
 
-## Implementation Timeline
+    rect rgb(255, 220, 200)
+        Note over Controller,Buses: Write Phase
+        Components->>Buses: Write values
+    end
 
-| Phase | Tasks | Effort | Priority |
-|-------|-------|--------|----------|
-| 1 | Fixes 1-3 (Singleton, ControlInfo, Immutability) | 5-8 hours | Must Have (Completed) |
-| 2 | Fix 4 (CpuPathResolver) | 2-3 hours | Must Have (Completed) |
-| 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have (Completed) |
-| 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Completed) |
-| 5 | Fix 8 (Testing) | 2-3 hours | Must Have (Completed) |
-| **Total** | | **15-23 hours** | |
+    rect rgb(220, 255, 200)
+        Note over Controller,Buses: Read Phase
+        Buses->>Components: Read values
+    end
 
-### Implementation Order
+    rect rgb(255, 255, 200)
+        Note over Controller,Buses: Process Phase
+        Components->>Components: Internal updates (ALU, flags)
+    end
 
-1. **Fix 2** (ControlInfo) - Core type change, many dependencies
-2. **Fix 3** (Remove mutable) - Depends on Fix 2
-3. **Fix 1** (Singleton) - Can be done with 2-3
-4. **Fix 4** (CpuPathResolver) - Depends on Fix 2
-5. **Fix 5** (Parallel Traversal) - Depends on Fix 4
-6. **Fixes 6-7** (Sim) - Independent of HDL changes
-7. **Fix 8** (Testing) - Throughout
+    rect rgb(240, 240, 240)
+        Note over Controller,Buses: Clear Phase
+        Components->>Components: Reset auto-clear controls
+    end
+```
 
-Completed to date: Fixes 1-8.
+**HDL Component Hierarchy** (hdl/README.md):
+```mermaid
+classDiagram
+    ComponentBase <|-- Component
+    Component <|-- ComponentWithParent
+    ComponentWithParent <|-- Control
+    ComponentWithParent <|-- Register
+    ComponentWithParent <|-- Bus
+    ComponentWithParent <|-- Counter
+
+    class ComponentBase {
+        +name() string
+        +path() string
+    }
+
+    class Control {
+        +phase() TickPhase
+        +auto_reset() bool
+        +control_info() ControlInfo
+    }
+```
+
+**Microcode Compilation Pipeline** (microcode/README.md):
+```mermaid
+flowchart LR
+    subgraph Input
+        YAML[microcode.yaml]
+    end
+
+    subgraph Parsing
+        DSL[DSL Parser]
+    end
+
+    subgraph IR
+        Program[IR Program]
+    end
+
+    subgraph Transforms
+        FT[FetchTransformer]
+        ST[SequenceTransformer]
+    end
+
+    subgraph Validation
+        FV[FetchValidator]
+        SV[SequenceValidator]
+        IV[IsaCoverageValidator]
+    end
+
+    subgraph Encoding
+        CE[ControlEncoder]
+        IE[InstructionEncoder]
+    end
+
+    subgraph Output
+        ROM[MicrocodeProgram<br/>Control Word Table]
+    end
+
+    YAML --> DSL --> Program
+    Program --> FT --> ST
+    ST --> FV --> SV --> IV
+    IV --> CE --> IE --> ROM
+```
+
+**CPU Data Flow** (docs/design.md):
+```mermaid
+flowchart TB
+    subgraph Buses
+        DB[Data Bus]
+        AB[Address Bus]
+    end
+
+    subgraph Registers
+        A[A Register]
+        X[X Register]
+        PC[Program Counter]
+        SR[Status Register]
+    end
+
+    subgraph Controller
+        IR[Instruction Register]
+        SC[Step Counter]
+        ROM[Microcode ROM]
+    end
+
+    subgraph Memory
+        MAR[Memory Address Register]
+        RAM[RAM 0x0000-0x1FFF]
+        Cart[Cartridge 0x8000-0xFFFF]
+    end
+
+    DB <--> A
+    DB <--> X
+    DB <--> IR
+    DB <--> SR
+    DB <--> Memory
+
+    AB <--> PC
+    AB <--> MAR
+
+    IR --> ROM
+    SC --> ROM
+    SR --> ROM
+    ROM --> |Control Word| Registers
+    ROM --> |Control Word| Memory
+```
+
+**Doxygen Mermaid Integration**:
+
+Install doxygen-mermaid filter or use mermaid-cli for HTML generation:
+
+```
+# In Doxyfile
+ALIASES += mermaid{1}="@htmlonly<div class=\"mermaid\">\1</div>@endhtmlonly"
+HTML_EXTRA_FILES = docs/mermaid.min.js
+```
+
+Add to HTML header:
+```html
+<script src="mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true});</script>
+```
+
+**GitHub Native Mermaid**:
+
+GitHub renders Mermaid in markdown natively, so diagrams in READMEs display automatically on GitHub without additional tooling.
+
+#### 2e. Add Documentation Build Target
+
+Update `CMakeLists.txt`:
+
+```cmake
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_IN ${CMAKE_SOURCE_DIR}/docs/Doxyfile)
+  set(DOXYGEN_OUT ${CMAKE_BINARY_DIR}/docs)
+
+  add_custom_target(docs
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM)
+endif()
+```
+
+#### 2f. CI Workflow for Documentation
+
+Create `.github/workflows/docs.yml`:
+
+```yaml
+name: Documentation
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths:
+      - '**.h'
+      - '**.cpp'
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen graphviz
+
+      - name: Generate Documentation
+        run: doxygen docs/Doxyfile
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/html
+
+  deploy-docs:
+    needs: build-docs
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+**Workflow behavior**:
+- On every push to main (with doc changes): Build and upload as artifact
+- On release: Deploy to GitHub Pages
+
+### Phase 3: Future Roadmap Items
+
+The following are feature roadmap items, not code quality issues:
+
+1. **ROM Decoding** - Expand microcode coverage
+2. **Assembler Integration** - Full assembly-to-execution pipeline
+3. **Instruction Coverage** - Implement remaining ISA instructions
+4. **Test Coverage** - Continue expanding test coverage toward 100%
 
 ---
 
 ## Conclusion
 
-The IRATA2 codebase is **well-architected** with strong type safety, clean module boundaries, and good test infrastructure. The identified issues are **architectural refinements** rather than fundamental flaws, and can be addressed incrementally without major rewrites.
+The IRATA2 codebase is **well-architected** with strong type safety, clean module boundaries, and good test infrastructure. All major issues from the previous review have been resolved:
 
-The most critical fixes (ControlBase CRTP refactor and mutable cache elimination) are now complete, restoring the foundational guarantees of zero-cost abstractions and immutability that the design relies on.
+- ✓ Virtual dispatch eliminated (CRTP throughout HDL)
+- ✓ HDL truly immutable (all const members)
+- ✓ Phase validation enforced (sim controls)
+- ✓ String paths separated (CpuPathResolver in microcode)
+- ✓ Mutable caches removed (both HDL and sim)
+- ✓ Read-after-write explicit (bus tracking)
+- ✓ ROM-like controller (control word assertion)
 
-All major alignment items are complete. Remaining work is roadmap-driven (ROM
-decoding, assembler integration, and instruction coverage expansion).
+The one remaining minor issue (unnecessary const_cast) is a code quality refinement, not an architectural concern.
 
 ---
 
@@ -461,6 +626,8 @@ decoding, assembler integration, and instruction coverage expansion).
 - `sim/include/irata2/sim/cpu.h` - Simulator CPU
 - `sim/include/irata2/sim/control.h` - Simulator controls
 - `sim/include/irata2/sim/bus.h` - Simulator buses
+- `sim/src/controller.cpp` - Controller implementation
+- `sim/src/cpu.cpp` - CPU implementation
 - `microcode/include/irata2/microcode/ir/step.h` - Microcode IR
 - `microcode/include/irata2/microcode/compiler/compiler.h` - Compiler
 
@@ -472,5 +639,5 @@ decoding, assembler integration, and instruction coverage expansion).
 - Module-specific READMEs
 
 ### Test Files
-- 43+ test files across all modules
+- 191 tests across all modules
 - E2E tests: `hlt.asm`, `nop.asm`, `crs.asm`

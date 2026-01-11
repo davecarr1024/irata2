@@ -45,12 +45,12 @@ void Controller::LoadProgram(
   }
 
   for (size_t i = 0; i < control_order.size(); ++i) {
-    const auto* control = control_order[i];
+    auto* control = control_order[i];
     const auto& expected = program_->control_paths[i];
     if (control->path() != expected) {
       throw SimError("control path order mismatch: " + expected);
     }
-    control_lines_.push_back(const_cast<ControlBase*>(control));
+    control_lines_.push_back(control);
   }
 }
 

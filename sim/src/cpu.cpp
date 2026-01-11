@@ -132,8 +132,14 @@ void Cpu::BuildControlIndex() {
 }
 
 ControlBase* Cpu::ResolveControl(std::string_view path) {
-  return const_cast<ControlBase*>(
-      static_cast<const Cpu&>(*this).ResolveControl(path));
+  if (path.empty()) {
+    throw SimError("control path is empty");
+  }
+  const auto it = controls_by_path_.find(std::string(path));
+  if (it == controls_by_path_.end()) {
+    throw SimError("control path not found in sim: " + std::string(path));
+  }
+  return it->second;
 }
 
 const ControlBase* Cpu::ResolveControl(std::string_view path) const {
