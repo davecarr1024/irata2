@@ -4,6 +4,8 @@
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
 
+#include <cstdint>
+
 namespace irata2::sim {
 
 class StatusRegister;
