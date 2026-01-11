@@ -17,6 +17,8 @@ ctest --test-dir build --output-on-failure -j 8
 ./build/hdl/test/hdl_tests
 ./build/sim/test/sim_tests
 ./build/isa/test/isa_tests
+./build/microcode/test/microcode_tests
+./build/assembler/test/assembler_tests
 
 # Run specific test by filter
 ./build/base/test/base_tests --gtest_filter="ByteTest.*"
@@ -34,6 +36,23 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build --parallel
 ```
 
+### Makefile Shortcuts
+
+```bash
+make configure  # Configure cmake with tests
+make build      # Build all targets
+make test       # Run all tests
+make coverage   # Build + test + generate coverage report
+make clean      # Remove build directory
+```
+
+### Git Hooks
+
+Enable pre-commit testing:
+```bash
+git config core.hooksPath .githooks
+```
+
 Notes:
 - Prefer parallel builds/tests by default.
 - Run build + tests before committing when practical.
@@ -45,11 +64,11 @@ IRATA2 is a cycle-accurate 8-bit CPU simulator in C++20. The goal is a "hardware
 
 ## Module Architecture
 
-Modules build in dependency order:
+Modules build in dependency order (managed by CMake):
 
 ```
-base → hdl → isa → sim → microcode
-         └────────────────┘
+base → hdl → isa → sim → microcode → assembler
+         └─────────────────────────────┘
 ```
 
 | Module | Purpose |
@@ -58,7 +77,8 @@ base → hdl → isa → sim → microcode
 | `hdl` | Immutable CPU structure (schematic, no runtime state) |
 | `isa` | YAML-defined instruction set, generates C++ via Python |
 | `sim` | Runtime simulator with mutable state and tick orchestration |
-| `microcode` | DSL, IR, compiler, encoder (placeholder) |
+| `microcode` | IR, compiler passes, validators, encoders for control sequences |
+| `assembler` | Assembly language compiler, outputs cartridge ROM + debug JSON |
 
 ## Key Design Patterns
 
@@ -125,3 +145,106 @@ HDL components follow this pattern:
 Adding instructions:
 1. Edit `isa/instructions.yaml`
 2. Rebuild - code generation runs automatically
+
+## Documentation
+
+- [docs/design.md](docs/design.md) - Full architecture and design philosophy
+- [docs/plan.md](docs/plan.md) - Project roadmap and next steps
+- [docs/projects/](docs/projects/) - Individual project designs:
+  - `debugging-support.md` - Assembler + sim diagnostics
+  - `isa-expansion.md` - Adding new instructions
+  - `microcode-debugging.md` - Control path visibility
+  - `microcode-compiler-improvements.md` - Compiler enhancements
+  - `cartridge-tools.md` - Program tooling
+- Module READMEs in each module directory
+
+### Doxygen
+
+Generate API documentation:
+```bash
+cmake --build build --target docs
+# Output: build/docs/html/index.html
+```
+
+## Independent Development Workflow
+
+When working autonomously on this project, follow this cycle for each unit of work:
+
+### 1. Plan the Work
+
+- Check `docs/plan.md` for current priorities and project order
+- Check `docs/projects/` for detailed project designs
+- Check `docs/code-review.md` and `docs/project-plan-alignment.md` for outstanding items
+- Break work into small, independent steps (each step = one commit)
+
+### 2. Implement Each Step
+
+For each step:
+
+```bash
+# 1. Make changes (code, tests, docs)
+# 2. Build and test locally
+make test
+
+# 3. Check coverage if adding new code
+make coverage
+# Review: build/coverage/html/index.html
+
+# 4. Commit with descriptive message
+git add -A
+git commit -m "Brief description of change"
+
+# 5. Push and monitor CI
+git push
+# Watch GitHub Actions for failures
+```
+
+### 3. Quality Gates
+
+Before considering a step complete:
+
+- [ ] All tests pass locally (`make test`)
+- [ ] No new compiler warnings
+- [ ] New code has test coverage
+- [ ] CI passes after push
+- [ ] Documentation updated if behavior changed
+
+### 4. Update Planning Docs
+
+After completing a project or milestone:
+
+- Update `docs/plan.md` with new status
+- Update `docs/project-plan-alignment.md` if applicable
+- Mark completed items in `docs/projects/*.md`
+
+### Step Size Guidelines
+
+**Good step size** (one commit each):
+- Add one new test file
+- Implement one new class/function with tests
+- Fix one bug with regression test
+- Update one documentation file
+- Add one new instruction to ISA + microcode + test
+
+**Too large** (break into smaller steps):
+- Implement entire new feature at once
+- Multiple unrelated changes in one commit
+- Large refactoring without incremental tests
+
+### Recovery from CI Failures
+
+If CI fails after push:
+
+1. Read the CI log to identify the failure
+2. Fix locally and verify with `make test`
+3. Commit the fix with message referencing the issue
+4. Push and verify CI passes
+
+### Current Project Priorities
+
+See `docs/plan.md` for the authoritative list. General order:
+
+1. **Debugging support** - Complete remaining test harness work
+2. **ISA expansion** - Add ALU instructions in batches
+3. **Microcode improvements** - Add validators as ISA grows
+4. **Tooling** - As needed for debugging complex issues
