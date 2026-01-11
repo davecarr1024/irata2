@@ -203,8 +203,10 @@ them directly from control words, matching the hardware-ish ROM model.
 
 **Location**: Various
 **Severity**: LOW
+**Status**: RESOLVED
 
-Status register exists in HDL with 6502-style flags, but full bus connectivity for push/pop operations is documented as "planned" in READMEs. This is expected for MVP but should be tracked.
+Status register wiring for push/pop is now explicitly documented as planned so
+the HDL status register doesn't imply stack integration is complete.
 
 ---
 

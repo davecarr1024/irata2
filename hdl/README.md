@@ -146,8 +146,9 @@ class Cpu final : public Component<Cpu> {
 
 ### Status Register (SR)
 
-The status register is bus-connected for push/pop and exposes named status
-signals as views into specific bits. The 6502-style bit layout is used:
+The status register is bus-connected in HDL and exposes named status signals as
+views into specific bits. Push/pop wiring is planned in the simulator. The
+6502-style bit layout is used:
 
 ```
 bit:  7   6   5   4   3   2   1   0

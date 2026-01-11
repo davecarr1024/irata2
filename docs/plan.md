@@ -55,7 +55,7 @@ Deliverables:
 - Controller component that fetches/decodes instruction bytes using IR + SC.
 - Microcode ROM decoding and control assertion each tick.
 - Memory model with MAR + read/write controls sufficient for fetch/decode.
-- Status register (SR) with 6502-style flags, bus-connected for push/pop.
+- Status register (SR) with 6502-style flags; push/pop wiring is planned.
 - Halt/crash signals terminate execution.
 
 Notes:
