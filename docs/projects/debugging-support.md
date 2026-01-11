@@ -39,8 +39,8 @@ happened.
 - Use `.include` as the canonical source-include directive for future work.
 
 **Milestones**
-- M0: JSON schema defined + validator + tests (Python checker in CI).
-- M1: Assembler emits JSON for existing ASM tests (versioned).
+- M0: JSON schema defined + validator + tests (Python checker in CI). ✅
+- M1: Assembler emits JSON for existing ASM tests (versioned). ✅
 
 #### 2) Simulator Debug Loader
 **Scope**
@@ -48,8 +48,8 @@ happened.
 - Provide a lookup API: address -> source, symbol -> address.
 
 **Milestones**
-- M0: Loader validates schema + errors gracefully.
-- M1: PC -> file/line lookup for current instruction.
+- M0: Loader validates schema + errors gracefully. ✅
+- M1: PC -> file/line lookup for current instruction. ✅
 
 #### PC-to-Source Mapping Timing (Design Notes)
 **Problem**
@@ -178,8 +178,8 @@ sequenceDiagram
 - Current bus values if meaningful to end users.
 
 **Milestones**
-- M0: Basic register/flag dump on failure (debug mode only).
-- M1: Source location + symbol context in failure output.
+- M0: Basic register/flag dump on failure (debug mode only). ✅
+- M1: Source location + symbol context in failure output. ✅
 
 #### 4) Trace Buffer (Rotating History)
 **Scope**
@@ -187,8 +187,8 @@ sequenceDiagram
 - Emit trace on failure.
 
 **Milestones**
-- M0: Store last N PC/IR + minimal state.
-- M1: Include symbolized source locations in trace.
+- M0: Store last N PC/IR + minimal state. ✅
+- M1: Include symbolized source locations in trace. ✅
 
 #### 5) Test Harness Integration
 **Scope**
@@ -196,8 +196,8 @@ sequenceDiagram
 - Improve test output formatting for CI logs.
 
 **Milestones**
-- M0: `irata2_run` accepts `--debug` flag for sidecar.
-- M1: Tests assert debug output presence on failure paths (debug mode).
+- M0: `irata2_run` accepts `--debug` flag for sidecar. ✅
+- M1: Tests assert debug output presence on failure paths (debug mode). ✅
 
 1. **Assembler debug output**
    - Emit a sidecar debug file with:
@@ -226,10 +226,10 @@ sequenceDiagram
 
 ## Milestones
 
-- M0: Assembler emits a debug sidecar file.
-- M1: Sim loads debug info and maps PC -> source line.
-- M2: Failures print symbolized state + trace buffer.
+- M0: Assembler emits a debug sidecar file. ✅
+- M1: Sim loads debug info and maps PC -> source line. ✅
+- M2: Failures print symbolized state + trace buffer. ✅
 
 ## Open Questions
 
-- None yet.
+- None.
