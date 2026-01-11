@@ -59,6 +59,7 @@ jobs:
         name: coverage-report
         path: build/coverage/html/
         retention-days: 30
+        if-no-files-found: ignore
 
   build-release:
     runs-on: ubuntu-latest
