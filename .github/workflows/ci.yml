@@ -46,14 +46,13 @@ jobs:
       continue-on-error: true
 
     - name: Upload coverage to Codecov
-      if: ${{ secrets.CODECOV_TOKEN != '' }}
       uses: codecov/codecov-action@v4
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
         files: ./build/coverage/coverage_filtered.info
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+      continue-on-error: true
 
     - name: Upload coverage HTML report
       uses: actions/upload-artifact@v4
