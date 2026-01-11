@@ -6,7 +6,8 @@
 namespace {
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
-            << " [--expect-crash] [--max-cycles N] <cartridge.bin>\n";
+            << " [--expect-crash] [--max-cycles N] [--debug debug.json]"
+            << " <cartridge.bin>\n";
 }
 }  // namespace
 
@@ -18,6 +19,7 @@ int main(int argc, char** argv) {
 
   bool expect_crash = false;
   int64_t max_cycles = -1;
+  std::string debug_path;
   std::string cartridge_path;
 
   for (int i = 1; i < argc; ++i) {
@@ -32,6 +34,14 @@ int main(int argc, char** argv) {
         return 1;
       }
       max_cycles = std::stoll(argv[++i]);
+      continue;
+    }
+    if (arg == "--debug") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      debug_path = argv[++i];
       continue;
     }
     if (cartridge_path.empty()) {
@@ -58,6 +68,9 @@ int main(int argc, char** argv) {
     cpu.pc().set_value(cartridge.header.entry);
     cpu.controller().sc().set_value(irata2::base::Byte{0});
     cpu.controller().ir().set_value(cpu.memory().ReadAt(cartridge.header.entry));
+    if (!debug_path.empty()) {
+      cpu.LoadDebugSymbols(irata2::sim::LoadDebugSymbols(debug_path));
+    }
 
     irata2::sim::Cpu::RunResult result;
     if (max_cycles < 0) {

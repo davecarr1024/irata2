@@ -8,12 +8,14 @@ add_library(irata2_sim
   src/alu.cpp
   src/cartridge.cpp
   src/cpu.cpp
+  src/cpu_debug_symbols.cpp
   src/controller.cpp
   src/initialization.cpp
   src/memory/memory.cpp
   src/memory/memory_address_register.cpp
   src/memory/module.cpp
   src/memory/region.cpp
+  src/debug_symbols.cpp
   src/status.cpp
 )
 add_library(irata2::sim ALIAS irata2_sim)

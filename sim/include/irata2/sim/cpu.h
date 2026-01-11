@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -18,6 +19,7 @@
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller.h"
 #include "irata2/sim/counter.h"
+#include "irata2/sim/debug_symbols.h"
 #include "irata2/sim/memory/memory.h"
 #include "irata2/sim/memory/module.h"
 #include "irata2/sim/memory/region.h"
@@ -109,6 +111,9 @@ class Cpu : public Component {
     return *microcode_;
   }
 
+  void LoadDebugSymbols(DebugSymbols symbols);
+  const DebugSymbols* debug_symbols() const;
+
   ProcessControl<true>& halt() { return halt_control_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
   ProcessControl<true>& crash() { return crash_control_; }
@@ -156,6 +161,7 @@ class Cpu : public Component {
   uint64_t cycle_count_ = 0;
 
   std::vector<Component*> components_;
+  std::optional<DebugSymbols> debug_symbols_;
 
   ProcessControl<true> halt_control_;
   ProcessControl<true> crash_control_;
