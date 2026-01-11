@@ -69,10 +69,12 @@ happened.
   to operand bytes or the next instruction.
 - Debug/tracing uses IPC (preferred), falling back to PC only when IPC is
   unavailable (bootstrap, reset, or non-instruction cycles).
+- Because the microcode validators enforce a uniform fetch preamble, IPC can
+  be latched there without per-instruction special cases.
 
 **Control implications**
-- Add a control line `ipc_write` (auto-reset) that latches PC into IPC.
-- Assert `ipc_write` only in the fetch stage that writes IR (SC == 0).
+- Add a control line `ipc_latch` (auto-reset) that latches PC into IPC.
+- Assert `ipc_latch` in the first fetch preamble step (PC -> address bus).
 - This guarantees the latched address corresponds to the opcode byte that
   defines the instruction and is stable through the entire microcode sequence.
 - IPC update does not interfere with PC increment or decode timing.
@@ -88,6 +90,25 @@ happened.
 - Round down PC by operand width during execution. This is fragile because it
   depends on knowing the current instruction's addressing mode and does not
   handle implied/increment side effects cleanly.
+
+**Other potential solutions**
+- **IR-based lookup:** Use the opcode in IR plus the last fetched PC (or a
+  decoder-maintained "current opcode address") to map to source. This still
+  needs a stable opcode address source, but could be implemented as a pure
+  sim-level model without extra HDL signals.
+- **PC history FIFO:** Track a tiny FIFO of recent PCs during fetch. The active
+  instruction picks the oldest entry in the FIFO until SC resets. This is a
+  lighter-weight hardware-ish alternative to a dedicated IPC register.
+- **Microcode-provided instruction start:** Extend microcode to emit a control
+  that tags the "instruction start" cycle. This moves the decision into the
+  control ROM but risks divergence if microcode changes or is optimized.
+- **Decode-stage capture in sim only:** In the simulator, capture the PC when
+  IR is written (SC == 0), and hold it in a sim-only field. This yields the
+  same behavior as IPC without HDL changes, but sim/HDL divergence is a risk.
+- **Sidecar execution map:** Emit a contiguous map of ROM offset -> source
+  line, and use the opcode fetch address derived from bus activity (if
+  observable) to index the map. This relies on being able to detect the opcode
+  fetch cycle from the outside.
 
 **Timing diagrams**
 
