@@ -20,6 +20,7 @@
 #include "irata2/sim/controller.h"
 #include "irata2/sim/counter.h"
 #include "irata2/sim/debug_symbols.h"
+#include "irata2/sim/debug_trace.h"
 #include "irata2/sim/memory/memory.h"
 #include "irata2/sim/memory/module.h"
 #include "irata2/sim/memory/region.h"
@@ -113,6 +114,17 @@ class Cpu : public Component {
 
   void LoadDebugSymbols(DebugSymbols symbols);
   const DebugSymbols* debug_symbols() const;
+  void EnableTrace(size_t depth);
+  bool trace_enabled() const { return trace_.enabled(); }
+  size_t trace_depth() const { return trace_.depth(); }
+  std::vector<DebugTraceEntry> trace_entries() const { return trace_.entries(); }
+
+  base::Word instruction_address() const;
+  std::optional<SourceLocation> instruction_source_location() const;
+
+  // For tests: control whether IPC is considered valid.
+  void SetIpcForTest(base::Word address);
+  void ClearIpcForTest();
 
   ProcessControl<true>& halt() { return halt_control_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
@@ -162,6 +174,8 @@ class Cpu : public Component {
 
   std::vector<Component*> components_;
   std::optional<DebugSymbols> debug_symbols_;
+  DebugTraceBuffer trace_;
+  bool ipc_valid_ = false;
 
   ProcessControl<true> halt_control_;
   ProcessControl<true> crash_control_;

@@ -246,6 +246,33 @@ Cpu::RunResult Cpu::RunUntilHalt() {
   return {.halted = halted_, .crashed = crashed_};
 }
 
+void Cpu::EnableTrace(size_t depth) {
+  trace_.Configure(depth);
+}
+
+base::Word Cpu::instruction_address() const {
+  if (ipc_valid_) {
+    return controller_.ipc().value();
+  }
+  return pc_.value();
+}
+
+std::optional<SourceLocation> Cpu::instruction_source_location() const {
+  if (!debug_symbols_) {
+    return std::nullopt;
+  }
+  return debug_symbols_->Lookup(instruction_address());
+}
+
+void Cpu::SetIpcForTest(base::Word address) {
+  ipc_valid_ = true;
+  controller_.ipc().set_value(address);
+}
+
+void Cpu::ClearIpcForTest() {
+  ipc_valid_ = false;
+}
+
 void Cpu::SetCurrentPhaseForTest(base::TickPhase phase) {
   current_phase_ = phase;
 }
@@ -257,6 +284,21 @@ void Cpu::TickProcess() {
   if (crash_control_.asserted()) {
     crashed_ = true;
     halted_ = true;
+  }
+  if (controller_.ipc_latch().asserted()) {
+    ipc_valid_ = true;
+    if (trace_.enabled()) {
+      DebugTraceEntry entry;
+      entry.cycle = cycle_count_;
+      entry.instruction_address = controller_.ipc().value();
+      entry.pc = pc_.value();
+      entry.ir = controller_.ir().value();
+      entry.sc = controller_.sc().value();
+      entry.a = a_.value();
+      entry.x = x_.value();
+      entry.status = status_.value();
+      trace_.Record(std::move(entry));
+    }
   }
 }
 

@@ -22,7 +22,9 @@ add_executable(sim_tests
   counter_test.cpp
   component_test.cpp
   controller_test.cpp
+  cpu_debug_test.cpp
   cpu_test.cpp
+  debug_trace_test.cpp
   debug_symbols_test.cpp
   initialization_test.cpp
   memory_test.cpp
