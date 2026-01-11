@@ -18,4 +18,6 @@ TEST(StatusTest, PathsUseStatusRegisterNames) {
   EXPECT_EQ(cpu.status().path(), "status");
   EXPECT_EQ(cpu.status().zero().path(), "status.zero");
   EXPECT_EQ(cpu.status().negative().path(), "status.negative");
+  EXPECT_EQ(cpu.status().zero().set().path(), "status.zero.set");
+  EXPECT_EQ(cpu.status().zero().clear().path(), "status.zero.clear");
 }

@@ -26,6 +26,7 @@ add_executable(sim_tests
   initialization_test.cpp
   memory_test.cpp
   register_test.cpp
+  status_test.cpp
 )
 
 target_link_libraries(sim_tests PRIVATE

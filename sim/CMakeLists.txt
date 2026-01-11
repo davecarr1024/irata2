@@ -13,6 +13,7 @@ add_library(irata2_sim
   src/memory/memory_address_register.cpp
   src/memory/module.cpp
   src/memory/region.cpp
+  src/status.cpp
 )
 add_library(irata2::sim ALIAS irata2_sim)
 
