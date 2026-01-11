@@ -1,0 +1,121 @@
+# Doxyfile for IRATA2 Documentation
+
+#---------------------------------------------------------------------------
+# Project Information
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = "IRATA2"
+PROJECT_BRIEF          = "Cycle-accurate 8-bit CPU simulator"
+PROJECT_NUMBER         =
+OUTPUT_DIRECTORY       = build/docs
+
+#---------------------------------------------------------------------------
+# Input Files
+#---------------------------------------------------------------------------
+
+INPUT                  = README.md \
+                         base \
+                         hdl \
+                         isa \
+                         sim \
+                         microcode \
+                         assembler \
+                         docs/design.md \
+                         docs/plan.md \
+                         base/README.md \
+                         hdl/README.md \
+                         sim/README.md \
+                         isa/README.md \
+                         microcode/README.md \
+                         assembler/README.md
+
+FILE_PATTERNS          = *.h *.cpp *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */test/* */build/*
+
+#---------------------------------------------------------------------------
+# Documentation Extraction
+#---------------------------------------------------------------------------
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+#---------------------------------------------------------------------------
+# Markdown and Diagrams
+#---------------------------------------------------------------------------
+
+USE_MDFILE_AS_MAINPAGE = README.md
+MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
+
+# Generate class diagrams
+HAVE_DOT               = YES
+CLASS_DIAGRAMS         = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+GRAPHICAL_HIERARCHY    = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+
+#---------------------------------------------------------------------------
+# Output Formats
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+GENERATE_MAN           = NO
+
+#---------------------------------------------------------------------------
+# HTML Output Options
+#---------------------------------------------------------------------------
+
+HTML_OUTPUT            = html
+HTML_COLORSTYLE        = AUTO_LIGHT
+HTML_DYNAMIC_MENUS     = YES
+HTML_DYNAMIC_SECTIONS  = YES
+SEARCHENGINE           = YES
+DISABLE_INDEX          = NO
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
+
+# Mermaid support via custom header
+HTML_EXTRA_FILES       =
+HTML_HEADER            = docs/doxygen-header.html
+
+#---------------------------------------------------------------------------
+# Source Browsing
+#---------------------------------------------------------------------------
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+#---------------------------------------------------------------------------
+# Preprocessing
+#---------------------------------------------------------------------------
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+
+#---------------------------------------------------------------------------
+# Warning and Progress
+#---------------------------------------------------------------------------
+
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+
+#---------------------------------------------------------------------------
+# Aliases for Mermaid
+#---------------------------------------------------------------------------
+
+ALIASES               += mermaid{1}="@htmlonly<div class=\"mermaid\">\1</div>@endhtmlonly"
