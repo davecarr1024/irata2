@@ -42,18 +42,42 @@ The microcode module defines instruction behavior as sequences of control signal
 
 ## System Overview
 
-```
-microcode.yaml → generate_microcode.py → irata_instruction_set.cpp
-                                              ↓
-                            C++ Compiler Pipeline (once at startup)
-                                              ↓
-                            FetchTransformer → SequenceTransformer
-                                              ↓
-                            Validators (ISA Coverage, Sequence, Fetch)
-                                              ↓
-                            Optimizers (EmptyStep, DuplicateStep, StepMerger)  (planned)
-                                              ↓
-                            Encoder → MicrocodeROM (singleton)  (planned)
+```mermaid
+flowchart LR
+    subgraph Input
+        YAML[microcode.yaml]
+    end
+
+    subgraph Parsing
+        GEN[generate_microcode.py]
+        CPP[irata_instruction_set.cpp]
+    end
+
+    subgraph Transforms
+        FT[FetchTransformer]
+        ST[SequenceTransformer]
+    end
+
+    subgraph Validation
+        FV[FetchValidator]
+        SV[SequenceValidator]
+        IV[IsaCoverageValidator]
+    end
+
+    subgraph Encoding
+        CE[ControlEncoder]
+        SE[StatusEncoder]
+        IE[InstructionEncoder]
+    end
+
+    subgraph Output
+        ROM[MicrocodeProgram<br/>Control Word Table]
+    end
+
+    YAML --> GEN --> CPP
+    CPP --> FT --> ST
+    ST --> FV --> SV --> IV
+    IV --> CE --> SE --> IE --> ROM
 ```
 
 ## YAML Microcode Format

@@ -15,26 +15,48 @@ The HDL module defines the **structure** of the CPU without runtime state. It's 
 
 ## Component Hierarchy
 
+```mermaid
+classDiagram
+    ComponentBase <|-- Component
+    Component <|-- ComponentWithParent
+    ComponentWithParent <|-- Bus
+    ComponentWithParent <|-- ComponentWithBus
+    ComponentWithParent <|-- Control
+    ComponentWithBus <|-- Register
+    ComponentWithBus <|-- Counter
+    ComponentWithParent <|-- LocalRegister
+    LocalRegister <|-- LocalCounter
+    ComponentWithParent <|-- Controller
+
+    class ComponentBase {
+        +name() string
+        +path() string
+        +cpu() Cpu&
+    }
+
+    class Component~Derived~ {
+        +self() Derived&
+        +visit(Visitor) void
+    }
+
+    class Control~Derived,ValueType,Phase,AutoReset~ {
+        +phase() TickPhase
+        +auto_reset() bool
+        +control_info() ControlInfo
+    }
+
+    class Bus~ValueType~ {
+        +kWidth size_t
+    }
+
+    class Register~Derived,ValueType~ {
+        +write() WriteControl
+        +read() ReadControl
+        +reset() ProcessControl
+    }
 ```
-Component<Derived> (CRTP base)
-└── ComponentWithParent<Derived>
-    ├── Bus<ValueType>
-    │   ├── ByteBus
-    │   └── WordBus
-    ├── ComponentWithBus<Derived, ValueType>
-    ├── Control<Derived, ValueType, Phase, AutoReset>
-    │   ├── WriteControl<ValueType>
-    │   ├── ReadControl<ValueType>
-    │   └── ProcessControl<AutoReset>
-    ├── Register<Derived, ValueType>
-    │   ├── ByteRegister
-    │   ├── WordRegister
-    │   └── Counter<ValueType>
-    ├── LocalRegister<Derived, ValueType>  (no bus)
-    │   └── LocalCounter<ValueType>
-    │       └── ByteCounter
-    └── Controller
-```
+
+The hierarchy uses CRTP (Curiously Recurring Template Pattern) for zero-cost static dispatch.
 
 ## Key Concepts
 

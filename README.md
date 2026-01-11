@@ -20,13 +20,28 @@ The project is organized into independent, self-contained modules:
 | [isa](isa/) | Instruction Set Architecture definitions (YAML + code generation) | [isa/README.md](isa/README.md) |
 | [sim](sim/) | Runtime simulator with mutable state | [sim/README.md](sim/README.md) |
 | [microcode](microcode/) | Microcode DSL, IR, compiler, encoder | [microcode/README.md](microcode/README.md) |
+| [assembler](assembler/) | Assembly language compiler | [assembler/README.md](assembler/README.md) |
+
+### Module Dependencies
+
+```mermaid
+graph LR
+    base --> hdl
+    base --> isa
+    hdl --> sim
+    hdl --> microcode
+    isa --> microcode
+    microcode --> assembler
+    sim --> assembler
+```
 
 **Build order** (managed automatically by CMake):
 1. `base` - No dependencies
 2. `hdl` - Depends on `base`
 3. `isa` - Depends on `base`
-4. `sim` - Depends on `base`, `hdl`
+4. `sim` - Depends on `base`, `hdl`, `microcode`
 5. `microcode` - Depends on `base`, `hdl`, `isa`
+6. `assembler` - Depends on `sim`, `microcode`
 
 ## Current Status
 

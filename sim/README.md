@@ -21,6 +21,38 @@ Each CPU clock cycle consists of five phases:
 4. **Process**: Internal updates (ALU operations, status flag updates)
 5. **Clear**: Reset auto-clear controls for next cycle
 
+```mermaid
+sequenceDiagram
+    participant Controller
+    participant Components
+    participant Buses
+
+    rect rgb(200, 220, 255)
+        Note over Controller,Buses: Control Phase
+        Controller->>Components: Assert control signals
+    end
+
+    rect rgb(255, 220, 200)
+        Note over Controller,Buses: Write Phase
+        Components->>Buses: Write values
+    end
+
+    rect rgb(220, 255, 200)
+        Note over Controller,Buses: Read Phase
+        Buses->>Components: Read values
+    end
+
+    rect rgb(255, 255, 200)
+        Note over Controller,Buses: Process Phase
+        Components->>Components: Internal updates (ALU, flags)
+    end
+
+    rect rgb(240, 240, 240)
+        Note over Controller,Buses: Clear Phase
+        Components->>Components: Reset auto-clear controls
+    end
+```
+
 ```cpp
 sim::Cpu cpu(hdl_cpu);
 cpu.Tick();  // Executes all five phases
