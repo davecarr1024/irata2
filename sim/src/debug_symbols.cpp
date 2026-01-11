@@ -327,12 +327,19 @@ DebugSymbols LoadDebugSymbols(const std::string& path) {
   symbols.version = RequireString(RequireField(root, "version"), "version");
   symbols.entry = ParseHexWord(
       RequireString(RequireField(root, "entry"), "entry"), "entry");
-  symbols.rom_size = static_cast<uint32_t>(
-      RequireNumber(RequireField(root, "rom_size"), "rom_size"));
+  const int64_t rom_size = RequireNumber(RequireField(root, "rom_size"), "rom_size");
+  if (rom_size <= 0) {
+    throw SimError("rom_size must be positive");
+  }
+  symbols.rom_size = static_cast<uint32_t>(rom_size);
 
   const auto it_cartridge = obj.find("cartridge_version");
   if (it_cartridge != obj.end() && it_cartridge->second.type == JsonValue::Type::Number) {
-    symbols.cartridge_version = static_cast<uint32_t>(it_cartridge->second.number);
+    if (it_cartridge->second.number < 0) {
+      throw SimError("cartridge_version must be non-negative");
+    }
+    symbols.cartridge_version =
+        static_cast<uint32_t>(it_cartridge->second.number);
   }
 
   symbols.source_root = RequireString(
@@ -354,9 +361,15 @@ DebugSymbols LoadDebugSymbols(const std::string& path) {
         RequireNumber(RequireField(value, "line"), "pc_to_source.line"));
     location.column = static_cast<int>(
         RequireNumber(RequireField(value, "column"), "pc_to_source.column"));
+    if (location.line < 1 || location.column < 1) {
+      throw SimError("pc_to_source line/column must be positive");
+    }
     location.text = RequireString(RequireField(value, "text"), "pc_to_source.text");
-    symbols.pc_to_source.emplace(ParseHexWord(address, "pc_to_source").value(),
-                                 std::move(location));
+    const auto [_, inserted] = symbols.pc_to_source.emplace(
+        ParseHexWord(address, "pc_to_source").value(), std::move(location));
+    if (!inserted) {
+      throw SimError("duplicate pc_to_source address");
+    }
   }
 
   const auto& records = RequireArray(RequireField(root, "records"), "records").array;
@@ -366,13 +379,20 @@ DebugSymbols LoadDebugSymbols(const std::string& path) {
     entry.address = ParseHexWord(
         RequireString(RequireField(record_value, "address"), "record.address"),
         "record.address");
-    entry.rom_offset = static_cast<uint32_t>(
-        RequireNumber(RequireField(record_value, "rom_offset"), "record.rom_offset"));
+    const int64_t rom_offset =
+        RequireNumber(RequireField(record_value, "rom_offset"), "record.rom_offset");
+    if (rom_offset < 0 || rom_offset >= static_cast<int64_t>(symbols.rom_size)) {
+      throw SimError("record.rom_offset out of range");
+    }
+    entry.rom_offset = static_cast<uint32_t>(rom_offset);
     entry.location.file = RequireString(RequireField(record_value, "file"), "record.file");
     entry.location.line = static_cast<int>(
         RequireNumber(RequireField(record_value, "line"), "record.line"));
     entry.location.column = static_cast<int>(
         RequireNumber(RequireField(record_value, "column"), "record.column"));
+    if (entry.location.line < 1 || entry.location.column < 1) {
+      throw SimError("record line/column must be positive");
+    }
     entry.location.text = RequireString(RequireField(record_value, "text"), "record.text");
     symbols.records.push_back(std::move(entry));
   }

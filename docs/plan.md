@@ -9,10 +9,11 @@ direction. Individual projects live in `docs/projects/`.
 - LDA/CMP/JEQ and ALU wiring are implemented.
 - Status analyzer and status bit controls exist.
 - ASM integration tests are split by instruction.
+- **Debugging support ~80% complete**: debug symbols, trace buffer, IPC, dump output all working.
 
 ## Active Project Ideas
 
-- Debugging support in assembler + sim: see `docs/projects/debugging-support.md`
+- Debugging support in assembler + sim: see `docs/projects/debugging-support.md` (nearly complete)
 - ISA expansion in batches: see `docs/projects/isa-expansion.md`
 - Microcode debug visibility: see `docs/projects/microcode-debugging.md`
 - Microcode compiler improvements: see `docs/projects/microcode-compiler-improvements.md`
@@ -20,10 +21,11 @@ direction. Individual projects live in `docs/projects/`.
 
 ## Planned Project Order
 
-1. Debugging support (assembler + sim) for better diagnostics and stability.
-2. Microcode debug visibility to improve transparency in the control path.
-3. Program tooling and cartridge inspection for safer workflows.
-4. ISA expansion in batches once tooling and diagnostics are solid.
+1. ~~Debugging support (assembler + sim)~~ - **Nearly complete**, finish test harness integration.
+2. ISA expansion in batches - **Next priority** after debugging closes.
+3. Microcode compiler improvements (validators, optimizers).
+4. Microcode debug visibility for control path transparency.
+5. Program tooling and cartridge inspection for safer workflows.
 
 ## Next Overall Steps
 
