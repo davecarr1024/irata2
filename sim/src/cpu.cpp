@@ -116,6 +116,7 @@ void Cpu::RegisterChild(Component& child) {
 void Cpu::BuildControlIndex() {
   controls_by_path_.clear();
   control_paths_.clear();
+  control_order_.clear();
 
   for (auto* component : components_) {
     if (auto* control = dynamic_cast<ControlBase*>(component)) {
@@ -125,10 +126,9 @@ void Cpu::BuildControlIndex() {
         throw SimError("duplicate control path in sim: " + component->path());
       }
       control_paths_.push_back(component->path());
+      control_order_.push_back(control);
     }
   }
-
-  std::sort(control_paths_.begin(), control_paths_.end());
 }
 
 ControlBase* Cpu::ResolveControl(std::string_view path) {

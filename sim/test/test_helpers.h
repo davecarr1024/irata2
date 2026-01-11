@@ -4,12 +4,15 @@
 #include <memory>
 
 #include "irata2/sim.h"
+#include "irata2/microcode/encoder/control_encoder.h"
 #include "irata2/microcode/output/program.h"
 
 namespace irata2::sim::test {
 
 inline std::shared_ptr<const microcode::output::MicrocodeProgram> MakeNoopProgram() {
   auto program = std::make_shared<microcode::output::MicrocodeProgram>();
+  irata2::microcode::encoder::ControlEncoder encoder(*DefaultHdl());
+  program->control_paths = encoder.control_paths();
   auto add = [&](uint8_t opcode) {
     microcode::output::MicrocodeKey key{opcode, 0, 0};
     program->table.emplace(microcode::output::EncodeKey(key), 0);

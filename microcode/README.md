@@ -12,7 +12,7 @@ Planned components:
 - **PartialStatus**: Represents a partially specified set of status flags (don’t-care bits).
 - **CompleteStatus**: Represents a fully specified set of status flags.
 - **StatusEncoder**: Expands `PartialStatus` into all matching `CompleteStatus` permutations and encodes `CompleteStatus` into a binary address field.
-- **ControlEncoder**: Assigns stable bit positions to controls and encodes/decodes control words (alphabetic by control path for stable ordering).
+- **ControlEncoder**: Assigns stable bit positions to controls and encodes/decodes control words (HDL traversal order).
 - **InstructionEncoder**: Combines opcode, step, and encoded status into instruction-memory addressing.
 
 The microcode pipeline produces the sparse table; the simulator’s controller will use these encoders to build the ROM image that drives control-line assertions each tick.
@@ -213,7 +213,7 @@ using MicrocodeTable = std::unordered_map<uint32_t, uint64_t>;
 
 struct MicrocodeProgram {
   MicrocodeTable table;             // sparse (opcode, step, status) -> control word
-  std::vector<std::string> control_paths;  // stable, alphabetic control ordering
+  std::vector<std::string> control_paths;  // stable HDL traversal ordering
   std::vector<StatusBitDefinition> status_bits;  // name + bit for status encoding
 };
 

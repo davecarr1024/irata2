@@ -17,7 +17,7 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 | Major Issues | 0 |
 | Minor Issues | 8 |
 | Design Compliance | ~94% |
-| Test Coverage | 88.7% lines, 98.0% functions (filtered) |
+| Test Coverage | 88.4% lines, 97.5% functions (filtered) |
 | Module Separation | Excellent |
 
 ---
@@ -32,7 +32,7 @@ The IRATA2 codebase demonstrates **strong adherence to most design principles** 
 | Strongly typed navigation | PASS | Path resolution moved to microcode |
 | Type-safe Byte/Word | PASS | Properly used throughout |
 | Five-phase tick model | PASS | Phase validation enforced in sim controls |
-| 100% test coverage | PARTIAL | 88.7% lines, 98.0% functions (filtered) |
+| 100% test coverage | PARTIAL | 88.4% lines, 97.5% functions (filtered) |
 | Clean module boundaries | PASS | Excellent separation of concerns |
 | No instruction logic in components | PASS | Components are dumb hardware |
 
@@ -369,6 +369,7 @@ private:
 
 #### Fix 5: Update ControlEncoder to Use Parallel Traversal
 **Effort**: 3-4 hours
+**Status**: DONE
 **Files**:
 - `microcode/include/irata2/microcode/encoder/control_encoder.h`
 - `microcode/src/encoder/control_encoder.cpp`
@@ -412,7 +413,7 @@ private:
 |-------|-------|--------|----------|
 | 1 | Fixes 1-3 (Singleton, ControlInfo, Immutability) | 5-8 hours | Must Have (Completed) |
 | 2 | Fix 4 (CpuPathResolver) | 2-3 hours | Must Have (Completed) |
-| 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have |
+| 3 | Fix 5 (Parallel Traversal) | 3-4 hours | Must Have (Completed) |
 | 4 | Fixes 6-7 (Sim Updates) | 3-5 hours | Should Have (Completed) |
 | 5 | Fix 8 (Testing) | 2-3 hours | Must Have |
 | **Total** | | **15-23 hours** | |
@@ -427,7 +428,7 @@ private:
 6. **Fixes 6-7** (Sim) - Independent of HDL changes
 7. **Fix 8** (Testing) - Throughout
 
-Completed to date: Fixes 1-4, 6, and 7.
+Completed to date: Fixes 1-7.
 
 ---
 

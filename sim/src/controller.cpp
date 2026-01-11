@@ -39,12 +39,18 @@ void Controller::LoadProgram(
   control_targets_.clear();
   control_targets_.reserve(program_->control_paths.size());
 
-  for (const auto& path : program_->control_paths) {
-    auto* control = cpu().ResolveControl(path);
-    if (!control) {
-      throw SimError("control path not found in sim: " + path);
+  const auto& control_order = cpu().ControlOrder();
+  if (control_order.size() != program_->control_paths.size()) {
+    throw SimError("control table size mismatch between HDL and microcode");
+  }
+
+  for (size_t i = 0; i < control_order.size(); ++i) {
+    const auto* control = control_order[i];
+    const auto& expected = program_->control_paths[i];
+    if (control->path() != expected) {
+      throw SimError("control path order mismatch: " + expected);
     }
-    control_targets_.push_back(control);
+    control_targets_.push_back(const_cast<ControlBase*>(control));
   }
 }
 

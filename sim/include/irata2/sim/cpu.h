@@ -95,6 +95,9 @@ class Cpu : public Component {
   ControlBase* ResolveControl(std::string_view path);
   const ControlBase* ResolveControl(std::string_view path) const;
   std::vector<std::string> AllControlPaths() const;
+  const std::vector<ControlBase*>& ControlOrder() const {
+    return control_order_;
+  }
 
  void RegisterChild(Component& child) override;
 
@@ -125,6 +128,7 @@ class Cpu : public Component {
 
   std::unordered_map<std::string, ControlBase*> controls_by_path_;
   std::vector<std::string> control_paths_;
+  std::vector<ControlBase*> control_order_;
 };
 
 }  // namespace irata2::sim
