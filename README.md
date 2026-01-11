@@ -85,6 +85,14 @@ make build
 make test
 ```
 
+## Git Hooks
+
+This repo ships a shared pre-commit hook that runs `make test`.
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Building
 
 See [Building](#building-options) for all build options including code coverage and release builds.
