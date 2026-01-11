@@ -1,4 +1,5 @@
 #include "irata2/sim.h"
+#include "irata2/sim/debug_dump.h"
 
 #include <cstdint>
 #include <iostream>
@@ -7,6 +8,7 @@ namespace {
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " [--expect-crash] [--max-cycles N] [--debug debug.json]"
+            << " [--trace-depth N]"
             << " <cartridge.bin>\n";
 }
 }  // namespace
@@ -19,6 +21,7 @@ int main(int argc, char** argv) {
 
   bool expect_crash = false;
   int64_t max_cycles = -1;
+  int64_t trace_depth = -1;
   std::string debug_path;
   std::string cartridge_path;
 
@@ -42,6 +45,14 @@ int main(int argc, char** argv) {
         return 1;
       }
       debug_path = argv[++i];
+      continue;
+    }
+    if (arg == "--trace-depth") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      trace_depth = std::stoll(argv[++i]);
       continue;
     }
     if (cartridge_path.empty()) {
@@ -70,9 +81,14 @@ int main(int argc, char** argv) {
     cpu.controller().ir().set_value(cpu.memory().ReadAt(cartridge.header.entry));
     if (!debug_path.empty()) {
       cpu.LoadDebugSymbols(irata2::sim::LoadDebugSymbols(debug_path));
+      const int64_t depth = trace_depth >= 0 ? trace_depth : 64;
+      cpu.EnableTrace(static_cast<size_t>(depth));
+    } else if (trace_depth >= 0) {
+      cpu.EnableTrace(static_cast<size_t>(trace_depth));
     }
 
     irata2::sim::Cpu::RunResult result;
+    bool timed_out = false;
     if (max_cycles < 0) {
       result = cpu.RunUntilHalt();
     } else {
@@ -84,10 +100,24 @@ int main(int argc, char** argv) {
       result.halted = cpu.halted();
       result.crashed = cpu.crashed();
       if (!result.halted) {
-        return 4;
+        timed_out = true;
       }
     }
 
+    if (!debug_path.empty()) {
+      const bool unexpected_crash = result.crashed && !expect_crash;
+      const bool unexpected_halt = !result.crashed && expect_crash;
+      if (timed_out || unexpected_crash || unexpected_halt) {
+        const std::string reason = timed_out ? "timeout"
+                                  : unexpected_crash ? "crash"
+                                                     : "halt";
+        std::cerr << irata2::sim::FormatDebugDump(cpu, reason) << "\n";
+      }
+    }
+
+    if (timed_out) {
+      return 4;
+    }
     if (expect_crash) {
       return result.crashed ? 0 : 2;
     }

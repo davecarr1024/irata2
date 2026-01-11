@@ -24,6 +24,7 @@ add_executable(sim_tests
   controller_test.cpp
   cpu_debug_test.cpp
   cpu_test.cpp
+  debug_dump_test.cpp
   debug_trace_test.cpp
   debug_symbols_test.cpp
   initialization_test.cpp

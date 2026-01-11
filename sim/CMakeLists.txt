@@ -10,6 +10,7 @@ add_library(irata2_sim
   src/cpu.cpp
   src/cpu_debug_symbols.cpp
   src/controller.cpp
+  src/debug_dump.cpp
   src/initialization.cpp
   src/memory/memory.cpp
   src/memory/memory_address_register.cpp
