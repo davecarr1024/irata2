@@ -42,3 +42,11 @@ TEST(AssemblerTest, RejectsByteOutOfRange) {
 TEST(AssemblerTest, RejectsUnknownLabel) {
   EXPECT_THROW(Assemble(".byte missing\n", "label.asm"), AssemblerError);
 }
+
+TEST(AssemblerTest, EmitsDebugJsonMetadata) {
+  auto result = Assemble("start: HLT\n", "test.asm");
+  EXPECT_NE(result.debug_json.find("\"version\": \"v1\""), std::string::npos);
+  EXPECT_NE(result.debug_json.find("\"source_files\": [\"test.asm\"]"), std::string::npos);
+  EXPECT_NE(result.debug_json.find("\"start\": \"0x8000\""), std::string::npos);
+  EXPECT_NE(result.debug_json.find("\"pc_to_source\""), std::string::npos);
+}

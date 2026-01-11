@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "v1",
+  "title": "irata2 debug symbols",
+  "type": "object",
+  "required": [
+    "version",
+    "entry",
+    "rom_size",
+    "source_root",
+    "source_files",
+    "symbols",
+    "pc_to_source",
+    "records"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "entry": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]+$"
+    },
+    "rom_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cartridge_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_root": {
+      "type": "string"
+    },
+    "source_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "symbols": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]+$"
+      }
+    },
+    "pc_to_source": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["file", "line", "column", "text"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "column": { "type": "integer", "minimum": 1 },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["address", "rom_offset", "file", "line", "column", "text"],
+        "properties": {
+          "address": { "type": "string", "pattern": "^0x[0-9a-fA-F]+$" },
+          "rom_offset": { "type": "integer", "minimum": 0 },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "column": { "type": "integer", "minimum": 1 },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "org_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start", "end"],
+        "properties": {
+          "start": { "type": "string", "pattern": "^0x[0-9a-fA-F]+$" },
+          "end": { "type": "string", "pattern": "^0x[0-9a-fA-F]+$" }
+        }
+      }
+    }
+  }
+}

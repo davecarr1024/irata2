@@ -1,6 +1,7 @@
 #include "irata2/assembler/assembler.h"
 
 #include <cctype>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
@@ -244,7 +245,8 @@ uint16_t ResolveWordOperand(const Operand& operand,
 }
 
 AssemblerResult Encode(const FirstPassResult& pass,
-                       const AssemblerOptions& options) {
+                       const AssemblerOptions& options,
+                       const std::string& source_file) {
   uint32_t origin = options.origin.value();
   uint32_t max_address = pass.max_address.value();
   if (max_address < origin) {
@@ -257,12 +259,48 @@ AssemblerResult Encode(const FirstPassResult& pass,
   }
 
   std::vector<uint8_t> rom(options.rom_size, 0xFF);
+  std::filesystem::path source_path =
+      source_file.empty() ? std::filesystem::path("unknown.asm")
+                          : std::filesystem::path(source_file);
+  std::filesystem::path root_path = source_path.parent_path();
+  std::string source_root = root_path.empty() ? "." : root_path.string();
+  std::vector<std::string> source_files;
+  std::unordered_map<std::string, bool> seen_files;
 
-  std::vector<std::string> debug_lines;
-  std::vector<base::Word> debug_addresses;
-  std::vector<uint32_t> debug_offsets;
-  std::vector<int> debug_line_numbers;
-  std::vector<int> debug_column_numbers;
+  auto RelativeToRoot = [&](const std::string& file) -> std::string {
+    std::filesystem::path path = file.empty() ? source_path : std::filesystem::path(file);
+    if (root_path.empty()) {
+      return path.string();
+    }
+    std::filesystem::path relative = path.lexically_relative(root_path);
+    if (relative.empty()) {
+      return path.filename().string();
+    }
+    return relative.string();
+  };
+
+  auto TrackSourceFile = [&](const std::string& file) -> std::string {
+    std::string relative = RelativeToRoot(file);
+    if (seen_files.insert({relative, true}).second) {
+      source_files.push_back(relative);
+    }
+    return relative;
+  };
+
+  std::vector<DebugRecord> records;
+  records.reserve(pass.items.size());
+
+  auto AddRecord = [&](const Span& span, base::Word address, uint32_t offset,
+                       const std::string& text) {
+    DebugRecord record;
+    record.address = address;
+    record.rom_offset = offset;
+    record.file = TrackSourceFile(span.file);
+    record.line = span.line;
+    record.column = span.column;
+    record.text = text;
+    records.push_back(std::move(record));
+  };
 
   for (const auto& item : pass.items) {
     uint32_t address = item.address.value();
@@ -276,11 +314,7 @@ AssemblerResult Encode(const FirstPassResult& pass,
 
     if (item.kind == Emittable::Kind::Instruction) {
       rom[offset] = item.opcode;
-      debug_lines.push_back(item.text);
-      debug_addresses.push_back(item.address);
-      debug_offsets.push_back(offset);
-      debug_line_numbers.push_back(item.span.line);
-      debug_column_numbers.push_back(item.span.column);
+      AddRecord(item.span, item.address, offset, item.text);
       if (item.operand_bytes == 1) {
         if (item.operands.empty()) {
           throw AssemblerError(item.span, "missing operand");
@@ -290,11 +324,8 @@ AssemblerResult Encode(const FirstPassResult& pass,
           throw AssemblerError(item.span, "address exceeds cartridge size");
         }
         rom[offset + 1] = value;
-        debug_lines.push_back(item.text);
-        debug_addresses.push_back(base::Word{static_cast<uint16_t>(address + 1)});
-        debug_offsets.push_back(offset + 1);
-        debug_line_numbers.push_back(item.span.line);
-        debug_column_numbers.push_back(item.span.column);
+        AddRecord(item.span, base::Word{static_cast<uint16_t>(address + 1)},
+                  offset + 1, item.text);
       } else if (item.operand_bytes == 2) {
         if (item.operands.empty()) {
           throw AssemblerError(item.span, "missing operand");
@@ -306,11 +337,8 @@ AssemblerResult Encode(const FirstPassResult& pass,
         rom[offset + 1] = static_cast<uint8_t>(value & 0xFFu);
         rom[offset + 2] = static_cast<uint8_t>((value >> 8) & 0xFFu);
         for (uint32_t i = 1; i <= 2; ++i) {
-          debug_lines.push_back(item.text);
-          debug_addresses.push_back(base::Word{static_cast<uint16_t>(address + i)});
-          debug_offsets.push_back(offset + i);
-          debug_line_numbers.push_back(item.span.line);
-          debug_column_numbers.push_back(item.span.column);
+          AddRecord(item.span, base::Word{static_cast<uint16_t>(address + i)},
+                    offset + i, item.text);
         }
       } else if (item.operand_bytes != 0) {
         throw AssemblerError(item.span, "unsupported operand width");
@@ -324,11 +352,8 @@ AssemblerResult Encode(const FirstPassResult& pass,
         throw AssemblerError(item.span, "byte write exceeds cartridge size");
       }
       rom[target] = ResolveByteOperand(item.operands[i], pass.symbols);
-      debug_lines.push_back(item.text);
-      debug_addresses.push_back(base::Word{static_cast<uint16_t>(address + i)});
-      debug_offsets.push_back(target);
-      debug_line_numbers.push_back(item.span.line);
-      debug_column_numbers.push_back(item.span.column);
+      AddRecord(item.span, base::Word{static_cast<uint16_t>(address + i)},
+                target, item.text);
     }
   }
 
@@ -336,12 +361,15 @@ AssemblerResult Encode(const FirstPassResult& pass,
   result.header.entry = options.origin;
   result.header.rom_size = static_cast<uint32_t>(rom.size());
   result.rom = std::move(rom);
+  if (source_files.empty()) {
+    TrackSourceFile(source_path.string());
+  }
   result.debug_json = EncodeDebugJson(result.header,
-                                      debug_lines,
-                                      debug_addresses,
-                                      debug_offsets,
-                                      debug_line_numbers,
-                                      debug_column_numbers);
+                                      "v1",
+                                      source_root,
+                                      source_files,
+                                      pass.symbols,
+                                      records);
   return result;
 }
 
@@ -382,7 +410,7 @@ AssemblerResult Assemble(std::string_view source,
   Program program = parser.Parse();
 
   FirstPassResult pass = FirstPass(program, options);
-  return Encode(pass, options);
+  return Encode(pass, options, filename);
 }
 
 AssemblerResult AssembleFile(const std::string& path,

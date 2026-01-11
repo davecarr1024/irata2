@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "irata2/base/types.h"
@@ -24,12 +25,21 @@ struct CartridgeHeader {
 
 std::vector<uint8_t> EncodeHeader(const CartridgeHeader& header);
 
+struct DebugRecord {
+  base::Word address;
+  uint32_t rom_offset = 0;
+  std::string file;
+  int line = 1;
+  int column = 1;
+  std::string text;
+};
+
 std::string EncodeDebugJson(const CartridgeHeader& header,
-                            const std::vector<std::string>& lines,
-                            const std::vector<base::Word>& addresses,
-                            const std::vector<uint32_t>& rom_offsets,
-                            const std::vector<int>& line_numbers,
-                            const std::vector<int>& column_numbers);
+                            std::string_view schema_version,
+                            std::string_view source_root,
+                            const std::vector<std::string>& source_files,
+                            const std::unordered_map<std::string, base::Word>& symbols,
+                            const std::vector<DebugRecord>& records);
 
 }  // namespace irata2::assembler
 
