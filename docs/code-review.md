@@ -8,14 +8,14 @@
 
 ## Executive Summary
 
-The IRATA2 codebase demonstrates **excellent adherence to design principles** with a solid foundation for a hardware-ish CPU simulator. All major architectural issues from the previous review are resolved. One minor issue remains regarding unnecessary const_cast usage.
+The IRATA2 codebase demonstrates **excellent adherence to design principles** with a solid foundation for a hardware-ish CPU simulator. All issues from the previous review are now resolved. Documentation generation infrastructure has been added.
 
 ### Summary Metrics
 
 | Category | Status |
 |----------|--------|
 | Major Issues | 0 |
-| Minor Issues | 1 |
+| Minor Issues | 0 |
 | Design Compliance | ~98% |
 | Test Coverage | 191 tests passing |
 | Module Separation | Excellent |
@@ -135,11 +135,11 @@ void Controller::AssertControlWord(uint64_t control_word) {
 
 ## Remaining Minor Issues
 
-### Issue 1: Unnecessary const_cast Usage
+### Issue 1: Unnecessary const_cast Usage (RESOLVED)
 
 **Location**: [sim/src/controller.cpp:53](sim/src/controller.cpp#L53), [sim/src/cpu.cpp:135-136](sim/src/cpu.cpp#L135-L136)
 **Severity**: LOW
-**Status**: OPEN
+**Status**: RESOLVED
 
 Two locations use `const_cast` that can be eliminated:
 
@@ -249,16 +249,16 @@ All HDL components use CRTP. No virtual dispatch, no runtime overhead.
 ### Phase 1: Remove Unnecessary Casts
 
 **Priority**: Low
-**Status**: TODO
+**Status**: DONE
 
-1. Update controller.cpp to use `auto*` instead of `const auto*`
-2. Update cpu.cpp to duplicate lookup logic in both ResolveControl overloads
-3. Verify tests still pass
+1. ~~Update controller.cpp to use `auto*` instead of `const auto*`~~
+2. ~~Update cpu.cpp to duplicate lookup logic in both ResolveControl overloads~~
+3. ~~Verify tests still pass~~
 
 ### Phase 2: Documentation Generation System
 
 **Priority**: Medium
-**Status**: TODO
+**Status**: DONE
 
 #### 2a. Add Doxygen-Style Docstrings to All Classes
 
@@ -600,7 +600,7 @@ The following are feature roadmap items, not code quality issues:
 
 ## Conclusion
 
-The IRATA2 codebase is **well-architected** with strong type safety, clean module boundaries, and good test infrastructure. All major issues from the previous review have been resolved:
+The IRATA2 codebase is **well-architected** with strong type safety, clean module boundaries, and good test infrastructure. All issues from the previous review have been resolved:
 
 - ✓ Virtual dispatch eliminated (CRTP throughout HDL)
 - ✓ HDL truly immutable (all const members)
@@ -609,8 +609,8 @@ The IRATA2 codebase is **well-architected** with strong type safety, clean modul
 - ✓ Mutable caches removed (both HDL and sim)
 - ✓ Read-after-write explicit (bus tracking)
 - ✓ ROM-like controller (control word assertion)
-
-The one remaining minor issue (unnecessary const_cast) is a code quality refinement, not an architectural concern.
+- ✓ Unnecessary const_cast usage removed
+- ✓ Documentation infrastructure added (Doxygen, Mermaid, CI)
 
 ---
 
