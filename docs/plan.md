@@ -17,6 +17,13 @@ direction. Individual projects live in `docs/projects/`.
 - Microcode debug visibility: see `docs/projects/microcode-debugging.md`
 - Program tooling and cartridge inspection: see `docs/projects/cartridge-tools.md`
 
+## Planned Project Order
+
+1. Debugging support (assembler + sim) for better diagnostics and stability.
+2. Microcode debug visibility to improve transparency in the control path.
+3. Program tooling and cartridge inspection for safer workflows.
+4. ISA expansion in batches once tooling and diagnostics are solid.
+
 ## Next Overall Steps
 
 1. Pick one project in `docs/projects/` and drive it to a minimal MVP.
