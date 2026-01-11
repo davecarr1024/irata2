@@ -15,6 +15,7 @@ direction. Individual projects live in `docs/projects/`.
 - Debugging support in assembler + sim: see `docs/projects/debugging-support.md`
 - ISA expansion in batches: see `docs/projects/isa-expansion.md`
 - Microcode debug visibility: see `docs/projects/microcode-debugging.md`
+- Microcode compiler improvements: see `docs/projects/microcode-compiler-improvements.md`
 - Program tooling and cartridge inspection: see `docs/projects/cartridge-tools.md`
 
 ## Planned Project Order

@@ -51,6 +51,100 @@ happened.
 - M0: Loader validates schema + errors gracefully.
 - M1: PC -> file/line lookup for current instruction.
 
+#### PC-to-Source Mapping Timing (Design Notes)
+**Problem**
+- Using the live PC to map to source is ambiguous once the opcode fetch
+  increments PC. During the body of an instruction, PC points at the next
+  instruction (implied addressing), or past operand bytes (immediate/absolute).
+- Relying on PC and addressing mode alone loses the exact "instruction start"
+  for trace and diagnostics.
+
+**Proposed hardware-ish solution**
+- Add a latched "instruction PC" register (IPC) that captures the instruction
+  start address at the beginning of each instruction.
+- IPC is loaded at the same moment the opcode is fetched (when SC == 0 and IR
+  is written). This avoids timing overhead because it is a parallel latch that
+  reuses the existing fetch stage.
+- During the rest of the instruction, IPC remains stable even as PC advances
+  to operand bytes or the next instruction.
+- Debug/tracing uses IPC (preferred), falling back to PC only when IPC is
+  unavailable (bootstrap, reset, or non-instruction cycles).
+
+**Control implications**
+- Add a control line `ipc_write` (auto-reset) that latches PC into IPC.
+- Assert `ipc_write` only in the fetch stage that writes IR (SC == 0).
+- This guarantees the latched address corresponds to the opcode byte that
+  defines the instruction and is stable through the entire microcode sequence.
+- IPC update does not interfere with PC increment or decode timing.
+
+**End-of-instruction detection**
+- No explicit "end" signal needed if IPC is latched at the next instruction's
+  fetch stage. The end of the current instruction is already implied by the
+  SC reset / fetch preamble.
+- If a future design adds multi-cycle fetch or microcode branches, IPC still
+  updates only on the next opcode fetch, keeping the mapping consistent.
+
+**Fallback approach (less accurate)**
+- Round down PC by operand width during execution. This is fragile because it
+  depends on knowing the current instruction's addressing mode and does not
+  handle implied/increment side effects cleanly.
+
+**Timing diagrams**
+
+Implied addressing (opcode only):
+```mermaid
+sequenceDiagram
+  participant PC
+  participant IR
+  participant IPC
+  participant SC
+  Note over SC: SC == 0 (fetch)
+  PC->>IR: read opcode @PC
+  PC->>PC: increment (PC = PC + 1)
+  PC->>IPC: ipc_write latch PC (opcode address)
+  Note over SC: SC > 0 (execute)
+  Note over IPC: IPC holds opcode address
+```
+
+Immediate addressing (opcode + 1 byte):
+```mermaid
+sequenceDiagram
+  participant PC
+  participant IR
+  participant IPC
+  participant SC
+  Note over SC: SC == 0 (fetch opcode)
+  PC->>IR: read opcode @PC
+  PC->>PC: increment (PC = PC + 1)
+  PC->>IPC: ipc_write latch PC (opcode address)
+  Note over SC: SC == 1 (fetch operand)
+  PC->>PC: read operand @PC
+  PC->>PC: increment (PC = PC + 1)
+  Note over SC: SC >= 2 (execute)
+  Note over IPC: IPC still points at opcode address
+```
+
+Absolute addressing (opcode + 2 bytes):
+```mermaid
+sequenceDiagram
+  participant PC
+  participant IR
+  participant IPC
+  participant SC
+  Note over SC: SC == 0 (fetch opcode)
+  PC->>IR: read opcode @PC
+  PC->>PC: increment (PC = PC + 1)
+  PC->>IPC: ipc_write latch PC (opcode address)
+  Note over SC: SC == 1 (fetch low byte)
+  PC->>PC: read low @PC
+  PC->>PC: increment (PC = PC + 1)
+  Note over SC: SC == 2 (fetch high byte)
+  PC->>PC: read high @PC
+  PC->>PC: increment (PC = PC + 1)
+  Note over SC: SC >= 3 (execute)
+  Note over IPC: IPC still points at opcode address
+```
+
 #### 3) Failure Diagnostics (Verbose State Dump)
 **Scope**
 - On unexpected halt/crash, dump full programmer-visible state when a debug
