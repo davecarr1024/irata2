@@ -29,24 +29,28 @@ set_target_properties(irata2_asm PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
-install(TARGETS irata2_assembler irata2_asm
-  EXPORT irata2AssemblerTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_assembler irata2_asm
+    EXPORT irata2AssemblerTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+  )
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
 
-install(EXPORT irata2AssemblerTargets
-  FILE irata2AssemblerTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(EXPORT irata2AssemblerTargets
+    FILE irata2AssemblerTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)

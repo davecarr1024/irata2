@@ -43,29 +43,32 @@ add_executable(irata2_run
 target_link_libraries(irata2_run PRIVATE irata2::sim)
 target_compile_features(irata2_run PRIVATE cxx_std_20)
 
-# Export configuration
-install(TARGETS irata2_sim
-  EXPORT irata2SimTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_sim
+    EXPORT irata2SimTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+  )
 
-install(TARGETS irata2_run
-  RUNTIME DESTINATION bin
-)
+  install(TARGETS irata2_run
+    RUNTIME DESTINATION bin
+  )
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
 
-install(EXPORT irata2SimTargets
-  FILE irata2SimTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(EXPORT irata2SimTargets
+    FILE irata2SimTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)

@@ -40,25 +40,28 @@ target_link_libraries(irata2_hdl PUBLIC
 # Require C++20
 target_compile_features(irata2_hdl PUBLIC cxx_std_20)
 
-# Export configuration
-install(TARGETS irata2_hdl
-  EXPORT irata2HdlTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_hdl
+    EXPORT irata2HdlTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+  )
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
 
-install(EXPORT irata2HdlTargets
-  FILE irata2HdlTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(EXPORT irata2HdlTargets
+    FILE irata2HdlTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)

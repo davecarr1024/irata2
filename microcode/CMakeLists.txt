@@ -56,25 +56,28 @@ target_link_libraries(irata2_microcode PUBLIC
 # Require C++20
 target_compile_features(irata2_microcode PUBLIC cxx_std_20)
 
-# Export configuration
-install(TARGETS irata2_microcode
-  EXPORT irata2MicrocodeTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_microcode
+    EXPORT irata2MicrocodeTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+  )
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
 
-install(EXPORT irata2MicrocodeTargets
-  FILE irata2MicrocodeTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(EXPORT irata2MicrocodeTargets
+    FILE irata2MicrocodeTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)
