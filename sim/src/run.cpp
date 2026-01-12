@@ -3,19 +3,39 @@
 #include "irata2/base/log.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
+#include <optional>
 
 namespace {
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " [--expect-crash] [--max-cycles N] [--debug debug.json]"
-            << " [--trace-depth N]"
-            << " <cartridge.bin>\n";
+            << " [--trace-depth N] [--log-level {info,warning,error,debug}]"
+            << " <cartridge.bin>\n"
+            << "\nLog level can also be set via IRATA2_LOG_LEVEL environment variable.\n";
+}
+
+std::optional<irata2::base::LogLevel> ParseLogLevel(const std::string& level_str) {
+  if (level_str == "info") return irata2::base::LogLevel::kInfo;
+  if (level_str == "warning") return irata2::base::LogLevel::kWarning;
+  if (level_str == "error") return irata2::base::LogLevel::kError;
+  if (level_str == "debug") return irata2::base::LogLevel::kDebug;
+  return std::nullopt;
 }
 }  // namespace
 
 int main(int argc, char** argv) {
   irata2::base::InitializeLogging();
+
+  // Check for IRATA2_LOG_LEVEL environment variable
+  std::optional<irata2::base::LogLevel> log_level;
+  if (const char* env_level = std::getenv("IRATA2_LOG_LEVEL")) {
+    log_level = ParseLogLevel(env_level);
+    if (log_level) {
+      irata2::base::SetLogLevel(*log_level);
+    }
+  }
 
   if (argc < 2) {
     PrintUsage(argv[0]);
@@ -56,6 +76,21 @@ int main(int argc, char** argv) {
         return 1;
       }
       trace_depth = std::stoll(argv[++i]);
+      continue;
+    }
+    if (arg == "--log-level") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      std::string level_str = argv[++i];
+      log_level = ParseLogLevel(level_str);
+      if (!log_level) {
+        std::cerr << "Error: Invalid log level '" << level_str << "'\n";
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      irata2::base::SetLogLevel(*log_level);
       continue;
     }
     if (cartridge_path.empty()) {
