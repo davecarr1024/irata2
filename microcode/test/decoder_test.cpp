@@ -169,3 +169,116 @@ TEST(MicrocodeDecoderTest, DecodesMultipleStatusFlags) {
 
   EXPECT_NE(dump.find("status zero,carry,negative:"), std::string::npos);
 }
+
+TEST(MicrocodeDecoderTest, DumpsEmptyProgramYaml) {
+  MicrocodeProgram program;
+  program.control_paths = {"halt"};
+  program.status_bits = {{"zero", 0}};
+
+  MicrocodeDecoder decoder(program);
+  const std::string yaml = decoder.DumpProgramYaml();
+  EXPECT_EQ(yaml, "opcodes: {}\n");
+}
+
+TEST(MicrocodeDecoderTest, DumpsSingleInstructionYaml) {
+  MicrocodeProgram program;
+  program.control_paths = {"halt"};
+  program.status_bits = {{"zero", 0}};
+  program.table[EncodeKey({0, 0, 0})] = 0b0001;  // opcode 0, step 0, halt
+
+  MicrocodeDecoder decoder(program);
+  const std::string yaml = decoder.DumpProgramYaml();
+
+  EXPECT_NE(yaml.find("opcodes:"), std::string::npos);
+  EXPECT_NE(yaml.find("  0:"), std::string::npos);
+  EXPECT_NE(yaml.find("    status_default:"), std::string::npos);
+  EXPECT_NE(yaml.find("      steps:"), std::string::npos);
+  EXPECT_NE(yaml.find("        - stage: 0"), std::string::npos);
+  EXPECT_NE(yaml.find("          controls:"), std::string::npos);
+  EXPECT_NE(yaml.find("            - halt"), std::string::npos);
+}
+
+TEST(MicrocodeDecoderTest, DumpsMultipleStepsYaml) {
+  MicrocodeProgram program = MakeTestProgram();
+  MicrocodeDecoder decoder(program);
+
+  const std::string yaml = decoder.DumpProgramYaml();
+
+  // Check for YAML structure
+  EXPECT_NE(yaml.find("opcodes:"), std::string::npos);
+  EXPECT_NE(yaml.find("  0:"), std::string::npos);
+  EXPECT_NE(yaml.find("  1:"), std::string::npos);
+  EXPECT_NE(yaml.find("  2:"), std::string::npos);
+
+  // Check for status variants
+  EXPECT_NE(yaml.find("    status_default:"), std::string::npos);
+  EXPECT_NE(yaml.find("    status_zero:"), std::string::npos);
+  EXPECT_NE(yaml.find("    status_carry:"), std::string::npos);
+
+  // Check for steps and controls
+  EXPECT_NE(yaml.find("      steps:"), std::string::npos);
+  EXPECT_NE(yaml.find("        - stage:"), std::string::npos);
+  EXPECT_NE(yaml.find("          controls:"), std::string::npos);
+  EXPECT_NE(yaml.find("            - halt"), std::string::npos);
+  EXPECT_NE(yaml.find("            - a.read"), std::string::npos);
+  EXPECT_NE(yaml.find("            - x.write"), std::string::npos);
+}
+
+TEST(MicrocodeDecoderTest, DumpsInstructionYamlWithNoMicrocode) {
+  MicrocodeProgram program = MakeTestProgram();
+  MicrocodeDecoder decoder(program);
+
+  const std::string yaml = decoder.DumpInstructionYaml(99);  // Non-existent opcode
+
+  EXPECT_NE(yaml.find("opcode_99: null"), std::string::npos);
+}
+
+TEST(MicrocodeDecoderTest, DumpsSpecificInstructionYaml) {
+  MicrocodeProgram program = MakeTestProgram();
+  MicrocodeDecoder decoder(program);
+
+  const std::string yaml = decoder.DumpInstructionYaml(1);
+
+  // Should include opcode 1's microcode
+  EXPECT_NE(yaml.find("opcode_1:"), std::string::npos);
+  EXPECT_NE(yaml.find("  status_default:"), std::string::npos);
+  EXPECT_NE(yaml.find("  status_zero:"), std::string::npos);
+  EXPECT_NE(yaml.find("    steps:"), std::string::npos);
+  EXPECT_NE(yaml.find("      - stage: 0"), std::string::npos);
+  EXPECT_NE(yaml.find("      - stage: 1"), std::string::npos);
+  EXPECT_NE(yaml.find("        controls:"), std::string::npos);
+  EXPECT_NE(yaml.find("          - halt"), std::string::npos);
+  EXPECT_NE(yaml.find("          - a.read"), std::string::npos);
+  EXPECT_NE(yaml.find("          - x.write"), std::string::npos);
+  EXPECT_NE(yaml.find("          - crash"), std::string::npos);
+
+  // Should NOT include other opcodes
+  EXPECT_EQ(yaml.find("opcode_0:"), std::string::npos);
+  EXPECT_EQ(yaml.find("opcode_2:"), std::string::npos);
+}
+
+TEST(MicrocodeDecoderTest, DumpsInstructionYamlSortsByStatus) {
+  MicrocodeProgram program = MakeTestProgram();
+  MicrocodeDecoder decoder(program);
+
+  const std::string yaml = decoder.DumpInstructionYaml(1);
+
+  // Default status should come before zero status
+  const size_t default_pos = yaml.find("  status_default:");
+  const size_t zero_pos = yaml.find("  status_zero:");
+  ASSERT_NE(default_pos, std::string::npos);
+  ASSERT_NE(zero_pos, std::string::npos);
+  EXPECT_LT(default_pos, zero_pos);
+}
+
+TEST(MicrocodeDecoderTest, DumpsYamlWithMultipleStatusFlags) {
+  MicrocodeProgram program;
+  program.control_paths = {"halt"};
+  program.status_bits = {{"zero", 0}, {"carry", 1}, {"negative", 2}};
+  program.table[EncodeKey({0, 0, 0b111})] = 0b0001;  // All flags set
+
+  MicrocodeDecoder decoder(program);
+  const std::string yaml = decoder.DumpProgramYaml();
+
+  EXPECT_NE(yaml.find("    status_zero,carry,negative:"), std::string::npos);
+}

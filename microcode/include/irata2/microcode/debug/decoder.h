@@ -43,6 +43,19 @@ class MicrocodeDecoder {
    */
   std::string DumpInstruction(uint8_t opcode) const;
 
+  /**
+   * @brief Dump the entire program in YAML format.
+   * @return YAML-formatted string with all opcodes, stages, and controls
+   */
+  std::string DumpProgramYaml() const;
+
+  /**
+   * @brief Dump a specific instruction in YAML format.
+   * @param opcode The instruction opcode
+   * @return YAML-formatted string for this opcode
+   */
+  std::string DumpInstructionYaml(uint8_t opcode) const;
+
  private:
   const output::MicrocodeProgram& program_;
 
