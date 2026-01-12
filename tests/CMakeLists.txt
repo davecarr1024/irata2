@@ -41,5 +41,14 @@ if(ASM_FILES)
                -DCARTRIDGE=${ASM_BIN}
                -P ${CMAKE_CURRENT_SOURCE_DIR}/expect_debug_dump.cmake)
     endif()
+
+    # Add log level test for hlt (simple successful program)
+    if(ASM_NAME STREQUAL "hlt")
+      add_test(NAME asm_${ASM_NAME}_log_levels
+               COMMAND ${CMAKE_COMMAND}
+               -DRUNNER=$<TARGET_FILE:irata2_run>
+               -DCARTRIDGE=${ASM_BIN}
+               -P ${CMAKE_CURRENT_SOURCE_DIR}/test_log_levels.cmake)
+    endif()
   endforeach()
 endif()

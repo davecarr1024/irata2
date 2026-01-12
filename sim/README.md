@@ -157,6 +157,60 @@ On unexpected crash/halt or timeout, the simulator prints a register/bus dump
 plus a trace of recent instructions. Use `--expect-crash` to mark a crash as
 expected or `--max-cycles N` to force a timeout.
 
+## Logging
+
+The simulator uses structured logging to provide visibility into execution:
+
+### Log Events
+
+- **sim.start**: Logged at simulation start with cartridge path, entry PC, trace depth, and debug symbols path
+- **sim.halt**: Logged on normal halt with cycle count and instruction address
+- **sim.crash**: Logged on crash with cycle count and instruction address
+- **sim.timeout**: Logged when max cycles exceeded with cycle count and instruction address
+- **sim.dump**: Logged on failure with full debug dump including CPU state, registers, buses, and trace buffer
+
+### Log Level Configuration
+
+Control logging verbosity via CLI or environment variable:
+
+```bash
+# Set log level via CLI flag (overrides environment variable)
+irata2_run --log-level info program.bin     # Show all lifecycle events (default)
+irata2_run --log-level warning program.bin  # Show only warnings and errors
+irata2_run --log-level error program.bin    # Show only errors
+irata2_run --log-level debug program.bin    # Show debug messages (verbose)
+
+# Set log level via environment variable
+export IRATA2_LOG_LEVEL=info
+irata2_run program.bin
+
+# Suppress logs in tests
+IRATA2_LOG_LEVEL=error ctest --test-dir build
+```
+
+### Log Output Examples
+
+**Normal execution:**
+```
+I0112 03:14:13.671054 run.cpp:94] sim.start: cartridge=program.bin, entry_pc=0x8000, trace_depth=0, debug_symbols=none
+I0112 03:14:13.671449 run.cpp:125] sim.halt: cycle_count=42, instruction_address=0x8010
+```
+
+**Failure with debug dump:**
+```
+I0112 03:15:51.663621 run.cpp:94] sim.start: cartridge=program.bin, entry_pc=0x8000, trace_depth=64, debug_symbols=program.json
+I0112 03:15:51.663984 run.cpp:122] sim.crash: cycle_count=4, instruction_address=0x8000
+I0112 03:15:51.664040 run.cpp:138] sim.dump:
+Debug dump (crash)
+cycle: 4
+instruction: 0x8000 program.asm:1:1 crs
+pc: 0x8001 ipc: 0x8000 ir: 0xff sc: 0x00
+a: 0x00 x: 0x00 sr: 0x02 flags: N=0 V=0 U=0 B=0 D=0 I=0 Z=1 C=0
+buses: data=-- address=--
+trace (1 entries):
+  [0] cycle=0 addr=0x8000 ir=0xff pc=0x8000 sc=0x01 a=0x00 x=0x00 sr=0x02 program.asm:1:1 crs
+```
+
 ## Files
 
 - `component.h` - Base classes for sim components
