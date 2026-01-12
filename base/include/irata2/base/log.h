@@ -32,10 +32,11 @@ namespace irata2::base {
  * @brief Initialize the logging system.
  *
  * This must be called once at program startup before any logging occurs.
- * It initializes the absl logging backend.
+ * It initializes the absl logging backend and sets INFO logs to stderr.
  */
 inline void InitializeLogging() {
   absl::InitializeLog();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
 }
 
 /**

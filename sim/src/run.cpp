@@ -1,5 +1,6 @@
 #include "irata2/sim.h"
 #include "irata2/sim/debug_dump.h"
+#include "irata2/base/log.h"
 
 #include <cstdint>
 #include <iostream>
@@ -14,6 +15,8 @@ void PrintUsage(const char* argv0) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  irata2::base::InitializeLogging();
+
   if (argc < 2) {
     PrintUsage(argv[0]);
     return 1;
@@ -87,6 +90,12 @@ int main(int argc, char** argv) {
       cpu.EnableTrace(static_cast<size_t>(trace_depth));
     }
 
+    // Log sim.start
+    IRATA2_LOG_INFO << "sim.start: cartridge=" << cartridge_path
+                    << ", entry_pc=" << cartridge.header.entry.to_string()
+                    << ", trace_depth=" << (trace_depth >= 0 ? trace_depth : (debug_path.empty() ? 0 : 64))
+                    << ", debug_symbols=" << (!debug_path.empty() ? debug_path : "none");
+
     irata2::sim::Cpu::RunResult result;
     bool timed_out = false;
     if (max_cycles < 0) {
@@ -102,6 +111,19 @@ int main(int argc, char** argv) {
       if (!result.halted) {
         timed_out = true;
       }
+    }
+
+    // Log lifecycle events
+    if (timed_out) {
+      IRATA2_LOG_INFO << "sim.timeout: max_cycles=" << max_cycles
+                      << ", cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
+    } else if (result.crashed) {
+      IRATA2_LOG_INFO << "sim.crash: cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
+    } else {
+      IRATA2_LOG_INFO << "sim.halt: cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
     }
 
     if (!debug_path.empty()) {
