@@ -2,6 +2,7 @@
 #define IRATA2_MICROCODE_COMPILER_COMPILER_H
 
 #include "irata2/hdl/control_info.h"
+#include "irata2/microcode/compiler/bus_validator.h"
 #include "irata2/microcode/compiler/fetch_transformer.h"
 #include "irata2/microcode/compiler/fetch_validator.h"
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
@@ -28,6 +29,7 @@ class Compiler {
   encoder::StatusEncoder status_encoder_;
   FetchTransformer fetch_transformer_;
   FetchValidator fetch_validator_;
+  BusValidator bus_validator_;
   IsaCoverageValidator isa_coverage_validator_;
   SequenceTransformer sequence_transformer_;
   SequenceValidator sequence_validator_;

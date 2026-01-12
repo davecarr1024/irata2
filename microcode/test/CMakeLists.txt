@@ -16,6 +16,7 @@ include(GoogleTest)
 
 add_executable(microcode_tests
   builder_test.cpp
+  bus_validator_test.cpp
   compiler_conflict_test.cpp
   compiler_test.cpp
   control_encoder_test.cpp
