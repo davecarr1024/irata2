@@ -62,6 +62,15 @@ target_link_libraries(irata2_microcode PUBLIC
 # Require C++20
 target_compile_features(irata2_microcode PUBLIC cxx_std_20)
 
+# Microcode dump CLI utility
+add_executable(microcode_dump src/microcode_dump_main.cpp)
+target_link_libraries(microcode_dump PRIVATE
+  irata2::microcode
+  absl::flags
+  absl::flags_parse
+)
+target_compile_features(microcode_dump PRIVATE cxx_std_20)
+
 # Export configuration (optional, disabled by default for development)
 option(ENABLE_INSTALL "Enable install targets" OFF)
 if(ENABLE_INSTALL)
