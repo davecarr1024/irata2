@@ -21,6 +21,7 @@ output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) c
   fetch_validator_.Run(instruction_set);
   sequence_transformer_.Run(instruction_set);
   bus_validator_.Run(instruction_set);
+  stage_validator_.Run(instruction_set);
   status_validator_.Run(instruction_set);
   isa_coverage_validator_.Run(instruction_set);
   sequence_validator_.Run(instruction_set);

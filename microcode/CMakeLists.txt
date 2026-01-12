@@ -31,6 +31,7 @@ add_library(irata2_microcode
   src/compiler/isa_coverage_validator.cpp
   src/compiler/sequence_transformer.cpp
   src/compiler/sequence_validator.cpp
+  src/compiler/stage_validator.cpp
   src/compiler/status_validator.cpp
   src/encoder/control_encoder.cpp
   src/encoder/instruction_encoder.cpp

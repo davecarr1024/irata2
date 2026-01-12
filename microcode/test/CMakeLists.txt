@@ -27,6 +27,7 @@ add_executable(microcode_tests
   instruction_encoder_test.cpp
   sequence_transformer_test.cpp
   sequence_validator_test.cpp
+  stage_validator_test.cpp
   status_encoder_test.cpp
   status_validator_test.cpp
 )

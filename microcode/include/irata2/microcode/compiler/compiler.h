@@ -8,6 +8,7 @@
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
 #include "irata2/microcode/compiler/sequence_transformer.h"
 #include "irata2/microcode/compiler/sequence_validator.h"
+#include "irata2/microcode/compiler/stage_validator.h"
 #include "irata2/microcode/compiler/status_validator.h"
 #include "irata2/microcode/encoder/control_encoder.h"
 #include "irata2/microcode/encoder/instruction_encoder.h"
@@ -31,6 +32,7 @@ class Compiler {
   FetchTransformer fetch_transformer_;
   FetchValidator fetch_validator_;
   BusValidator bus_validator_;
+  StageValidator stage_validator_;
   StatusValidator status_validator_;
   IsaCoverageValidator isa_coverage_validator_;
   SequenceTransformer sequence_transformer_;
