@@ -35,6 +35,7 @@ add_library(irata2_microcode
   src/compiler/sequence_validator.cpp
   src/compiler/stage_validator.cpp
   src/compiler/status_validator.cpp
+  src/debug/decoder.cpp
   src/encoder/control_encoder.cpp
   src/encoder/instruction_encoder.cpp
   src/encoder/status_encoder.cpp
