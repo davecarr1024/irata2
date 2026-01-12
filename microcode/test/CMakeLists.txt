@@ -28,6 +28,7 @@ add_executable(microcode_tests
   sequence_transformer_test.cpp
   sequence_validator_test.cpp
   status_encoder_test.cpp
+  status_validator_test.cpp
 )
 
 target_link_libraries(microcode_tests PRIVATE
