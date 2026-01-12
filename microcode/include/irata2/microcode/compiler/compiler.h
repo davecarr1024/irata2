@@ -4,6 +4,7 @@
 #include "irata2/hdl/control_info.h"
 #include "irata2/microcode/compiler/bus_validator.h"
 #include "irata2/microcode/compiler/control_conflict_validator.h"
+#include "irata2/microcode/compiler/empty_step_optimizer.h"
 #include "irata2/microcode/compiler/fetch_transformer.h"
 #include "irata2/microcode/compiler/fetch_validator.h"
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
@@ -41,6 +42,7 @@ class Compiler {
   IsaCoverageValidator isa_coverage_validator_;
   SequenceTransformer sequence_transformer_;
   SequenceValidator sequence_validator_;
+  EmptyStepOptimizer empty_step_optimizer_;
 };
 
 }  // namespace irata2::microcode::compiler

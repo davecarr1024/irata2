@@ -23,6 +23,7 @@ add_executable(microcode_tests
   control_encoder_test.cpp
   cpu_path_resolver_test.cpp
   decoder_test.cpp
+  empty_step_optimizer_test.cpp
   fetch_transformer_test.cpp
   fetch_validator_test.cpp
   isa_coverage_validator_test.cpp

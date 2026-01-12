@@ -27,6 +27,7 @@ add_library(irata2_microcode
   src/compiler/bus_validator.cpp
   src/compiler/compiler.cpp
   src/compiler/control_conflict_validator.cpp
+  src/compiler/empty_step_optimizer.cpp
   src/compiler/fetch_transformer.cpp
   src/compiler/fetch_validator.cpp
   src/compiler/isa_coverage_validator.cpp

@@ -28,6 +28,11 @@ output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) c
   isa_coverage_validator_.Run(instruction_set);
   sequence_validator_.Run(instruction_set);
 
+  // Optimization passes with re-validation
+  empty_step_optimizer_.Run(instruction_set);
+  stage_validator_.Run(instruction_set);
+  sequence_validator_.Run(instruction_set);
+
   output::MicrocodeProgram program;
   program.control_paths = control_encoder_.control_paths();
   program.status_bits = status_encoder_.bits();
