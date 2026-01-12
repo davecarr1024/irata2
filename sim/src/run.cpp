@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
                       << ", instruction_address=" << cpu.instruction_address().to_string();
     }
 
+    // Log failure-path debug dump and trace
     if (!debug_path.empty()) {
       const bool unexpected_crash = result.crashed && !expect_crash;
       const bool unexpected_halt = !result.crashed && expect_crash;
@@ -133,7 +134,9 @@ int main(int argc, char** argv) {
         const std::string reason = timed_out ? "timeout"
                                   : unexpected_crash ? "crash"
                                                      : "halt";
-        std::cerr << irata2::sim::FormatDebugDump(cpu, reason) << "\n";
+        const std::string dump = irata2::sim::FormatDebugDump(cpu, reason);
+        IRATA2_LOG_INFO << "sim.dump:\n" << dump;
+        std::cerr << dump << "\n";
       }
     }
 
