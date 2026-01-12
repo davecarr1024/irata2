@@ -26,6 +26,7 @@ add_custom_target(generate_microcode ALL DEPENDS ${MICROCODE_GENERATED_CPP})
 add_library(irata2_microcode
   src/compiler/bus_validator.cpp
   src/compiler/compiler.cpp
+  src/compiler/control_conflict_validator.cpp
   src/compiler/fetch_transformer.cpp
   src/compiler/fetch_validator.cpp
   src/compiler/isa_coverage_validator.cpp

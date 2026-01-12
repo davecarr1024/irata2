@@ -3,6 +3,7 @@
 
 #include "irata2/hdl/control_info.h"
 #include "irata2/microcode/compiler/bus_validator.h"
+#include "irata2/microcode/compiler/control_conflict_validator.h"
 #include "irata2/microcode/compiler/fetch_transformer.h"
 #include "irata2/microcode/compiler/fetch_validator.h"
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
@@ -33,6 +34,7 @@ class Compiler {
   FetchTransformer fetch_transformer_;
   FetchValidator fetch_validator_;
   BusValidator bus_validator_;
+  ControlConflictValidator control_conflict_validator_;
   PhaseOrderingValidator phase_ordering_validator_;
   StageValidator stage_validator_;
   StatusValidator status_validator_;
