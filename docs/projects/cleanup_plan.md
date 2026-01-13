@@ -10,6 +10,7 @@ The cleanup effort involves significant architectural changes to the sim module:
 - Control and Register type redesigns
 - Controller submodule with hardware-ish implementation
 - Memory structure changes
+- Microcode compiler/validator improvements
 
 ## Phase 1: Foundation Changes (No Breaking Changes)
 
@@ -602,6 +603,129 @@ Each top-level module should have `docs/` directory with:
 - `readme.md` - Module overview
 - Design doc for each submodule
 
+## Phase 10: Microcode Module Cleanup
+
+**Goal:** Improve validators, add step-merging optimizer, restructure compiler.
+
+### 10.1 BusValidator Improvements
+
+**Current:** Uses hardcoded lookups to determine register types.
+
+**Problem:** The type system already knows this. The HDL has control references with
+bus information.
+
+**Solution:** Use HDL type information instead of hardcoding.
+
+**Changes:**
+- MicrocodeProgram has control references into HDL
+- HDL knows which controls are read/write controls with bus references
+- BusValidator should use this information for bus deconfliction
+- If HDL is missing this info, update HDL first
+
+**Files:**
+- [bus_validator.cpp](../../microcode/src/compiler/bus_validator.cpp)
+- May require HDL updates
+
+**Steps:**
+1. Audit HDL for bus/control type information
+2. Add missing type info to HDL if needed
+3. Refactor BusValidator to use HDL types instead of hardcoded lookups
+4. Remove hardcoded register name checks
+
+### 10.2 ControlConflictValidator Fix
+
+**Current:** Flags multiple ALU opcode bits as a conflict.
+
+**Problem:** ALU opcode is binary encoded - multiple bits being set is expected.
+
+**Solution:** Don't treat ALU opcode bits as conflicting controls.
+
+**Files:**
+- [control_conflict_validator.cpp](../../microcode/src/compiler/control_conflict_validator.cpp)
+
+**Steps:**
+1. Identify ALU opcode controls
+2. Exclude them from conflict detection (they're binary encoded, not one-hot)
+
+### 10.3 PhaseOrderingValidator Removal
+
+**Current:** Validates control ordering within a step.
+
+**Problem:** This validator is based on a misunderstanding of tick phases.
+
+**Key insight:** Within each tick phase, components are ticked in a **nondeterministic
+order** and controls are consumed in a **nondeterministic order**. This is by design.
+Controls enforce access to their values in the sim to protect tick phase reasoning.
+
+**Solution:** Remove this validator entirely - it's not needed.
+
+**Files:**
+- [phase_ordering_validator.h](../../microcode/include/irata2/microcode/compiler/phase_ordering_validator.h)
+- [phase_ordering_validator.cpp](../../microcode/src/compiler/phase_ordering_validator.cpp)
+- [phase_ordering_validator_test.cpp](../../microcode/test/phase_ordering_validator_test.cpp)
+- [compiler.cpp](../../microcode/src/compiler/compiler.cpp)
+
+**Steps:**
+1. Remove PhaseOrderingValidator from compiler
+2. Delete PhaseOrderingValidator files
+3. Update documentation to clarify nondeterministic ordering within phases
+
+### 10.4 Step-Merging Optimizer
+
+**Goal:** Merge adjacent steps when safe based on phase ordering.
+
+**Phase ordering rules:**
+- Tick phases are ordered: `control < write < read < process < clear`
+- All controls in a step happen in tick phase order (control *set* is unordered
+  except for phases)
+- Control a ≤ control b if control a's phase ≤ control b's phase
+- Step a ≤ step b if all controls in step a ≤ all controls in step b
+- Step a is mergeable with step b if step a ≤ step b AND they're in the same stage
+
+**Short version:** Steps are mergeable if everything in step a happens before or at
+the same time as everything in step b, and they're in the same stage.
+
+**Files:**
+- New: `step_merging_optimizer.h`, `step_merging_optimizer.cpp`
+- New: `step_merging_optimizer_test.cpp`
+
+**Steps:**
+1. Implement phase comparison for controls
+2. Implement step comparison (a ≤ b)
+3. Implement merge detection (same stage + a ≤ b)
+4. Implement step merging (union of control sets)
+5. Add comprehensive tests
+
+### 10.5 Compiler Restructuring
+
+**Goal:** Defensive compiler structure with preamble, validators, transformers.
+
+**New structure:**
+1. **Preamble passes** - Required to get microcode to valid state
+   - StepTransformer
+   - SequenceTransformer
+2. **Validators** - All validators run after preamble
+3. **Transformers** - Each transformer followed by all validators
+
+**Pattern:** For each transformer:
+1. Run transformer
+2. Run all validators
+3. If any validator fails, transformer produced invalid output
+
+**Current issue:** End of `Compiler::Compile` does encoding inline. This should be
+a separate encoder class.
+
+**Files:**
+- [compiler.h](../../microcode/include/irata2/microcode/compiler/compiler.h)
+- [compiler.cpp](../../microcode/src/compiler/compiler.cpp)
+- New: `encoder.h`, `encoder.cpp` (for final encoding step)
+
+**Steps:**
+1. Categorize existing passes as preamble/validator/transformer
+2. Implement new compilation loop with defensive validation
+3. Extract encoding logic into separate Encoder class
+4. Add tests for invalid transformer output detection
+
 ## Dependency Graph
 
 ```
@@ -619,12 +743,16 @@ Phase 6 (Controller) ─────────┘
     ↓
 Phase 7 (CPU Constructor)
     ↓
-Phase 8 (HDL Enforcement)
+Phase 8 (HDL Enforcement) ←── Phase 10 (Microcode) [10.1 needs HDL types]
     ↓
 Phase 9 (Documentation)
 ```
 
-Note: Phase 6 depends on Phase 2 because the ControlEncoder needs the new control hierarchy.
+Notes:
+- Phase 6 depends on Phase 2 because the ControlEncoder needs the new control hierarchy.
+- Phase 10 (Microcode) is mostly independent and can be done early, except 10.1
+  (BusValidator) which needs HDL type information from Phase 8.
+- Phase 10.2, 10.3, 10.4, 10.5 can be done at any time.
 
 ## Estimated Complexity
 
@@ -639,6 +767,7 @@ Note: Phase 6 depends on Phase 2 because the ControlEncoder needs the new contro
 | 7     | 3-5           | 0         | Medium     |
 | 8     | 5-8           | 0         | Medium     |
 | 9     | Many          | Several   | Low        |
+| 10    | 5-8           | 3-4       | Medium     |
 
 ## Design Decisions
 
