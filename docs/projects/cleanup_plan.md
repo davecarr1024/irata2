@@ -633,36 +633,61 @@ Note: Phase 6 depends on Phase 2 because the ControlEncoder needs the new contro
 | 8     | 5-8           | 0         | Medium     |
 | 9     | Many          | Several   | Low        |
 
-## Open Questions
+## Design Decisions
 
-See end of document for questions that need clarification before implementation.
+These decisions were clarified during planning and should guide implementation.
 
----
+### Factory Pattern Style
 
-## Questions for Clarification
+Use `std::function` for all factories:
+```cpp
+using RegionFactory = std::function<std::unique_ptr<Region>(Memory& parent)>;
+using ModuleFactory = std::function<std::unique_ptr<Module>(Region& parent)>;
+```
 
-1. **Factory pattern style:** For the factory pattern (regions, modules), should we use:
-   - `std::function<std::unique_ptr<T>(Parent&)>` lambdas?
-   - Dedicated factory classes?
-   - Template factory functions?
+### Testing Strategy
 
-2. **Test-only CPU construction:** The cleanup doc says "CPU shouldn't be possible to build with any other HDL or microcode." However, tests often need custom configurations. Should there be:
-   - A separate test-only constructor?
-   - A friend test class?
-   - A builder pattern that tests can use?
+**Full CPU testing only.** Tests should use the complete CPU with real HDL and microcode,
+not custom configurations. This is a project-level consistency decision.
 
-3. **ROM grid sizing:** For InstructionMemory, what's the expected instruction address space size? This affects how many 16-bit/8-bit ROMs are needed in the grid. Is there a target or should it be dynamic?
+To maintain test quality:
+- Build test harnesses, matchers, and helpers as needed
+- Keep tests easy to understand despite full CPU complexity
+- Accept slight coverage reduction as a conscious tradeoff for clean class design
+- Same applies to visibility changes: prefer clean design over testability when in conflict
 
-4. **WordRegister dual bus connection:** The doc mentions WordRegisters on "word bus + byte bus." Does this mean:
-   - The word as a whole is on WordBus, AND the high/low bytes are on ByteBus?
-   - We need a new type that's connected to both simultaneously?
-   - The same register can switch between bus connections?
+### InstructionMemory Sizing
 
-5. **Controller encoder timing:** The encoders "take in microcode program but don't store it." This suggests encoding happens at construction time. Is this correct, or should encoding be lazy/incremental?
+InstructionMemory dynamically sizes its ROM grid based on the microcode program:
+- Calculate required address space from opcode/step/status dimensions
+- Calculate required data width from control word size
+- Generate appropriate number of 16-bit address / 8-bit data ROMs
 
-6. **Status permutation use case:** The StatusEncoder permutation (PartialStatus -> CompleteStatus list) - is this used at:
-   - Compile time (microcode compiler generates all permutations)?
-   - Runtime (controller needs to handle partial matches)?
-   - Both?
+### WordRegister Dual Bus Connection
 
-7. **Phase priorities:** Should phases be implemented strictly in order, or can some be parallelized? For example, Phase 3 (Registers) and Phase 5 (Memory) seem relatively independent.
+WordRegisters support simultaneous connection to both buses:
+- The word as a whole moves on the **word bus** (typically address bus)
+- The high/low bytes individually move on the **byte bus** (typically data bus)
+- Both can happen in the same tick - phase ordering makes this safe
+- Bus contention is handled by the existing phase model
+
+Example use case: MAR can receive a full word from PC (word bus) or be loaded
+byte-by-byte from memory (byte bus).
+
+### Controller Encoder Timing
+
+All encoding happens at construction time:
+1. Controller receives MicrocodeProgram
+2. Encoders process program and build encoding tables
+3. InstructionMemory encodes all microcode into ROM grid
+4. MicrocodeProgram reference is discarded
+5. Runtime behavior uses only InstructionMemory/ROM lookups
+
+The StatusEncoder's `Permute()` function is used during this construction-time
+encoding to expand partial status matches into all matching complete statuses.
+
+### Phase Implementation Order
+
+Phases should follow the dependency graph but can be interleaved with other
+project work. Prioritize stability and testing. Independent phases (e.g.,
+Phase 3 Registers and Phase 5 Memory) can be worked in parallel if desired.
