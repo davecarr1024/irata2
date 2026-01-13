@@ -75,3 +75,42 @@
 
 * Generally good, but the hdl should enforce at startup that the sim is a superset of the hdl.
 * All the structural changes above should be reflected and enforced in the hdl.
+
+# microcode
+
+## BusValidator
+
+* The validator does a bunch of hardcoded lookups to decide what kind of register is what. But this shouldn't be necessary.
+* The type system knows what's up. The microcode program should have all the control references into the hdl. The hdl knows which controls are read and write controls, and these should have bus references. This is enoguh information to do bus deconfliction. If this information isn't in the hdl it should be updated.
+
+## ControlConflictValidator
+
+* Multiple ALU opcode bits being asserted isn't an error since the ALU opcode is binary encoded.
+
+## PhaseOrderingValidator
+
+* This shows a concerning misunderstanding of the tick phases.
+* Tick phases happen in order every tick: control write read process clear
+* Within each tick phase, components are ticked in a nondeterministic order and controls are consumed in a nondeterministic order. This is by design. Docs should reflect this, since it's an important property of the system. 
+* Controls enforce access to their values in the sim to protect tick phase reasoning.
+* This validator isn't needed at all because of this reasoning.
+
+## Optimizer
+
+* The step-merging optimizer should be easy to write with a correct understanding of tick phases and microcode steps and stages.
+* Tick phases are ordered: control < write < read < process < clear
+* All controls in a microcode step happen in tick phase order, they are a control _set_ and are unordered except for their phases
+* control a is less than or equal to control b if control a's phase <= control b's phase
+* step a is less than or equal to step b if all controls in step a are less than or equal to the controls in step b
+* step a is mergable with step b if step a <= step b _and_ they are in the same stage
+* It's complicated to write out this way, but the short way to say it is steps are mergable if everything in step a happens before or at the same time as everything in step b, and they're in the same stage.
+
+## Compiler
+
+The compiler should have a concept of:
+* Preamble passes - passes that have to run to get the microcode to a valid state (this is StepTransformer and SequenceTransformer)
+* validators - all validators
+* transfomers - all other transformers
+* The compiler should run the preamble passes, all the validators, and then enter a pattern where: for each transformer, run the transformer and then all the validators. 
+* This pattern is defensive and designed to detect invalid output from a transformer.
+* Currently the end of Compiler::Compile is doing a bunch of encoding? This should be in a separate encoder class.
