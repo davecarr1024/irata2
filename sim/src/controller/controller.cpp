@@ -1,4 +1,4 @@
-#include "irata2/sim/controller.h"
+#include "irata2/sim/controller/controller.h"
 
 #include "irata2/microcode/encoder/instruction_encoder.h"
 #include "irata2/sim/cpu.h"
@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-namespace irata2::sim {
+namespace irata2::sim::controller {
 
 Controller::Controller(std::string name,
                        Component& parent,
@@ -122,4 +122,4 @@ void Controller::TickProcess() {
   }
 }
 
-}  // namespace irata2::sim
+}  // namespace irata2::sim::controller

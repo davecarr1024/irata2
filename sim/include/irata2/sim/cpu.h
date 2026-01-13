@@ -12,12 +12,12 @@
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
 #include "irata2/microcode/output/program.h"
-#include "irata2/sim/alu.h"
+#include "irata2/sim/alu/alu.h"
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
-#include "irata2/sim/controller.h"
+#include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
 #include "irata2/sim/debug_symbols.h"
 #include "irata2/sim/debug_trace.h"
@@ -28,6 +28,10 @@
 #include "irata2/sim/word_bus.h"
 
 namespace irata2::sim {
+
+// Bring nested namespace components into sim namespace for convenience
+using alu::Alu;
+using controller::Controller;
 
 /**
  * @brief Runtime CPU simulator with mutable state.

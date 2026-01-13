@@ -8,7 +8,7 @@
 #include "irata2/sim/status.h"
 #include "irata2/sim/status_register.h"
 
-namespace irata2::sim {
+namespace irata2::sim::alu {
 
 class Alu final : public ComponentWithParent {
  public:
@@ -50,6 +50,6 @@ class Alu final : public ComponentWithParent {
   Status& overflow_;
 };
 
-}  // namespace irata2::sim
+}  // namespace irata2::sim::alu
 
 #endif  // IRATA2_SIM_ALU_H
