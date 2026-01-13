@@ -24,12 +24,20 @@ add_custom_target(generate_microcode ALL DEPENDS ${MICROCODE_GENERATED_CPP})
 
 # Microcode library
 add_library(irata2_microcode
+  src/compiler/bus_validator.cpp
   src/compiler/compiler.cpp
+  src/compiler/control_conflict_validator.cpp
+  src/compiler/duplicate_step_optimizer.cpp
+  src/compiler/empty_step_optimizer.cpp
   src/compiler/fetch_transformer.cpp
   src/compiler/fetch_validator.cpp
   src/compiler/isa_coverage_validator.cpp
+  src/compiler/phase_ordering_validator.cpp
   src/compiler/sequence_transformer.cpp
   src/compiler/sequence_validator.cpp
+  src/compiler/stage_validator.cpp
+  src/compiler/status_validator.cpp
+  src/debug/decoder.cpp
   src/encoder/control_encoder.cpp
   src/encoder/instruction_encoder.cpp
   src/encoder/status_encoder.cpp
@@ -56,25 +64,37 @@ target_link_libraries(irata2_microcode PUBLIC
 # Require C++20
 target_compile_features(irata2_microcode PUBLIC cxx_std_20)
 
-# Export configuration
-install(TARGETS irata2_microcode
-  EXPORT irata2MicrocodeTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
+# Microcode dump CLI utility
+add_executable(microcode_dump src/microcode_dump_main.cpp)
+target_link_libraries(microcode_dump PRIVATE
+  irata2::microcode
+  absl::flags
+  absl::flags_parse
 )
+target_compile_features(microcode_dump PRIVATE cxx_std_20)
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_microcode
+    EXPORT irata2MicrocodeTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+  )
 
-install(EXPORT irata2MicrocodeTargets
-  FILE irata2MicrocodeTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
+
+  install(EXPORT irata2MicrocodeTargets
+    FILE irata2MicrocodeTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)

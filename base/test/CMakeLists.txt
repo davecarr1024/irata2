@@ -20,6 +20,7 @@ add_executable(base_tests
   byte_test.cpp
   word_test.cpp
   tick_phase_test.cpp
+  log_test.cpp
 )
 
 target_link_libraries(base_tests PRIVATE

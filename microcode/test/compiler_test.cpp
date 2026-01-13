@@ -75,7 +75,17 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
 TEST(CompilerTest, RejectsStepIndexOverflow) {
   Cpu cpu;
   InstructionSet set;
-  std::vector<Step> steps(257);
+  // Create 257 non-empty, non-duplicate steps so optimizers don't remove them
+  std::vector<Step> steps;
+  steps.reserve(257);
+  for (int i = 0; i < 257; ++i) {
+    // Alternate between halt and crash to prevent deduplication
+    if (i % 2 == 0) {
+      steps.push_back(MakeStep({&cpu.halt().control_info()}));
+    } else {
+      steps.push_back(MakeStep({&cpu.crash().control_info()}));
+    }
+  }
   set.instructions.push_back(
       MakeInstruction(Opcode::HLT_IMP, std::move(steps)));
   set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP, {MakeStep({})}));

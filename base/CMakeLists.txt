@@ -15,25 +15,33 @@ target_include_directories(irata2_base INTERFACE
 # Require C++20
 target_compile_features(irata2_base INTERFACE cxx_std_20)
 
-# Link with fmt for string formatting
-target_link_libraries(irata2_base INTERFACE fmt::fmt)
-
-# Export configuration
-install(TARGETS irata2_base
-  EXPORT irata2BaseTargets
-  INCLUDES DESTINATION include
+# Link with fmt for string formatting and absl for logging
+target_link_libraries(irata2_base INTERFACE
+  fmt::fmt
+  absl::log
+  absl::log_initialize
+  absl::log_globals
 )
 
-install(DIRECTORY include/
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
-)
+# Export configuration (optional, disabled by default for development)
+option(ENABLE_INSTALL "Enable install targets" OFF)
+if(ENABLE_INSTALL)
+  install(TARGETS irata2_base
+    EXPORT irata2BaseTargets
+    INCLUDES DESTINATION include
+  )
 
-install(EXPORT irata2BaseTargets
-  FILE irata2BaseTargets.cmake
-  NAMESPACE irata2::
-  DESTINATION lib/cmake/irata2
-)
+  install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+  )
+
+  install(EXPORT irata2BaseTargets
+    FILE irata2BaseTargets.cmake
+    NAMESPACE irata2::
+    DESTINATION lib/cmake/irata2
+  )
+endif()
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)

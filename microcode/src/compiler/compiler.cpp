@@ -12,6 +12,7 @@ Compiler::Compiler(encoder::ControlEncoder control_encoder,
                    const hdl::ControlInfo& reset_control)
     : control_encoder_(std::move(control_encoder)),
       status_encoder_(std::move(status_encoder)),
+      status_validator_(status_encoder_),
       sequence_transformer_(increment_control, reset_control),
       sequence_validator_(increment_control, reset_control) {}
 
@@ -19,7 +20,21 @@ output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) c
   fetch_transformer_.Run(instruction_set);
   fetch_validator_.Run(instruction_set);
   sequence_transformer_.Run(instruction_set);
+  bus_validator_.Run(instruction_set);
+  control_conflict_validator_.Run(instruction_set);
+  phase_ordering_validator_.Run(instruction_set);
+  stage_validator_.Run(instruction_set);
+  status_validator_.Run(instruction_set);
   isa_coverage_validator_.Run(instruction_set);
+  sequence_validator_.Run(instruction_set);
+
+  // Optimization passes with re-validation
+  empty_step_optimizer_.Run(instruction_set);
+  stage_validator_.Run(instruction_set);
+  sequence_validator_.Run(instruction_set);
+
+  duplicate_step_optimizer_.Run(instruction_set);
+  stage_validator_.Run(instruction_set);
   sequence_validator_.Run(instruction_set);
 
   output::MicrocodeProgram program;

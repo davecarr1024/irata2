@@ -16,17 +16,25 @@ include(GoogleTest)
 
 add_executable(microcode_tests
   builder_test.cpp
+  bus_validator_test.cpp
   compiler_conflict_test.cpp
   compiler_test.cpp
+  control_conflict_validator_test.cpp
   control_encoder_test.cpp
   cpu_path_resolver_test.cpp
+  decoder_test.cpp
+  duplicate_step_optimizer_test.cpp
+  empty_step_optimizer_test.cpp
   fetch_transformer_test.cpp
   fetch_validator_test.cpp
   isa_coverage_validator_test.cpp
   instruction_encoder_test.cpp
+  phase_ordering_validator_test.cpp
   sequence_transformer_test.cpp
   sequence_validator_test.cpp
+  stage_validator_test.cpp
   status_encoder_test.cpp
+  status_validator_test.cpp
 )
 
 target_link_libraries(microcode_tests PRIVATE

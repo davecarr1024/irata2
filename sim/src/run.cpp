@@ -1,19 +1,42 @@
 #include "irata2/sim.h"
 #include "irata2/sim/debug_dump.h"
+#include "irata2/base/log.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
+#include <optional>
 
 namespace {
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " [--expect-crash] [--max-cycles N] [--debug debug.json]"
-            << " [--trace-depth N]"
-            << " <cartridge.bin>\n";
+            << " [--trace-depth N] [--log-level {info,warning,error,debug}]"
+            << " <cartridge.bin>\n"
+            << "\nLog level can also be set via IRATA2_LOG_LEVEL environment variable.\n";
+}
+
+std::optional<irata2::base::LogLevel> ParseLogLevel(const std::string& level_str) {
+  if (level_str == "info") return irata2::base::LogLevel::kInfo;
+  if (level_str == "warning") return irata2::base::LogLevel::kWarning;
+  if (level_str == "error") return irata2::base::LogLevel::kError;
+  if (level_str == "debug") return irata2::base::LogLevel::kDebug;
+  return std::nullopt;
 }
 }  // namespace
 
 int main(int argc, char** argv) {
+  irata2::base::InitializeLogging();
+
+  // Check for IRATA2_LOG_LEVEL environment variable
+  std::optional<irata2::base::LogLevel> log_level;
+  if (const char* env_level = std::getenv("IRATA2_LOG_LEVEL")) {
+    log_level = ParseLogLevel(env_level);
+    if (log_level) {
+      irata2::base::SetLogLevel(*log_level);
+    }
+  }
+
   if (argc < 2) {
     PrintUsage(argv[0]);
     return 1;
@@ -55,6 +78,21 @@ int main(int argc, char** argv) {
       trace_depth = std::stoll(argv[++i]);
       continue;
     }
+    if (arg == "--log-level") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      std::string level_str = argv[++i];
+      log_level = ParseLogLevel(level_str);
+      if (!log_level) {
+        std::cerr << "Error: Invalid log level '" << level_str << "'\n";
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      irata2::base::SetLogLevel(*log_level);
+      continue;
+    }
     if (cartridge_path.empty()) {
       cartridge_path = std::move(arg);
       continue;
@@ -87,6 +125,12 @@ int main(int argc, char** argv) {
       cpu.EnableTrace(static_cast<size_t>(trace_depth));
     }
 
+    // Log sim.start
+    IRATA2_LOG_INFO << "sim.start: cartridge=" << cartridge_path
+                    << ", entry_pc=" << cartridge.header.entry.to_string()
+                    << ", trace_depth=" << (trace_depth >= 0 ? trace_depth : (debug_path.empty() ? 0 : 64))
+                    << ", debug_symbols=" << (!debug_path.empty() ? debug_path : "none");
+
     irata2::sim::Cpu::RunResult result;
     bool timed_out = false;
     if (max_cycles < 0) {
@@ -104,6 +148,20 @@ int main(int argc, char** argv) {
       }
     }
 
+    // Log lifecycle events
+    if (timed_out) {
+      IRATA2_LOG_INFO << "sim.timeout: max_cycles=" << max_cycles
+                      << ", cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
+    } else if (result.crashed) {
+      IRATA2_LOG_INFO << "sim.crash: cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
+    } else {
+      IRATA2_LOG_INFO << "sim.halt: cycle_count=" << cpu.cycle_count()
+                      << ", instruction_address=" << cpu.instruction_address().to_string();
+    }
+
+    // Log failure-path debug dump and trace
     if (!debug_path.empty()) {
       const bool unexpected_crash = result.crashed && !expect_crash;
       const bool unexpected_halt = !result.crashed && expect_crash;
@@ -111,7 +169,9 @@ int main(int argc, char** argv) {
         const std::string reason = timed_out ? "timeout"
                                   : unexpected_crash ? "crash"
                                                      : "halt";
-        std::cerr << irata2::sim::FormatDebugDump(cpu, reason) << "\n";
+        const std::string dump = irata2::sim::FormatDebugDump(cpu, reason);
+        IRATA2_LOG_INFO << "sim.dump:\n" << dump;
+        std::cerr << dump << "\n";
       }
     }
 

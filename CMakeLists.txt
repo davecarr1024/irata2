@@ -22,6 +22,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
+# Abseil library for logging and utilities
+FetchContent_Declare(
+  absl
+  GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+  GIT_TAG 20240116.2
+)
+set(ABSL_PROPAGATE_CXX_STD ON)
+FetchContent_MakeAvailable(absl)
+
 # Code coverage support
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
 
