@@ -16,30 +16,16 @@ Compiler::Compiler(encoder::ControlEncoder control_encoder,
       sequence_transformer_(increment_control, reset_control),
       sequence_validator_(increment_control, reset_control) {}
 
-output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) const {
-  fetch_transformer_.Run(instruction_set);
-  fetch_validator_.Run(instruction_set);
-  sequence_transformer_.Run(instruction_set);
+void Compiler::RunAllValidators(ir::InstructionSet& instruction_set) const {
   bus_validator_.Run(instruction_set);
   control_conflict_validator_.Run(instruction_set);
   stage_validator_.Run(instruction_set);
   status_validator_.Run(instruction_set);
   isa_coverage_validator_.Run(instruction_set);
   sequence_validator_.Run(instruction_set);
+}
 
-  // Optimization passes with re-validation
-  empty_step_optimizer_.Run(instruction_set);
-  stage_validator_.Run(instruction_set);
-  sequence_validator_.Run(instruction_set);
-
-  duplicate_step_optimizer_.Run(instruction_set);
-  stage_validator_.Run(instruction_set);
-  sequence_validator_.Run(instruction_set);
-
-  step_merging_optimizer_.Run(instruction_set);
-  stage_validator_.Run(instruction_set);
-  sequence_validator_.Run(instruction_set);
-
+output::MicrocodeProgram Compiler::Encode(const ir::InstructionSet& instruction_set) const {
   output::MicrocodeProgram program;
   program.control_paths = control_encoder_.control_paths();
   program.status_bits = status_encoder_.bits();
@@ -83,6 +69,29 @@ output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) c
   }
 
   return program;
+}
+
+output::MicrocodeProgram Compiler::Compile(ir::InstructionSet instruction_set) const {
+  // Phase 1: Preamble passes - required to get microcode to valid state
+  fetch_transformer_.Run(instruction_set);
+  fetch_validator_.Run(instruction_set);
+  sequence_transformer_.Run(instruction_set);
+
+  // Phase 2: Initial validation - verify preamble output is valid
+  RunAllValidators(instruction_set);
+
+  // Phase 3: Optimization passes - each optimizer followed by all validators
+  empty_step_optimizer_.Run(instruction_set);
+  RunAllValidators(instruction_set);
+
+  duplicate_step_optimizer_.Run(instruction_set);
+  RunAllValidators(instruction_set);
+
+  step_merging_optimizer_.Run(instruction_set);
+  RunAllValidators(instruction_set);
+
+  // Phase 4: Encoding - convert validated IR to output format
+  return Encode(instruction_set);
 }
 
 }  // namespace irata2::microcode::compiler

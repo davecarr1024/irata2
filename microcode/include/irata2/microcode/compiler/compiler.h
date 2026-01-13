@@ -21,6 +21,28 @@
 
 namespace irata2::microcode::compiler {
 
+/**
+ * @brief Compiles microcode IR into a MicrocodeProgram.
+ *
+ * The compiler runs passes in a structured order:
+ *
+ * 1. **Preamble passes** - Required to get microcode to valid state
+ *    - FetchTransformer: Adds fetch preamble steps
+ *    - FetchValidator: Validates fetch preamble structure
+ *    - SequenceTransformer: Adds step increment/reset controls
+ *
+ * 2. **Initial validation** - All validators run to verify preamble output
+ *
+ * 3. **Optimization passes** - Each optimizer followed by all validators
+ *    - EmptyStepOptimizer -> validators
+ *    - DuplicateStepOptimizer -> validators
+ *    - StepMergingOptimizer -> validators
+ *
+ * 4. **Encoding** - Convert validated IR to output format
+ *
+ * This defensive structure ensures that any pass producing invalid output
+ * is immediately detected by the validators.
+ */
 class Compiler {
  public:
   Compiler(encoder::ControlEncoder control_encoder,
@@ -31,17 +53,29 @@ class Compiler {
   output::MicrocodeProgram Compile(ir::InstructionSet instruction_set) const;
 
  private:
+  // Run all validators on the instruction set
+  void RunAllValidators(ir::InstructionSet& instruction_set) const;
+
+  // Encode the validated IR into the output program
+  output::MicrocodeProgram Encode(const ir::InstructionSet& instruction_set) const;
+
   encoder::ControlEncoder control_encoder_;
   encoder::StatusEncoder status_encoder_;
+
+  // Preamble passes
   FetchTransformer fetch_transformer_;
   FetchValidator fetch_validator_;
+  SequenceTransformer sequence_transformer_;
+
+  // Validators
   BusValidator bus_validator_;
   ControlConflictValidator control_conflict_validator_;
   StageValidator stage_validator_;
   StatusValidator status_validator_;
   IsaCoverageValidator isa_coverage_validator_;
-  SequenceTransformer sequence_transformer_;
   SequenceValidator sequence_validator_;
+
+  // Optimizers
   EmptyStepOptimizer empty_step_optimizer_;
   DuplicateStepOptimizer duplicate_step_optimizer_;
   StepMergingOptimizer step_merging_optimizer_;
