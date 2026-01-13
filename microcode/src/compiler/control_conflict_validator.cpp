@@ -33,9 +33,6 @@ void ValidateStep(const ir::Step& step, int opcode, int step_index) {
   // Track read/write operations per component
   std::map<std::string, std::set<std::string>> component_operations;
 
-  // Track ALU opcode bits
-  std::vector<std::string> alu_opcode_bits;
-
   for (const auto* control : step.controls) {
     const std::string_view path = control->path;
     const std::string component = GetComponentPath(path);
@@ -43,11 +40,6 @@ void ValidateStep(const ir::Step& step, int opcode, int step_index) {
 
     // Track component operations
     component_operations[component].insert(operation);
-
-    // Track ALU opcode bits
-    if (path.find("alu.opcode_bit") != std::string_view::npos) {
-      alu_opcode_bits.push_back(std::string(path));
-    }
   }
 
   // Check for read+write conflicts on the same component
@@ -75,18 +67,8 @@ void ValidateStep(const ir::Step& step, int opcode, int step_index) {
       throw MicrocodeError(message.str());
     }
   }
-
-  // Check for multiple ALU opcode bits (should only set one at a time)
-  if (alu_opcode_bits.size() > 1) {
-    std::ostringstream message;
-    message << "multiple ALU opcode bits set in opcode " << opcode
-            << " step " << step_index << ": ";
-    for (size_t i = 0; i < alu_opcode_bits.size(); ++i) {
-      if (i > 0) message << ", ";
-      message << alu_opcode_bits[i];
-    }
-    throw MicrocodeError(message.str());
-  }
+  // Note: Multiple ALU opcode bits being set is valid because the ALU opcode
+  // is binary encoded (not one-hot). Multiple bits form a single opcode value.
 }
 
 }  // namespace

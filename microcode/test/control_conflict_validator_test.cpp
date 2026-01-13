@@ -91,7 +91,9 @@ TEST(ControlConflictValidatorTest, RejectsReadWriteSameComponent) {
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
-TEST(ControlConflictValidatorTest, RejectsMultipleAluOpcodeBits) {
+TEST(ControlConflictValidatorTest, AcceptsMultipleAluOpcodeBits) {
+  // ALU opcode is binary encoded, so multiple bits being set is valid
+  // (they form a single opcode value, not conflicting operations)
   Cpu cpu;
   InstructionSet set;
   set.instructions.push_back(MakeInstruction(
@@ -100,7 +102,7 @@ TEST(ControlConflictValidatorTest, RejectsMultipleAluOpcodeBits) {
                     &cpu.alu().opcode_bit_1().control_info()})}));
 
   ControlConflictValidator validator;
-  EXPECT_THROW(validator.Run(set), MicrocodeError);
+  EXPECT_NO_THROW(validator.Run(set));
 }
 
 TEST(ControlConflictValidatorTest, RejectsSetClearSameFlag) {
