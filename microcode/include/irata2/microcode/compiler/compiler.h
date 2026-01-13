@@ -13,6 +13,7 @@
 #include "irata2/microcode/compiler/sequence_validator.h"
 #include "irata2/microcode/compiler/stage_validator.h"
 #include "irata2/microcode/compiler/status_validator.h"
+#include "irata2/microcode/compiler/step_merging_optimizer.h"
 #include "irata2/microcode/encoder/control_encoder.h"
 #include "irata2/microcode/encoder/instruction_encoder.h"
 #include "irata2/microcode/encoder/status_encoder.h"
@@ -43,6 +44,7 @@ class Compiler {
   SequenceValidator sequence_validator_;
   EmptyStepOptimizer empty_step_optimizer_;
   DuplicateStepOptimizer duplicate_step_optimizer_;
+  StepMergingOptimizer step_merging_optimizer_;
 };
 
 }  // namespace irata2::microcode::compiler

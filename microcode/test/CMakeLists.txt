@@ -34,6 +34,7 @@ add_executable(microcode_tests
   stage_validator_test.cpp
   status_encoder_test.cpp
   status_validator_test.cpp
+  step_merging_optimizer_test.cpp
 )
 
 target_link_libraries(microcode_tests PRIVATE
