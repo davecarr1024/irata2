@@ -363,7 +363,13 @@ private:
 
 ### 6.3 StatusEncoder
 
-**Purpose:** Encode/decode status values for addressing.
+**Purpose:** Encode/decode status values for ROM addressing. Handles expansion
+of sparse microcode (partial status requirements) into dense ROM entries.
+
+**Key concepts:**
+- `CompleteStatus`: All status bits have defined values (e.g., C=1, Z=0, N=0, V=1)
+- `PartialStatus`: Only some status bits specified, others are "don't care"
+  (e.g., C=1, Z=*, N=*, V=*) - this is what microcode steps output
 
 **Interface:**
 ```cpp
@@ -371,25 +377,26 @@ class StatusEncoder : public ComponentWithParent {
 public:
   void Initialize(const MicrocodeProgram& program, Cpu& cpu);
 
-  // Complete status (all bits specified) -> binary encoding
+  // Complete status (all bits specified) -> binary encoding for ROM address
   uint32_t Encode(const CompleteStatus& status) const;
 
   // Binary encoding -> complete status
   CompleteStatus Decode(uint32_t encoded) const;
 
-  // Partial status -> all matching complete statuses
+  // Expand partial status to all matching complete statuses
+  // Used at construction time to populate ROM for all "don't care" combinations
   std::vector<CompleteStatus> Permute(const PartialStatus& partial) const;
 
 private:
-  std::vector<Status*> status_references_;  // Ordered list
+  std::vector<Status*> status_references_;  // Ordered list for stable encoding
 };
 ```
 
 **Steps:**
 1. Create StatusEncoder class
 2. Implement status enumeration from MicrocodeProgram
-3. Implement encoding/decoding
-4. Implement PartialStatus permutation
+3. Implement encoding/decoding for ROM addressing
+4. Implement PartialStatus permutation for sparse-to-dense expansion
 
 ### 6.4 InstructionMemory
 
@@ -683,8 +690,12 @@ All encoding happens at construction time:
 4. MicrocodeProgram reference is discarded
 5. Runtime behavior uses only InstructionMemory/ROM lookups
 
-The StatusEncoder's `Permute()` function is used during this construction-time
-encoding to expand partial status matches into all matching complete statuses.
+The microcode program output is **sparse** - it only specifies statuses the
+instruction "cares about" for each step. The StatusEncoder's `Permute()` function
+expands these partial status requirements into all matching complete statuses,
+ensuring the ROM grid is fully addressed. For example, if a step only cares about
+the carry flag being set, permutation generates entries for all combinations of
+the other status bits (zero, negative, overflow, etc.).
 
 ### Phase Implementation Order
 
