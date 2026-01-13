@@ -19,6 +19,7 @@ direction. Individual projects live in `docs/projects/`.
 - Microcode debug visibility: see `docs/projects/microcode-debugging.md`
 - Microcode compiler improvements: see `docs/projects/microcode-compiler-improvements.md`
 - Program tooling and cartridge inspection: see `docs/projects/cartridge-tools.md`
+- Sim module cleanup and refactoring: see `docs/projects/cleanup.md` (principles) and `docs/projects/cleanup_plan.md` (implementation plan)
 
 ## Planned Project Order (Defensive)
 
@@ -30,7 +31,11 @@ risk as the ISA grows.
 3. Microcode compiler improvements (validators, optimizers) to harden correctness early.
 4. Microcode debug visibility for control path transparency.
 5. Program tooling and cartridge inspection for safer workflows.
-6. ISA expansion in batches - **Deferred** until tooling supports safe vertical growth.
+6. **Sim module cleanup** - Architectural refactoring per `cleanup_plan.md`. This is a
+   long-running effort that can be interleaved with other work. Early phases (1-4)
+   provide immediate code quality benefits. Later phases (5-8) are prerequisites
+   for more sophisticated ISA features.
+7. ISA expansion in batches - **Deferred** until tooling supports safe vertical growth.
 
 ## Next Overall Steps
 

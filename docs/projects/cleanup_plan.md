@@ -1,0 +1,668 @@
+# Cleanup Implementation Plan
+
+This document provides a detailed implementation plan for the changes proposed in
+[cleanup.md](cleanup.md). Changes are organized into phases based on dependencies.
+
+## Overview
+
+The cleanup effort involves significant architectural changes to the sim module:
+- Component hierarchy improvements (visibility, factory patterns)
+- Control and Register type redesigns
+- Controller submodule with hardware-ish implementation
+- Memory structure changes
+
+## Phase 1: Foundation Changes (No Breaking Changes)
+
+These changes can be made independently without breaking existing functionality.
+
+### 1.1 Visibility Improvements
+
+**Goal:** Make members protected/private unless they must be public.
+
+| Component | Changes |
+|-----------|---------|
+| Component | `current_phase()`, `RegisterChild()`, `Tick*()` -> protected |
+| ComponentWithParent | `RegisterChild()` -> protected (called during construction) |
+
+**Files:**
+- [component.h](../../sim/include/irata2/sim/component.h)
+- [component_with_parent.h](../../sim/include/irata2/sim/component_with_parent.h)
+
+**Steps:**
+1. Add `protected:` section to Component for tick methods
+2. Move `RegisterChild()` to protected in ComponentWithParent
+3. Ensure tests use public interface only (refactor if needed)
+4. Verify all tests pass
+
+### 1.2 Children List in Components
+
+**Goal:** Components maintain list of children for tick propagation.
+
+**Changes:**
+- Add `std::vector<Component*> children_` to Component
+- `RegisterChild()` populates this list
+- Tick methods propagate to children automatically
+
+**Files:**
+- [component.h](../../sim/include/irata2/sim/component.h)
+- [cpu.h](../../sim/include/irata2/sim/cpu.h)
+
+**Steps:**
+1. Add `children_` vector to Component (protected)
+2. Modify `RegisterChild()` to populate children list
+3. Base `Tick*()` implementations call children's `Tick*()` methods
+4. Update CPU to use children list instead of manual component vector
+5. Verify tick ordering is preserved
+
+### 1.3 Structural References as Const
+
+**Goal:** All parent/children references are const and set during construction.
+
+**Changes:**
+- Ensure `parent_` is already const reference (verify)
+- Mark `children_` as populated during construction only
+
+**Files:**
+- [component_with_parent.h](../../sim/include/irata2/sim/component_with_parent.h)
+
+**Steps:**
+1. Audit all structural references
+2. Add assertions or design that prevents modification post-construction
+3. Document the invariant
+
+## Phase 2: Control Hierarchy Redesign
+
+**Goal:** Clean control type hierarchy with virtual root and concrete leaf types.
+
+### 2.1 New Control Hierarchy
+
+```
+Control (root, virtual)
+├── AutoResetControl
+│   ├── WriteControl (Write phase)
+│   ├── ReadControl (Read phase)
+│   └── ProcessControl (Process phase)
+└── LatchedControl
+    ├── LatchedWriteControl
+    ├── LatchedReadControl
+    └── LatchedProcessControl
+```
+
+**Files:**
+- [control.h](../../sim/include/irata2/sim/control.h) (major rewrite)
+- New: `auto_reset_control.h`, `latched_control.h`
+
+**Steps:**
+1. Create abstract `Control` base with virtual interface
+2. Create `AutoResetControl` intermediate class
+3. Create `LatchedControl` intermediate class
+4. Migrate phase-specific controls to inherit from appropriate intermediate
+5. Keep phase information in templates
+6. Update all control usages to use leaf types
+7. Deprecate old control patterns
+
+### 2.2 Update All Control Usages
+
+**Affected files (grep for Control usage):**
+- Cpu, Controller, Registers, Alu, Memory, StatusAnalyzer
+
+**Steps:**
+1. Identify all control declarations
+2. Change to appropriate leaf type
+3. Verify phase enforcement still works
+
+## Phase 3: Register Hierarchy Redesign
+
+**Goal:** Clean register hierarchy with ValueType template, optional bus connection.
+
+### 3.1 Base Register Changes
+
+**New hierarchy:**
+```
+Register<ValueType> (base, not connected to bus)
+├── ByteRegister
+├── WordRegister (has high/low ByteRegisters)
+└── RegisterWithBus<ValueType> : ComponentWithBus
+    ├── ByteRegisterWithBus
+    └── WordRegisterWithBus
+```
+
+**Changes:**
+- Default registers not connected to bus
+- All registers have reset control by default
+- RegisterWithBus implements ComponentWithBus
+
+**Files:**
+- [register.h](../../sim/include/irata2/sim/register.h)
+- New: `register_with_bus.h`
+- [byte_register.h](../../sim/include/irata2/sim/byte_register.h)
+- [word_register.h](../../sim/include/irata2/sim/word_register.h)
+
+**Steps:**
+1. Create base Register without bus connection
+2. Create RegisterWithBus that adds bus
+3. Update ByteRegister and WordRegister
+4. Update all usages
+
+### 3.2 WordRegister Improvements
+
+**Changes:**
+- WordRegister has high/low ByteRegister members
+- Word-level reset control
+- Support for dual bus connection (word bus + byte bus)
+
+**Steps:**
+1. Add high/low ByteRegister members
+2. Add word-level reset
+3. Implement word bus read/write
+4. Implement byte bus access through high/low registers
+
+### 3.3 WordCounter Type
+
+**Changes:**
+- Word register with ByteRegister bytes
+- Word-level increment control
+- Handle byte overflow
+
+**Files:**
+- New: `word_counter.h`
+
+**Steps:**
+1. Extend WordRegister (or WordRegisterWithBus)
+2. Add increment control (ProcessControl)
+3. Implement low byte increment with overflow to high byte
+
+### 3.4 LatchedWordRegister Redesign
+
+**Current:** Simple value holder with no controls.
+
+**New design:**
+- Not connected to bus
+- Hard connection to target WordRegister
+- Latch control copies target value
+
+**Use case:** IPC (Instruction Pointer Cache) latches from PC.
+
+**Steps:**
+1. Add constructor parameter for target register reference
+2. Add latch control (ProcessControl)
+3. TickProcess copies target value when latch asserted
+
+### 3.5 CPU-Level TMP Word Register
+
+**Goal:** Add a tmp word register connected to both buses for complex addressing.
+
+**Use cases:**
+- Moving words between registers
+- Building addresses from memory bytes
+- Absolute addressing mode support
+
+**Steps:**
+1. Add TMP WordRegister to CPU
+2. Connect to word bus and byte bus
+3. Wire up controls in controller
+
+## Phase 4: ComponentWithBus Abstraction
+
+**Goal:** Generalize bus interaction with abstract read/write methods.
+
+### 4.1 Abstract Methods
+
+**Changes:**
+```cpp
+template<typename Derived, typename ValueType>
+class ComponentWithBus : public ComponentWithParent {
+protected:
+  // Subclasses implement these
+  virtual ValueType read_value() = 0;
+  virtual void write_value(ValueType value) = 0;
+
+  // Base class implements tick methods
+  void TickWrite() final {
+    if (write().asserted()) {
+      bus().Write(read_value(), path());
+    }
+  }
+
+  void TickRead() final {
+    if (read().asserted()) {
+      write_value(bus().Read(path()));
+    }
+  }
+};
+```
+
+**Files:**
+- [component_with_bus.h](../../sim/include/irata2/sim/component_with_bus.h)
+
+**Steps:**
+1. Add abstract `read_value()` and `write_value()` protected methods
+2. Implement TickWrite/TickRead in base class
+3. Update Register to implement the abstract methods
+4. Update Memory to implement the abstract methods
+
+## Phase 5: Memory Refactoring
+
+**Goal:** Regions and Modules as ComponentWithParent with factory pattern.
+
+### 5.1 Region as ComponentWithParent
+
+**Current:** Region is a simple struct with name, offset, module.
+
+**New:** Region is ComponentWithParent.
+
+**Initialization challenge:** Bidirectional references (Memory has Regions, Regions know parent).
+
+**Solution:** Factory pattern - Memory constructor takes vector of region factories.
+
+```cpp
+using RegionFactory = std::function<std::unique_ptr<Region>(Memory& parent)>;
+
+Memory::Memory(Cpu& cpu, const std::vector<RegionFactory>& region_factories)
+  : ComponentWithBus(...) {
+  for (const auto& factory : region_factories) {
+    regions_.push_back(factory(*this));
+  }
+}
+```
+
+**Files:**
+- [region.h](../../sim/include/irata2/sim/memory/region.h)
+- [memory.h](../../sim/include/irata2/sim/memory/memory.h)
+
+**Steps:**
+1. Make Region extend ComponentWithParent
+2. Change Memory constructor to accept region factories
+3. Update all Memory construction sites
+
+### 5.2 Module as ComponentWithParent
+
+**Similar pattern:** Region takes module factory.
+
+```cpp
+using ModuleFactory = std::function<std::unique_ptr<Module>(Region& parent)>;
+
+Region::Region(Memory& parent, const std::string& name,
+               Word offset, ModuleFactory module_factory)
+  : ComponentWithParent(parent, name), offset_(offset) {
+  module_ = module_factory(*this);
+}
+```
+
+**Files:**
+- [module.h](../../sim/include/irata2/sim/memory/module.h)
+- [ram.h](../../sim/include/irata2/sim/memory/ram.h)
+- [rom.h](../../sim/include/irata2/sim/memory/rom.h)
+
+**Steps:**
+1. Make Module extend ComponentWithParent
+2. Make Ram/Rom extend Module properly
+3. Update Region to use module factory
+4. Update all Region construction sites
+
+### 5.3 Memory as ComponentWithBus
+
+**Current:** Memory already extends ComponentWithBus.
+
+**Verify:** Ensure it properly uses the abstraction from Phase 4.
+
+## Phase 6: Controller Submodule
+
+This is the largest and most complex phase. The controller becomes a proper
+submodule with hardware-ish implementation.
+
+### 6.1 Directory Structure
+
+```
+sim/
+├── include/irata2/sim/
+│   └── controller/
+│       ├── controller.h
+│       ├── control_encoder.h
+│       ├── status_encoder.h
+│       ├── instruction_encoder.h
+│       ├── instruction_memory.h
+│       └── rom_grid.h
+└── src/
+    └── controller/
+        ├── controller.cpp
+        ├── control_encoder.cpp
+        ├── status_encoder.cpp
+        ├── instruction_encoder.cpp
+        └── instruction_memory.cpp
+```
+
+### 6.2 ControlEncoder
+
+**Purpose:** Encode/decode control signals to/from binary control words.
+
+**Interface:**
+```cpp
+class ControlEncoder : public ComponentWithParent {
+public:
+  // At startup: extract all controls from microcode, fetch sim references
+  void Initialize(const MicrocodeProgram& program, Cpu& cpu);
+
+  // Encode: set of control references -> binary control word
+  std::vector<uint8_t> Encode(const std::vector<ControlBase*>& controls) const;
+
+  // Decode: binary control word -> set of control references
+  std::vector<ControlBase*> Decode(const std::vector<uint8_t>& word) const;
+
+private:
+  std::vector<ControlBase*> control_references_;  // Ordered list
+  size_t control_word_width_;  // Bytes needed to encode all controls
+};
+```
+
+**Steps:**
+1. Create ControlEncoder class
+2. Implement control enumeration from MicrocodeProgram
+3. Implement encoding logic (control index -> bit position)
+4. Implement decoding logic (bit position -> control reference)
+
+### 6.3 StatusEncoder
+
+**Purpose:** Encode/decode status values for addressing.
+
+**Interface:**
+```cpp
+class StatusEncoder : public ComponentWithParent {
+public:
+  void Initialize(const MicrocodeProgram& program, Cpu& cpu);
+
+  // Complete status (all bits specified) -> binary encoding
+  uint32_t Encode(const CompleteStatus& status) const;
+
+  // Binary encoding -> complete status
+  CompleteStatus Decode(uint32_t encoded) const;
+
+  // Partial status -> all matching complete statuses
+  std::vector<CompleteStatus> Permute(const PartialStatus& partial) const;
+
+private:
+  std::vector<Status*> status_references_;  // Ordered list
+};
+```
+
+**Steps:**
+1. Create StatusEncoder class
+2. Implement status enumeration from MicrocodeProgram
+3. Implement encoding/decoding
+4. Implement PartialStatus permutation
+
+### 6.4 InstructionMemory
+
+**Purpose:** Hardware-ish ROM storage for microcode.
+
+**Design:**
+- Contains ControlEncoder and StatusEncoder
+- Contains grid of Rom objects (16-bit address space, 8-bit data each)
+- Dynamically sizes ROM grid based on instruction/control space
+- Takes microcode program at construction, encodes into ROMs, discards program
+
+**Interface:**
+```cpp
+class InstructionMemory : public ComponentWithParent {
+public:
+  InstructionMemory(Controller& parent, const MicrocodeProgram& program);
+
+  // Lookup: (opcode, step, status) -> control references
+  std::vector<ControlBase*> Lookup(uint8_t opcode, uint8_t step,
+                                    const CompleteStatus& status) const;
+
+private:
+  ControlEncoder control_encoder_;
+  StatusEncoder status_encoder_;
+  std::vector<std::vector<Rom>> rom_grid_;  // [row][col]
+  size_t address_width_;
+  size_t data_width_;
+};
+```
+
+**Steps:**
+1. Create InstructionMemory class
+2. Implement ROM grid sizing calculation
+3. Implement microcode-to-ROM encoding
+4. Implement lookup logic
+
+### 6.5 Controller Refactoring
+
+**Current:** Stores MicrocodeProgram directly, accesses it at runtime.
+
+**New:** Uses InstructionMemory for lookups.
+
+**Changes:**
+```cpp
+class Controller : public ComponentWithParent {
+public:
+  Controller(Cpu& cpu, const MicrocodeProgram& program);
+
+  void TickControl() override {
+    // Get current state
+    uint8_t opcode = ir_.value().value();
+    uint8_t step = sc_.value().value();
+    CompleteStatus status = GatherStatus();
+
+    // Lookup in InstructionMemory
+    auto controls = instruction_memory_.Lookup(opcode, step, status);
+
+    // Assert controls
+    for (auto* control : controls) {
+      control->Assert();
+    }
+  }
+
+private:
+  ByteRegister ir_;
+  LocalCounter<base::Byte> sc_;
+  LatchedWordRegister ipc_;
+  InstructionMemory instruction_memory_;  // Owns the encoders and ROMs
+};
+```
+
+**Steps:**
+1. Refactor Controller to use InstructionMemory
+2. Remove direct MicrocodeProgram storage
+3. Update Controller tests
+
+## Phase 7: CPU Constructor Refactoring
+
+**Goal:** CPU should statically lookup HDL and compiled microcode.
+
+### 7.1 Static HDL/Microcode Singletons
+
+**Current:** CPU accepts HDL and MicrocodeProgram as constructor args.
+
+**New:** Private static methods build singletons.
+
+```cpp
+class Cpu : public Component {
+public:
+  // New constructor: just needs ROM and optional debug symbols
+  Cpu(Rom cartridge,
+      std::optional<DebugSymbols> debug_symbols = std::nullopt,
+      std::vector<RegionFactory> extra_regions = {});
+
+private:
+  // Singleton builders (replaces initialization.h)
+  static const Hdl& GetHdl();
+  static const MicrocodeProgram& GetMicrocodeProgram();
+
+  // Validate sim matches HDL
+  void ValidateAgainstHdl(const Hdl& hdl);
+};
+```
+
+**Steps:**
+1. Create static singleton methods for HDL and MicrocodeProgram
+2. Move initialization logic from initialization.h into CPU
+3. Add validation method
+4. Update CPU constructor to use singletons
+5. Update all CPU construction sites (tests may need adjustment)
+
+### 7.2 RunResult Improvements
+
+**Current:** RunResult is minimal.
+
+**New:** Full debug dump and halt reason.
+
+```cpp
+enum class HaltReason {
+  Timeout,
+  Halt,
+  Crash
+};
+
+struct CpuState {
+  uint8_t a, x;
+  uint16_t pc;
+  uint8_t ir, sc;
+  // ... all registers and status flags
+};
+
+struct RunResult {
+  HaltReason reason;
+  uint64_t cycles;
+  std::optional<CpuState> state;  // Full dump when requested
+};
+```
+
+**Steps:**
+1. Add HaltReason enum
+2. Add CpuState struct
+3. Update RunResult
+4. Update RunUntilHalt to populate new fields
+
+## Phase 8: HDL Enforcement
+
+**Goal:** HDL should enforce that sim is a superset of HDL at startup.
+
+### 8.1 Validation Method
+
+**Add to HDL:** Method to validate against sim.
+
+```cpp
+class Hdl {
+public:
+  // Throws if sim doesn't match HDL structure
+  void ValidateAgainst(const Cpu& cpu) const;
+};
+```
+
+**Checks:**
+- All HDL components exist in sim
+- All HDL controls exist in sim
+- All HDL buses exist in sim
+- Types match
+
+**Steps:**
+1. Add validation method to HDL
+2. Call during CPU construction
+3. Handle structural changes (new hierarchy) in HDL
+
+### 8.2 HDL Structural Updates
+
+Update HDL to reflect new sim structure:
+- New control hierarchy
+- New register hierarchy
+- Controller submodule structure
+- Memory region/module hierarchy
+
+## Phase 9: Documentation and Cleanup
+
+### 9.1 One Class Per File
+
+Audit and fix any files with multiple classes.
+
+### 9.2 Directory Nesting
+
+Ensure submodules have proper directory structure:
+- `sim/alu/` for ALU components
+- `sim/controller/` for controller components
+- `sim/memory/` for memory components
+
+### 9.3 Namespace Nesting
+
+Update namespaces to match directory structure:
+- `irata2::sim::alu::Alu`
+- `irata2::sim::controller::Controller`
+- `irata2::sim::memory::Memory`
+
+### 9.4 Documentation
+
+Each top-level module should have `docs/` directory with:
+- `readme.md` - Module overview
+- Design doc for each submodule
+
+## Dependency Graph
+
+```
+Phase 1 (Foundation)
+    ↓
+Phase 2 (Controls) ←──────────┐
+    ↓                         │
+Phase 3 (Registers)           │
+    ↓                         │
+Phase 4 (ComponentWithBus)    │
+    ↓                         │
+Phase 5 (Memory)              │
+    ↓                         │
+Phase 6 (Controller) ─────────┘
+    ↓
+Phase 7 (CPU Constructor)
+    ↓
+Phase 8 (HDL Enforcement)
+    ↓
+Phase 9 (Documentation)
+```
+
+Note: Phase 6 depends on Phase 2 because the ControlEncoder needs the new control hierarchy.
+
+## Estimated Complexity
+
+| Phase | Files Changed | New Files | Risk Level |
+|-------|---------------|-----------|------------|
+| 1     | 3-5           | 0         | Low        |
+| 2     | 10-15         | 2-3       | Medium     |
+| 3     | 8-12          | 3-4       | Medium     |
+| 4     | 3-5           | 0         | Low        |
+| 5     | 5-8           | 0         | Medium     |
+| 6     | 5-10          | 8-10      | High       |
+| 7     | 3-5           | 0         | Medium     |
+| 8     | 5-8           | 0         | Medium     |
+| 9     | Many          | Several   | Low        |
+
+## Open Questions
+
+See end of document for questions that need clarification before implementation.
+
+---
+
+## Questions for Clarification
+
+1. **Factory pattern style:** For the factory pattern (regions, modules), should we use:
+   - `std::function<std::unique_ptr<T>(Parent&)>` lambdas?
+   - Dedicated factory classes?
+   - Template factory functions?
+
+2. **Test-only CPU construction:** The cleanup doc says "CPU shouldn't be possible to build with any other HDL or microcode." However, tests often need custom configurations. Should there be:
+   - A separate test-only constructor?
+   - A friend test class?
+   - A builder pattern that tests can use?
+
+3. **ROM grid sizing:** For InstructionMemory, what's the expected instruction address space size? This affects how many 16-bit/8-bit ROMs are needed in the grid. Is there a target or should it be dynamic?
+
+4. **WordRegister dual bus connection:** The doc mentions WordRegisters on "word bus + byte bus." Does this mean:
+   - The word as a whole is on WordBus, AND the high/low bytes are on ByteBus?
+   - We need a new type that's connected to both simultaneously?
+   - The same register can switch between bus connections?
+
+5. **Controller encoder timing:** The encoders "take in microcode program but don't store it." This suggests encoding happens at construction time. Is this correct, or should encoding be lazy/incremental?
+
+6. **Status permutation use case:** The StatusEncoder permutation (PartialStatus -> CompleteStatus list) - is this used at:
+   - Compile time (microcode compiler generates all permutations)?
+   - Runtime (controller needs to handle partial matches)?
+   - Both?
+
+7. **Phase priorities:** Should phases be implemented strictly in order, or can some be parallelized? For example, Phase 3 (Registers) and Phase 5 (Memory) seem relatively independent.
