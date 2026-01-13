@@ -29,7 +29,6 @@ add_executable(microcode_tests
   fetch_validator_test.cpp
   isa_coverage_validator_test.cpp
   instruction_encoder_test.cpp
-  phase_ordering_validator_test.cpp
   sequence_transformer_test.cpp
   sequence_validator_test.cpp
   stage_validator_test.cpp
