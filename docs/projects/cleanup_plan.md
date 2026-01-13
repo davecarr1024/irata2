@@ -71,11 +71,11 @@ Better encapsulation and automatic tick propagation.
 2. Add assertions or design that prevents modification post-construction
 3. Document the invariant
 
-## Phase 2: Control Hierarchy Redesign
+## Phase 2: Control Hierarchy Redesign [COMPLETE]
 
-**Goal:** Clean control type hierarchy with virtual root and concrete leaf types.
+Clean control type hierarchy with virtual root and intermediate classes.
 
-### 2.1 New Control Hierarchy
+### 2.1 New Control Hierarchy [COMPLETE]
 
 ```
 Control (root, virtual)
@@ -203,11 +203,11 @@ Register<ValueType> (base, not connected to bus)
 2. Connect to word bus and byte bus
 3. Wire up controls in controller
 
-## Phase 4: ComponentWithBus Abstraction
+## Phase 4: ComponentWithBus Abstraction [COMPLETE]
 
-**Goal:** Generalize bus interaction with abstract read/write methods.
+Generalize bus interaction with abstract read/write methods.
 
-### 4.1 Abstract Methods
+### 4.1 Abstract Methods [COMPLETE]
 
 **Changes:**
 ```cpp
