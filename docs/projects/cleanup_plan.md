@@ -603,9 +603,12 @@ Each top-level module should have `docs/` directory with:
 - `readme.md` - Module overview
 - Design doc for each submodule
 
-## Phase 10: Microcode Module Cleanup
+## Phase 10: Microcode Module Cleanup [COMPLETE]
 
 **Goal:** Improve validators, add step-merging optimizer, restructure compiler.
+
+**Status:** All items complete (10.2, 10.3, 10.4, 10.5). BusValidator improvements (10.1)
+deferred until HDL type information is available.
 
 ### 10.1 BusValidator Improvements
 
@@ -632,7 +635,7 @@ bus information.
 3. Refactor BusValidator to use HDL types instead of hardcoded lookups
 4. Remove hardcoded register name checks
 
-### 10.2 ControlConflictValidator Fix
+### 10.2 ControlConflictValidator Fix [COMPLETE]
 
 **Current:** Flags multiple ALU opcode bits as a conflict.
 
@@ -647,7 +650,7 @@ bus information.
 1. Identify ALU opcode controls
 2. Exclude them from conflict detection (they're binary encoded, not one-hot)
 
-### 10.3 PhaseOrderingValidator Removal
+### 10.3 PhaseOrderingValidator Removal [COMPLETE]
 
 **Current:** Validates control ordering within a step.
 
@@ -670,7 +673,7 @@ Controls enforce access to their values in the sim to protect tick phase reasoni
 2. Delete PhaseOrderingValidator files
 3. Update documentation to clarify nondeterministic ordering within phases
 
-### 10.4 Step-Merging Optimizer
+### 10.4 Step-Merging Optimizer [COMPLETE]
 
 **Goal:** Merge adjacent steps when safe based on phase ordering.
 
@@ -696,7 +699,7 @@ the same time as everything in step b, and they're in the same stage.
 4. Implement step merging (union of control sets)
 5. Add comprehensive tests
 
-### 10.5 Compiler Restructuring
+### 10.5 Compiler Restructuring [COMPLETE]
 
 **Goal:** Defensive compiler structure with preamble, validators, transformers.
 

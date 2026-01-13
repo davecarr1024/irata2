@@ -11,8 +11,9 @@ direction. Individual projects live in `docs/projects/`.
 - ASM integration tests are split by instruction.
 - **Debugging support complete**: debug symbols, trace buffer, IPC, dump output, and test harness integration finished.
 - **Logging improvements complete**: structured logging with lifecycle events, failure-path dumps, CLI/env configuration, and comprehensive documentation.
-- **Microcode compiler improvements in progress**: all 5 validators complete (M0-M4), 2 optimizers complete (O0-O1 EmptyStep/DuplicateStep).
+- **Microcode compiler improvements complete**: all 5 validators (M0-M4), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring done.
 - **Microcode debug visibility complete**: decoder, YAML output, CLI utility (M0-M2).
+- **Microcode module cleanup complete**: Phase 10 of cleanup_plan.md - ControlConflictValidator fix, PhaseOrderingValidator removal, step-merging optimizer, compiler restructuring.
 
 ## Active Project Ideas
 
