@@ -60,16 +60,4 @@ void Memory::WriteAt(base::Word address, base::Byte value) {
   region->Write(address, value);
 }
 
-void Memory::TickWrite() {
-  if (write().asserted()) {
-    bus().Write(ReadAt(mar_.value()), path());
-  }
-}
-
-void Memory::TickRead() {
-  if (read().asserted()) {
-    WriteAt(mar_.value(), bus().Read(path()));
-  }
-}
-
 }  // namespace irata2::sim::memory
