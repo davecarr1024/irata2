@@ -1,6 +1,7 @@
 # Project Plan Alignment Analysis
 
-**Date:** 2026-01-11
+**Date:** 2026-01-13 (Updated)
+**Previous Update:** 2026-01-11
 
 This document compares the project plans in `docs/projects/` with actual implementation state and recommends next steps.
 
@@ -8,9 +9,9 @@ This document compares the project plans in `docs/projects/` with actual impleme
 
 ## Debugging Support (docs/projects/debugging-support.md)
 
-### Status: ~80% Complete
+### Status: COMPLETE ✓
 
-This project is well underway. Here's the milestone status:
+All milestones achieved. Here's the final status:
 
 | Subproject | Milestone | Status | Evidence |
 |------------|-----------|--------|----------|
@@ -25,46 +26,34 @@ This project is well underway. Here's the milestone status:
 | | M1: Symbolized locations | DONE | `FormatTraceLocation()` in dump |
 | **5) Test Harness** | M0: `--debug` flag | DONE | `run.cpp` accepts `--debug debug.json` |
 | | M0: `--trace-depth` flag | DONE | Configurable trace depth |
-| | M1: Assert debug output | NOT DONE | Tests don't verify debug output format |
+| | M1: Assert debug output | DONE | Test coverage exists in debug_dump_test.cpp |
 
-### Remaining Work
+### Project Complete
 
-1. **Test harness M1**: Add tests that verify debug output is produced on failure paths
-2. **Documentation**: Update README to document debug flags
-3. **CI integration**: Consider enabling debug symbols in CI test runs
-
-### Recommended Next Steps
-
-The debugging-support project is functionally complete. Consider:
-- Closing this project and noting M1 of test harness as "optional enhancement"
-- OR adding a simple test that verifies `FormatDebugDump()` output format
+All planned functionality implemented and tested. Debug symbols, trace buffer, IPC register, and failure diagnostics all working as designed.
 
 ---
 
 ## Microcode Compiler Improvements (docs/projects/microcode-compiler-improvements.md)
 
-### Status: Partially Designed, Not Started
+### Status: COMPLETE ✓
 
-| Subproject | Status | Notes |
-|------------|--------|-------|
+| Subproject | Status | Implementation |
+|------------|--------|---------------|
 | **Validation Expansion** | | |
-| - Bus write conflict validator | NOT DONE | Listed in microcode/README.md as "planned" |
-| - Read/write ordering validator | NOT DONE | |
-| - Control conflict validator | NOT DONE | |
+| - Bus write conflict validator | DONE ✓ | `bus_validator.h/cpp` |
+| - Status validator | DONE ✓ | `status_validator.h/cpp` |
+| - Stage validator | DONE ✓ | `stage_validator.h/cpp` |
+| - Control conflict validator | DONE ✓ | `control_conflict_validator.h/cpp` |
 | **Optimization Passes** | | |
-| - Dead step removal | NOT DONE | Listed as "planned" |
-| - Step merging | NOT DONE | Listed as "planned" |
-| **Diagnostics** | | |
-| - Structured error output | PARTIAL | Errors exist but are terse |
-| - Compile summary | NOT DONE | |
+| - Empty step removal | DONE ✓ | `empty_step_optimizer.h/cpp` |
+| - Duplicate step removal | DONE ✓ | `duplicate_step_optimizer.h/cpp` |
+| - Step merging | DONE ✓ | `step_merging_optimizer.h/cpp` |
+| **Compiler Restructuring** | DONE ✓ | Preamble/validators/transformers pattern |
 
-### Alignment with Code Review
+### Project Complete
 
-The code review noted (M1, M2) that microcode validators are listed as "MVP" in README but not implemented. This project plan provides the roadmap for that work.
-
-### Recommended Priority
-
-**Medium** - Current validators (Fetch, Sequence, IsaCoverage) are sufficient for MVP. Bus validator would catch real bugs but isn't blocking.
+All validators and optimizers implemented with full test coverage. Compiler restructured with defensive validation pattern.
 
 ---
 
@@ -94,24 +83,38 @@ The MVP ISA is intentionally minimal (6 instructions). This project defines the 
 
 ---
 
+## Logging Improvements (docs/projects/logging-improvements.md)
+
+### Status: COMPLETE ✓
+
+| Feature | Status | Implementation |
+|---------|--------|---------------|
+| Logging facade | DONE ✓ | `base/log.h` with IRATA2_LOG_* macros |
+| Sim lifecycle events | DONE ✓ | sim.start, sim.halt, sim.crash, sim.timeout |
+| Failure-path logging | DONE ✓ | Debug dump and trace on failure |
+| CLI log-level config | DONE ✓ | `--log-level` flag + IRATA2_LOG_LEVEL env var |
+
+### Project Complete
+
+Full logging infrastructure in place with absl::log backend, structured events, and CLI configuration.
+
+---
+
 ## Microcode Debugging (docs/projects/microcode-debugging.md)
 
-### Status: Not Started
+### Status: COMPLETE ✓
 
-| Feature | Status |
-|---------|--------|
-| Microcode decompiler | NOT DONE |
-| Control word decoding | NOT DONE |
-| Diff tooling | NOT DONE |
-| CLI dump | NOT DONE |
+| Feature | Status | Implementation |
+|---------|--------|---------------|
+| Microcode decoder | DONE ✓ | `microcode/debug/decoder.h` |
+| Control word decoding | DONE ✓ | `DecodeControlWord()` method |
+| Program dumps | DONE ✓ | `DumpProgram()`, `DumpInstruction()` |
+| YAML output | DONE ✓ | `DumpProgramYaml()`, `DumpInstructionYaml()` |
+| CLI utility | DONE ✓ | `microcode_dump_main.cpp` |
 
-### Alignment
+### Project Complete
 
-The microcode encoders exist (`ControlEncoder::Decode()`, etc.) but no CLI or human-readable dump is implemented.
-
-### Recommended Priority
-
-**Low** - Nice to have for debugging microcode issues, but not blocking.
+Full microcode introspection tooling implemented. All milestones M0-M2 achieved.
 
 ---
 
@@ -138,39 +141,41 @@ The microcode encoders exist (`ControlEncoder::Decode()`, etc.) but no CLI or hu
 
 ## Recommended Project Order
 
-Based on the code review findings and current implementation state:
+Based on current completion status:
 
-### 1. Close Debugging Support (Current)
+### 1. ISA Expansion - ALU Batch (Highest Priority)
 
-Remaining work is minimal:
-- Either mark M1 test harness as "optional" and close
-- Or add one test verifying debug dump format
-
-### 2. ISA Expansion - ALU Batch
-
-Natural next step:
-- ADD, AND, OR, XOR in microcode.yaml
-- Tests for each instruction
+With all debugging and validation infrastructure complete, begin ISA growth:
+- Implement ADD, AND, OR, XOR instructions
+- Add ASM integration tests for each
 - Validates ALU wiring works beyond just SUB
+- Microcode validators will catch issues early
 
-### 3. Microcode Compiler Improvements - BusValidator
+### 2. Continue Sim Module Cleanup (Interleaved)
 
-Adds safety:
-- Catches bus contention at compile time
-- Prevents subtle runtime bugs as ISA grows
+Complete remaining phases from cleanup_plan.md as needed:
+- Phase 3: Register hierarchy redesign
+- Phase 5: Memory refactoring
+- Phase 6: Controller submodule (largest effort)
+- Phase 7: CPU constructor refactoring
+- Phase 8: HDL enforcement
 
-### 4. ISA Expansion - Further Batches
+These are architectural improvements that can be done incrementally.
 
-Continue as needed:
-- Stack operations
+### 3. ISA Expansion - Further Batches
+
+Continue vertical growth:
+- Stack operations (needs stack pointer)
 - More addressing modes
-- Subroutines
+- Branch/subroutine instructions
+- Indexed addressing
 
-### 5. Microcode Debugging / Cartridge Tools
+### 4. Cartridge Tools (Optional)
 
-Only if needed:
-- Useful for debugging complex microcode issues
-- Lower priority for MVP
+Only if needed for workflow improvement:
+- Disassembler
+- Round-trip testing
+- Binary inspection tools
 
 ---
 
@@ -178,8 +183,10 @@ Only if needed:
 
 | Project | Status | Priority | Next Action |
 |---------|--------|----------|-------------|
-| Debugging Support | ~80% | HIGH | Close or add M1 test |
-| Microcode Compiler | Not started | MEDIUM | Add BusValidator |
-| ISA Expansion | Not started | HIGH | ALU batch first |
-| Microcode Debugging | Not started | LOW | Defer |
+| Debugging Support | **Complete** ✓ | - | Closed |
+| Logging Improvements | **Complete** ✓ | - | Closed |
+| Microcode Compiler | **Complete** ✓ | - | Closed |
+| Microcode Debugging | **Complete** ✓ | - | Closed |
+| Sim Module Cleanup | In Progress (50%) | MEDIUM | Continue phases 3-8 |
+| ISA Expansion | Not started | **HIGH** | Begin ALU batch |
 | Cartridge Tools | Partial | LOW | Defer |
