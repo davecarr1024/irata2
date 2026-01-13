@@ -159,6 +159,9 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
 }
 
 void Cpu::RegisterChild(Component& child) {
+  // Call base class to add to children_ for tick propagation
+  Component::RegisterChild(child);
+  // Also add to components_ for control indexing
   components_.push_back(&child);
 }
 
@@ -207,33 +210,27 @@ std::vector<std::string> Cpu::AllControlPaths() const {
   return control_paths_;
 }
 
-void Cpu::TickPhase(void (Component::*phase)()) {
-  for (auto* component : components_) {
-    (component->*phase)();
-  }
-  (this->*phase)();
-}
-
 void Cpu::Tick() {
   if (halted_) {
     return;
   }
 
   // Execute five-phase tick model
+  // Each phase automatically propagates to all children via Component base class
   current_phase_ = base::TickPhase::Control;
-  TickPhase(&Component::TickControl);
+  Component::TickControl();
 
   current_phase_ = base::TickPhase::Write;
-  TickPhase(&Component::TickWrite);
+  Component::TickWrite();
 
   current_phase_ = base::TickPhase::Read;
-  TickPhase(&Component::TickRead);
+  Component::TickRead();
 
   current_phase_ = base::TickPhase::Process;
-  TickPhase(&Component::TickProcess);
+  TickProcess();  // Call our override which checks halt/crash controls
 
   current_phase_ = base::TickPhase::Clear;
-  TickPhase(&Component::TickClear);
+  Component::TickClear();
 
   current_phase_ = base::TickPhase::None;
   cycle_count_++;
@@ -278,6 +275,10 @@ void Cpu::SetCurrentPhaseForTest(base::TickPhase phase) {
 }
 
 void Cpu::TickProcess() {
+  // First propagate to all children
+  Component::TickProcess();
+
+  // Then do CPU-specific processing
   if (halt_control_.asserted()) {
     halted_ = true;
   }

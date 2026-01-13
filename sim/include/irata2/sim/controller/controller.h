@@ -13,7 +13,7 @@
 #include "irata2/sim/latched_word_register.h"
 #include "irata2/sim/word_bus.h"
 
-namespace irata2::sim {
+namespace irata2::sim::controller {
 
 class Controller final : public ComponentWithParent {
  public:
@@ -56,6 +56,6 @@ class Controller final : public ComponentWithParent {
   std::vector<ControlBase*> control_lines_;
 };
 
-}  // namespace irata2::sim
+}  // namespace irata2::sim::controller
 
 #endif  // IRATA2_SIM_CONTROLLER_H

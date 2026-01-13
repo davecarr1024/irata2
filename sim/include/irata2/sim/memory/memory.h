@@ -27,8 +27,10 @@ class Memory final : public ComponentWithBus<Memory, base::Byte> {
   base::Byte ReadAt(base::Word address) const;
   void WriteAt(base::Word address, base::Byte value);
 
-  void TickWrite() override;
-  void TickRead() override;
+ protected:
+  // Implement ComponentWithBus abstract interface
+  base::Byte read_value() const override { return ReadAt(mar_.value()); }
+  void write_value(base::Byte value) override { WriteAt(mar_.value(), value); }
 
  private:
   Region* FindRegion(base::Word address);

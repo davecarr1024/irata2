@@ -12,12 +12,12 @@
 #include "irata2/base/tick_phase.h"
 #include "irata2/hdl/cpu.h"
 #include "irata2/microcode/output/program.h"
-#include "irata2/sim/alu.h"
+#include "irata2/sim/alu/alu.h"
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
-#include "irata2/sim/controller.h"
+#include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
 #include "irata2/sim/debug_symbols.h"
 #include "irata2/sim/debug_trace.h"
@@ -28,6 +28,10 @@
 #include "irata2/sim/word_bus.h"
 
 namespace irata2::sim {
+
+// Bring nested namespace components into sim namespace for convenience
+using alu::Alu;
+using controller::Controller;
 
 /**
  * @brief Runtime CPU simulator with mutable state.
@@ -74,9 +78,6 @@ class Cpu : public Component {
   const Cpu& cpu() const override { return *this; }
 
   std::string path() const override { return ""; }
-
-  /// @brief Get current tick phase.
-  base::TickPhase current_phase() const override { return current_phase_; }
 
   /**
    * @brief Execute one complete clock cycle (all five phases).
@@ -158,12 +159,18 @@ class Cpu : public Component {
     return control_order_;
   }
 
- void RegisterChild(Component& child) override;
+  /// @brief Get current tick phase.
+  base::TickPhase current_phase() const override { return current_phase_; }
+
+  /// @brief Register a child component.
+  /// Public in CPU to allow test code to register test components.
+  void RegisterChild(Component& child) override;
+
+ protected:
+  void TickProcess() override;
 
  private:
   void BuildControlIndex();
-  void TickPhase(void (Component::*phase)());
-  void TickProcess() override;
 
   std::shared_ptr<const hdl::Cpu> hdl_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> microcode_;

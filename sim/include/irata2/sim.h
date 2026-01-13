@@ -6,7 +6,7 @@
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
-#include "irata2/sim/controller.h"
+#include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
 #include "irata2/sim/cpu.h"
 #include "irata2/sim/cartridge.h"

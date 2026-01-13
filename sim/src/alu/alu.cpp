@@ -1,6 +1,6 @@
-#include "irata2/sim/alu.h"
+#include "irata2/sim/alu/alu.h"
 
-namespace irata2::sim {
+namespace irata2::sim::alu {
 
 Alu::Alu(std::string name,
          Component& parent,
@@ -61,4 +61,4 @@ void Alu::TickProcess() {
   }
 }
 
-}  // namespace irata2::sim
+}  // namespace irata2::sim::alu

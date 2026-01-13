@@ -23,25 +23,21 @@ class Register : public ComponentWithBus<Derived, ValueType> {
   ProcessControl<true>& reset() { return reset_control_; }
   const ProcessControl<true>& reset() const { return reset_control_; }
 
-  void TickWrite() override {
-    if (this->write().asserted()) {
-      this->bus().Write(value_, this->path());
-    }
-  }
-
-  void TickRead() override {
-    if (this->read().asserted()) {
-      value_ = this->bus().Read(this->path());
-    }
-  }
-
   void TickProcess() override {
+    // First propagate to children
+    Component::TickProcess();
+
+    // Then handle reset
     if (reset_control_.asserted()) {
       value_ = ValueType{};
     }
   }
 
  protected:
+  // Implement ComponentWithBus abstract interface
+  ValueType read_value() const override { return value_; }
+  void write_value(ValueType value) override { value_ = value; }
+
   ValueType& value_mutable() { return value_; }
 
  private:
