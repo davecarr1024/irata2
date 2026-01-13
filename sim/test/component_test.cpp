@@ -10,22 +10,6 @@ class DummyComponent final : public ComponentWithParent {
   DummyComponent(Component& parent, const std::string& name)
       : ComponentWithParent(parent, name) {}
 };
-
-class TickComponent final : public Component {
- public:
-  Cpu& cpu() override { return *cpu_; }
-  const Cpu& cpu() const override { return *cpu_; }
-  irata2::base::TickPhase current_phase() const override {
-    return cpu_->current_phase();
-  }
-  std::string path() const override { return "tick"; }
-  void RegisterChild(Component& child) override { (void)child; }
-
-  explicit TickComponent(Cpu& cpu) : cpu_(&cpu) {}
-
- private:
-  Cpu* cpu_;
-};
 }  // namespace
 
 TEST(SimComponentTest, CpuIsRoot) {
@@ -54,16 +38,5 @@ TEST(SimComponentTest, ComponentWithParentAccessors) {
   EXPECT_EQ(const_child.cpu().path(), "");
 }
 
-TEST(SimComponentTest, DefaultTickMethodsAreCallable) {
-  Cpu sim;
-  TickComponent component(sim);
-
-  component.TickControl();
-  component.TickWrite();
-  component.TickRead();
-  component.TickProcess();
-  component.TickClear();
-
-  Component* base = new TickComponent(sim);
-  delete base;
-}
+// Note: Tick methods are now protected and tested via full CPU integration tests
+// This aligns with the design principle of "Full CPU testing only"

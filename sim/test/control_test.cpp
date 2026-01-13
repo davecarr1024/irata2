@@ -6,26 +6,37 @@
 
 using namespace irata2::sim;
 
-TEST(SimControlTest, AutoResetClearsOnTickClear) {
+TEST(SimControlTest, AutoResetClearsAfterTick) {
   Cpu sim;
 
+  // Create a control and register it so it gets ticked
   ProcessControl<true> control("auto", sim);
+  sim.RegisterChild(control);
+
   test::AssertControl(control);
   EXPECT_TRUE(test::IsAsserted(control));
 
-  control.TickClear();
-  EXPECT_FALSE(test::IsAsserted(control));
+  // A full tick cycle will clear auto-reset controls
+  sim.Tick();
+  test::SetPhase(sim, irata2::base::TickPhase::Process);
+  EXPECT_FALSE(control.asserted());
 }
 
 TEST(SimControlTest, LatchedControlDoesNotAutoClear) {
   Cpu sim;
 
+  // Create a control and register it so it gets ticked
   Control<irata2::base::TickPhase::Process, false> control("latched", sim);
+  sim.RegisterChild(control);
+
   test::AssertControl(control);
   EXPECT_TRUE(test::IsAsserted(control));
 
-  control.TickClear();
-  EXPECT_TRUE(test::IsAsserted(control));
+  // A full tick cycle should NOT clear latched controls
+  sim.Tick();
+  test::SetPhase(sim, irata2::base::TickPhase::Process);
+  EXPECT_TRUE(control.asserted());
+
   test::ClearControl(control);
   EXPECT_FALSE(test::IsAsserted(control));
 }

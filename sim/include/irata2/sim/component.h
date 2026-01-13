@@ -2,6 +2,7 @@
 #define IRATA2_SIM_COMPONENT_H
 
 #include <string>
+#include <vector>
 
 #include "irata2/base/tick_phase.h"
 
@@ -20,21 +21,52 @@ class Component {
   virtual Cpu& cpu() = 0;
   virtual const Cpu& cpu() const = 0;
 
-  virtual base::TickPhase current_phase() const = 0;
-
   // Get component path for debugging
   virtual std::string path() const = 0;
 
+  // Current tick phase - public for component hierarchy access
+  virtual base::TickPhase current_phase() const = 0;
+
+ protected:
+  // Children registered during construction - populated by RegisterChild()
+  std::vector<Component*> children_;
+
   // Register a child component with the root CPU for ticking.
-  virtual void RegisterChild(Component& child) { (void)child; }
+  // Protected: only called during component construction
+  virtual void RegisterChild(Component& child) { children_.push_back(&child); }
 
   // Five-phase tick model
-  // Components override the phases they participate in
-  virtual void TickControl() {}
-  virtual void TickWrite() {}
-  virtual void TickRead() {}
-  virtual void TickProcess() {}
-  virtual void TickClear() {}
+  // Base implementations automatically propagate to children
+  // Components override these to add their own behavior
+  virtual void TickControl() {
+    for (auto* child : children_) {
+      child->TickControl();
+    }
+  }
+
+  virtual void TickWrite() {
+    for (auto* child : children_) {
+      child->TickWrite();
+    }
+  }
+
+  virtual void TickRead() {
+    for (auto* child : children_) {
+      child->TickRead();
+    }
+  }
+
+  virtual void TickProcess() {
+    for (auto* child : children_) {
+      child->TickProcess();
+    }
+  }
+
+  virtual void TickClear() {
+    for (auto* child : children_) {
+      child->TickClear();
+    }
+  }
 };
 
 // Base class for all non-root simulator components
@@ -62,7 +94,6 @@ class ComponentWithParent : public Component {
     }
     return parent_.path() + "." + name_;
   }
-
 
  private:
   Component& parent_;

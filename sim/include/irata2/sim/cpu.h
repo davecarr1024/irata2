@@ -75,9 +75,6 @@ class Cpu : public Component {
 
   std::string path() const override { return ""; }
 
-  /// @brief Get current tick phase.
-  base::TickPhase current_phase() const override { return current_phase_; }
-
   /**
    * @brief Execute one complete clock cycle (all five phases).
    *
@@ -158,12 +155,18 @@ class Cpu : public Component {
     return control_order_;
   }
 
- void RegisterChild(Component& child) override;
+  /// @brief Get current tick phase.
+  base::TickPhase current_phase() const override { return current_phase_; }
+
+  /// @brief Register a child component.
+  /// Public in CPU to allow test code to register test components.
+  void RegisterChild(Component& child) override;
+
+ protected:
+  void TickProcess() override;
 
  private:
   void BuildControlIndex();
-  void TickPhase(void (Component::*phase)());
-  void TickProcess() override;
 
   std::shared_ptr<const hdl::Cpu> hdl_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> microcode_;
