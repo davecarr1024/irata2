@@ -11,8 +11,17 @@ namespace irata2::sim {
 // Forward declaration
 class Cpu;
 
-// Abstract base class for all simulator components
-// Simulator components have runtime state and tick behavior
+/**
+ * @brief Abstract base class for all simulator components.
+ *
+ * Components form a tree hierarchy set up during construction:
+ * - Parent/child relationships are immutable after construction
+ * - RegisterChild() populates the children list during construction only
+ * - Tick methods automatically propagate to all children
+ *
+ * @see ComponentWithParent for non-root components with a parent reference
+ * @see Cpu for the root component
+ */
 class Component {
  public:
   virtual ~Component() = default;  // LCOV_EXCL_LINE
@@ -28,11 +37,23 @@ class Component {
   virtual base::TickPhase current_phase() const = 0;
 
  protected:
-  // Children registered during construction - populated by RegisterChild()
+  /**
+   * @brief List of child components populated during construction.
+   *
+   * Structural invariant: This list is populated by RegisterChild() during
+   * component construction and should not be modified after construction
+   * completes. Tick methods automatically iterate this list.
+   */
   std::vector<Component*> children_;
 
-  // Register a child component with the root CPU for ticking.
-  // Protected: only called during component construction
+  /**
+   * @brief Register a child component for tick propagation.
+   *
+   * This method should only be called during component construction to build
+   * the component hierarchy. The hierarchy is immutable after construction.
+   *
+   * @param child Component to register as a child
+   */
   virtual void RegisterChild(Component& child) { children_.push_back(&child); }
 
   // Five-phase tick model
@@ -69,8 +90,23 @@ class Component {
   }
 };
 
-// Base class for all non-root simulator components
-// Non-root components have a parent reference
+/**
+ * @brief Base class for all non-root simulator components.
+ *
+ * ComponentWithParent provides a parent reference set during construction.
+ * The parent reference is immutable - it cannot be rebound to point to a
+ * different parent after construction.
+ *
+ * Structural invariants:
+ * - parent_ is set in the constructor and never changes (C++ references
+ *   cannot be rebound)
+ * - name_ is const and set during construction
+ * - The component hierarchy (parent/child relationships) is immutable
+ *   after construction completes
+ *
+ * @see Component for the base class with tick propagation
+ * @see Cpu for the root component (which has no parent)
+ */
 class ComponentWithParent : public Component {
  public:
   explicit ComponentWithParent(Component& parent, const std::string& name)
@@ -96,8 +132,8 @@ class ComponentWithParent : public Component {
   }
 
  private:
-  Component& parent_;
-  const std::string name_;
+  Component& parent_;       // Immutable: reference cannot be rebound
+  const std::string name_;  // Immutable: const member
 };
 
 }  // namespace irata2::sim
