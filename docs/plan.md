@@ -14,6 +14,7 @@ direction. Individual projects live in `docs/projects/`.
 - **Microcode compiler improvements complete**: all 5 validators (M0-M4), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring done.
 - **Microcode debug visibility complete**: decoder, YAML output, CLI utility (M0-M2).
 - **Microcode module cleanup complete**: Phase 10 of cleanup_plan.md - ControlConflictValidator fix, PhaseOrderingValidator removal, step-merging optimizer, compiler restructuring.
+- **Sim module cleanup in progress**: Phases 1, 2, 4, 9, 10 of cleanup_plan.md complete. Component hierarchy improvements, control hierarchy redesign, ComponentWithBus abstraction, directory/namespace organization done.
 
 ## Active Project Ideas
 
