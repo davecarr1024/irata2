@@ -25,6 +25,7 @@
 #include "irata2/sim/register_with_bus.h"
 #include "irata2/sim/status_register.h"
 #include "irata2/sim/word_bus.h"
+#include "irata2/sim/word_counter.h"
 #include "irata2/sim/word_register.h"
 #include "irata2/sim/write_control.h"
 
