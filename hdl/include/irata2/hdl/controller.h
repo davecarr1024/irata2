@@ -19,7 +19,6 @@ class Controller final : public ComponentWithParent<Controller> {
   const ByteRegister& ir() const { return ir_; }
   const ByteCounter& sc() const { return sc_; }
   const LatchedWordRegister& ipc() const { return ipc_; }
-  const ProcessControl<true>& ipc_latch() const { return ipc_latch_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
@@ -27,14 +26,12 @@ class Controller final : public ComponentWithParent<Controller> {
     ir_.visit(visitor);
     sc_.visit(visitor);
     ipc_.visit(visitor);
-    ipc_latch_.visit(visitor);
   }
 
  private:
   const ByteRegister ir_;
   const ByteCounter sc_;
   const LatchedWordRegister ipc_;
-  const ProcessControl<true> ipc_latch_;
 };
 
 }  // namespace irata2::hdl

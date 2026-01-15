@@ -134,7 +134,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
   RegisterChild(controller_.ipc());
-  RegisterChild(controller_.ipc_latch());
+  RegisterChild(controller_.ipc().latch());
 
   RegisterChild(memory_);
   RegisterChild(memory_.write());
@@ -286,7 +286,7 @@ void Cpu::TickProcess() {
     crashed_ = true;
     halted_ = true;
   }
-  if (controller_.ipc_latch().asserted()) {
+  if (controller_.ipc().latch().asserted()) {
     ipc_valid_ = true;
     if (trace_.enabled()) {
       DebugTraceEntry entry;

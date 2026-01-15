@@ -101,7 +101,7 @@ TEST(SimControllerTest, IpcLatchCapturesPreIncrementPc) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
   auto program = MakeProgramWithControls(
       *hdl,
-      {"pc.write", "pc.increment", "controller.ipc_latch"},
+      {"pc.write", "pc.increment", "controller.ipc.latch"},
       0x02);
 
   Cpu sim(hdl, program);

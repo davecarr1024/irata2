@@ -30,9 +30,6 @@ class Controller final : public ComponentWithParent {
   LatchedWordRegister& ipc() { return ipc_; }
   const LatchedWordRegister& ipc() const { return ipc_; }
 
-  ProcessControl<true>& ipc_latch() { return ipc_latch_; }
-  const ProcessControl<true>& ipc_latch() const { return ipc_latch_; }
-
   void LoadProgram(
       std::shared_ptr<const microcode::output::MicrocodeProgram> program);
   const microcode::output::MicrocodeProgram* program() const {
@@ -50,7 +47,6 @@ class Controller final : public ComponentWithParent {
   ByteRegister ir_;
   LocalCounter<base::Byte> sc_;
   LatchedWordRegister ipc_;
-  ProcessControl<true> ipc_latch_;
   Bus<base::Word>& address_bus_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> program_;
   std::vector<ControlBase*> control_lines_;

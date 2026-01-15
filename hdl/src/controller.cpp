@@ -8,7 +8,6 @@ Controller::Controller(std::string name,
     : ComponentWithParent<Controller>(std::move(name), parent),
       ir_("ir", *this, data_bus),
       sc_("sc", *this),
-      ipc_("ipc", *this),
-      ipc_latch_("ipc_latch", *this) {}
+      ipc_("ipc", *this) {}
 
 }  // namespace irata2::hdl

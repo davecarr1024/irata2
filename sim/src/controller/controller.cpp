@@ -15,8 +15,7 @@ Controller::Controller(std::string name,
     : ComponentWithParent(parent, std::move(name)),
       ir_("ir", *this, data_bus),
       sc_("sc", *this),
-      ipc_("ipc", *this),
-      ipc_latch_("ipc_latch", *this),
+      ipc_("ipc", *this, address_bus),
       address_bus_(address_bus) {}
 
 void Controller::LoadProgram(
@@ -117,9 +116,9 @@ void Controller::TickControl() {
 }
 
 void Controller::TickProcess() {
-  if (ipc_latch_.asserted()) {
-    ipc_.set_value(address_bus_.value());
-  }
+  // IPC latching is now handled automatically by LatchedWordRegister
+  // when ipc_.latch() is asserted. It copies directly from PC.
+  Component::TickProcess();
 }
 
 }  // namespace irata2::sim::controller
