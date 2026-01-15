@@ -4,14 +4,14 @@
 #include <utility>
 
 #include "irata2/base/types.h"
-#include "irata2/sim/register.h"
+#include "irata2/sim/register_with_bus.h"
 
 namespace irata2::sim {
 
-class ByteRegister : public Register<ByteRegister, base::Byte> {
+class ByteRegister : public RegisterWithBus<ByteRegister, base::Byte> {
  public:
   ByteRegister(std::string name, Component& parent, Bus<base::Byte>& bus)
-      : Register<ByteRegister, base::Byte>(std::move(name), parent, bus) {}
+      : RegisterWithBus<ByteRegister, base::Byte>(std::move(name), parent, bus) {}
 };
 
 }  // namespace irata2::sim

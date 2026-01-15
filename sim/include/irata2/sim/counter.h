@@ -4,15 +4,15 @@
 #include <utility>
 
 #include "irata2/sim/control.h"
-#include "irata2/sim/register.h"
+#include "irata2/sim/register_with_bus.h"
 
 namespace irata2::sim {
 
 template <typename ValueType>
-class Counter : public Register<Counter<ValueType>, ValueType> {
+class Counter : public RegisterWithBus<Counter<ValueType>, ValueType> {
  public:
   Counter(std::string name, Component& parent, Bus<ValueType>& bus)
-      : Register<Counter<ValueType>, ValueType>(std::move(name), parent, bus),
+      : RegisterWithBus<Counter<ValueType>, ValueType>(std::move(name), parent, bus),
         increment_control_("increment", *this) {}
 
   ProcessControl<true>& increment() { return increment_control_; }

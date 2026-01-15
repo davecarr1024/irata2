@@ -4,14 +4,14 @@
 #include <utility>
 
 #include "irata2/base/types.h"
-#include "irata2/sim/register.h"
+#include "irata2/sim/register_with_bus.h"
 
 namespace irata2::sim {
 
-class WordRegister : public Register<WordRegister, base::Word> {
+class WordRegister : public RegisterWithBus<WordRegister, base::Word> {
  public:
   WordRegister(std::string name, Component& parent, Bus<base::Word>& bus)
-      : Register<WordRegister, base::Word>(std::move(name), parent, bus) {}
+      : RegisterWithBus<WordRegister, base::Word>(std::move(name), parent, bus) {}
 };
 
 }  // namespace irata2::sim
