@@ -1,5 +1,9 @@
 # Logging Improvements (Sim Debugging)
 
+**Status: COMPLETE** ✓
+
+All milestones (M0-M4) achieved. Full logging infrastructure with absl::log backend, structured events, and CLI configuration implemented.
+
 ## Goals
 
 - Make sim runtime behavior observable with consistent, structured logs.
