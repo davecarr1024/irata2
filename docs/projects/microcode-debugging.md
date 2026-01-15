@@ -1,5 +1,9 @@
 # Microcode Debugging and Introspection
 
+**Status: COMPLETE** ✓
+
+All milestones (M0-M2) achieved. Microcode decoder, YAML output, and CLI utility (microcode_dump_main) fully implemented.
+
 ## Goals
 
 - Make compiled microcode easy to inspect and reason about.

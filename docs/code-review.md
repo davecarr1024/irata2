@@ -4,6 +4,15 @@
 **Reviewer:** Claude Code
 **Scope:** Full codebase architectural review
 
+> **Update (2026-01-15):** Many items identified in this review have now been addressed:
+> - BusValidator, StatusValidator, and step optimizers are complete (see microcode-compiler-improvements.md)
+> - Logging improvements complete (see logging-improvements.md)
+> - Debugging support complete (see debugging-support.md)
+> - Microcode debug visibility complete (see microcode-debugging.md)
+> - Sim module cleanup in progress (Phases 1, 2, 4, 9, 10 complete)
+>
+> See [project-plan-alignment.md](project-plan-alignment.md) for current status.
+
 ---
 
 ## Executive Summary
