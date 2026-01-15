@@ -116,34 +116,42 @@ Control (root, virtual)
 
 **Goal:** Clean register hierarchy with ValueType template, optional bus connection.
 
-### 3.1 Base Register Changes
+### 3.1 Base Register Changes [COMPLETE]
 
 **New hierarchy:**
 ```
-Register<ValueType> (base, not connected to bus)
-├── ByteRegister
-├── WordRegister (has high/low ByteRegisters)
-└── RegisterWithBus<ValueType> : ComponentWithBus
-    ├── ByteRegisterWithBus
-    └── WordRegisterWithBus
+RegisterBase<Derived, ValueType> (base, not connected to bus)
+├── LocalCounter<ValueType>
+└── RegisterWithBus<Derived, ValueType> : ComponentWithBus
+    ├── ByteRegister
+    ├── WordRegister
+    ├── Counter<ValueType>
+    └── MemoryAddressRegister
 ```
 
 **Changes:**
-- Default registers not connected to bus
+- Created RegisterBase<Derived, ValueType> for registers without bus
+- Created RegisterWithBus<Derived, ValueType> for bus-connected registers
 - All registers have reset control by default
-- RegisterWithBus implements ComponentWithBus
+- Updated all concrete register types
 
 **Files:**
-- [register.h](../../sim/include/irata2/sim/register.h)
-- New: `register_with_bus.h`
-- [byte_register.h](../../sim/include/irata2/sim/byte_register.h)
-- [word_register.h](../../sim/include/irata2/sim/word_register.h)
+- New: [register_base.h](../../sim/include/irata2/sim/register_base.h)
+- New: [register_with_bus.h](../../sim/include/irata2/sim/register_with_bus.h)
+- Updated: [register.h](../../sim/include/irata2/sim/register.h) (now compatibility shim)
+- Updated: [byte_register.h](../../sim/include/irata2/sim/byte_register.h)
+- Updated: [word_register.h](../../sim/include/irata2/sim/word_register.h)
+- Updated: [counter.h](../../sim/include/irata2/sim/counter.h)
+- Updated: [local_counter.h](../../sim/include/irata2/sim/local_counter.h)
+- Updated: [memory_address_register.h/cpp](../../sim/include/irata2/sim/memory/memory_address_register.h)
 
-**Steps:**
-1. Create base Register without bus connection
-2. Create RegisterWithBus that adds bus
-3. Update ByteRegister and WordRegister
-4. Update all usages
+**Completed:**
+1. ✓ Created base RegisterBase without bus connection
+2. ✓ Created RegisterWithBus that adds bus
+3. ✓ Updated ByteRegister and WordRegister to extend RegisterWithBus
+4. ✓ Updated Counter and MemoryAddressRegister to extend RegisterWithBus
+5. ✓ Updated LocalCounter to extend RegisterBase
+6. ✓ All 298 tests pass
 
 ### 3.2 WordRegister Improvements
 
