@@ -153,49 +153,50 @@ RegisterBase<Derived, ValueType> (base, not connected to bus)
 5. ✓ Updated LocalCounter to extend RegisterBase
 6. ✓ All 298 tests pass
 
-### 3.2 WordRegister Improvements
+### 3.2 WordRegister Improvements [COMPLETE]
 
 **Changes:**
-- WordRegister has high/low ByteRegister members
-- Word-level reset control
-- Support for dual bus connection (word bus + byte bus)
+- Added high()/low() byte accessors
+- Added set_high()/set_low() methods
+- Foundation for future dual bus support
 
-**Steps:**
-1. Add high/low ByteRegister members
-2. Add word-level reset
-3. Implement word bus read/write
-4. Implement byte bus access through high/low registers
+**Completed:**
+1. ✓ Added byte-level accessor methods to WordRegister
+2. ✓ All 298 tests pass
 
-### 3.3 WordCounter Type
+### 3.3 WordCounter Type [COMPLETE]
 
 **Changes:**
-- Word register with ByteRegister bytes
-- Word-level increment control
-- Handle byte overflow
+- Word register that extends WordRegister with increment functionality
+- Proper 16-bit increment with byte overflow handling
 
 **Files:**
-- New: `word_counter.h`
+- New: [word_counter.h](../../sim/include/irata2/sim/word_counter.h)
 
-**Steps:**
-1. Extend WordRegister (or WordRegisterWithBus)
-2. Add increment control (ProcessControl)
-3. Implement low byte increment with overflow to high byte
+**Completed:**
+1. ✓ Created WordCounter extending WordRegister
+2. ✓ Added increment control (ProcessControl)
+3. ✓ Implements proper word increment (low byte overflow increments high byte)
+4. ✓ All 298 tests pass
 
-### 3.4 LatchedWordRegister Redesign
+### 3.4 LatchedWordRegister Redesign [COMPLETE]
 
-**Current:** Simple value holder with no controls.
+**Changes:**
+- Encapsulates latch control within LatchedWordRegister
+- Latches from address bus to preserve timing semantics
+- IPC now uses ipc.latch() instead of standalone ipc_latch control
 
-**New design:**
-- Not connected to bus
-- Hard connection to target WordRegister
-- Latch control copies target value
+**Files:**
+- Updated: [latched_word_register.h](../../sim/include/irata2/sim/latched_word_register.h)
+- Updated: [controller.h/cpp](../../sim/include/irata2/sim/controller/controller.h)
+- Updated: HDL files, microcode.yaml, tests
 
-**Use case:** IPC (Instruction Pointer Cache) latches from PC.
-
-**Steps:**
-1. Add constructor parameter for target register reference
-2. Add latch control (ProcessControl)
-3. TickProcess copies target value when latch asserted
+**Completed:**
+1. ✓ Added latch() ProcessControl to LatchedWordRegister
+2. ✓ Latches from bus (not direct register) to preserve timing
+3. ✓ Removed standalone ipc_latch control from Controller
+4. ✓ Updated all references and tests
+5. ✓ All 298 tests pass
 
 ### 3.5 CPU-Level TMP Word Register
 
