@@ -127,6 +127,11 @@ cmake --build build --target generate_isa
 
 Namespaces: `irata2::base`, `irata2::hdl`, `irata2::sim`, `irata2::isa`
 
+The sim module is organized into subdirectories with nested namespaces:
+- `irata2::sim::alu` - ALU components
+- `irata2::sim::controller` - Controller components
+- `irata2::sim::memory` - Memory subsystem (RAM, ROM, regions)
+
 ## Test Conventions
 
 - Tests use GoogleTest with `TEST()` macro
@@ -242,9 +247,17 @@ If CI fails after push:
 
 ### Current Project Priorities
 
-See `docs/plan.md` for the authoritative list. General order:
+See `docs/plan.md` for the authoritative list. Current status as of January 2026:
 
-1. **Debugging support** - Complete remaining test harness work
-2. **ISA expansion** - Add ALU instructions in batches
-3. **Microcode improvements** - Add validators as ISA grows
-4. **Tooling** - As needed for debugging complex issues
+**Completed Projects:**
+1. ✓ **Debugging support** - Debug symbols, trace buffer, IPC register, failure diagnostics all complete
+2. ✓ **Logging improvements** - Structured logging with CLI/env configuration complete
+3. ✓ **Microcode compiler improvements** - All 5 validators and 3 optimizers complete, compiler restructured
+4. ✓ **Microcode debug visibility** - Decoder, YAML output, CLI utility complete
+
+**Active Work:**
+1. **Sim module cleanup** - In progress (Phases 1, 2, 4, 9, 10 complete). Remaining phases (3, 5, 6, 7, 8) provide architectural improvements and can be interleaved with other work.
+
+**Next Priorities:**
+1. **ISA expansion** - Begin with ALU instructions batch (ADD, AND, OR, XOR). The validation and debugging infrastructure is now in place to support safe ISA growth.
+2. **Continue sim cleanup** - Complete remaining phases as needed to support advanced features
