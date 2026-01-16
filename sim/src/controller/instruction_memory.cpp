@@ -29,7 +29,7 @@ InstructionMemory::InstructionMemory(
 
   // Create ROM sized to fit all entries (add 1 because addresses are 0-indexed)
   const size_t rom_size = static_cast<size_t>(max_address) + 1;
-  std::vector<uint64_t> rom_data(rom_size, 0);
+  std::vector<__uint128_t> rom_data(rom_size, 0);
 
   // Burn the microcode into ROM
   for (const auto& [key, value] : program.table) {
@@ -55,7 +55,7 @@ std::vector<ControlBase*> InstructionMemory::Lookup(uint8_t opcode,
                            static_cast<uint32_t>(status);
 
   // Read control word from ROM
-  const uint64_t control_word = rom_->Read(address);
+  const __uint128_t control_word = rom_->Read(address);
 
   // Decode control word to get control references
   // Note: control_word == 0 is valid (no controls asserted)
@@ -63,8 +63,8 @@ std::vector<ControlBase*> InstructionMemory::Lookup(uint8_t opcode,
   const size_t num_controls = control_encoder_.control_count();
 
   // Check for overflow
-  if (num_controls < 64) {
-    const uint64_t overflow = control_word >> num_controls;
+  if (num_controls < 128) {
+    const __uint128_t overflow = control_word >> num_controls;
     if (overflow != 0) {
       throw SimError("control word sets bits outside control table");
     }

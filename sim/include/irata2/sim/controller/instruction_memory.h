@@ -18,8 +18,8 @@ class Cpu;
 
 namespace irata2::sim::controller {
 
-/// Type alias for microcode ROM storage (32-bit address, 64-bit data)
-using MicrocodeRomStorage = RomStorage<uint32_t, uint64_t>;
+/// Type alias for microcode ROM storage (32-bit address, 128-bit data)
+using MicrocodeRomStorage = RomStorage<uint32_t, __uint128_t>;
 
 /// Hardware-ish ROM storage for microcode.
 ///
@@ -28,9 +28,9 @@ using MicrocodeRomStorage = RomStorage<uint32_t, uint64_t>;
 /// At construction, it processes the microcode program and "burns" it into
 /// ROM storage. The original program is not retained after initialization.
 ///
-/// Uses RomStorage<uint32_t, uint64_t>:
+/// Uses RomStorage<uint32_t, __uint128_t>:
 /// - 32-bit addresses encode (opcode << 16 | step << 8 | status)
-/// - 64-bit data stores control words
+/// - 128-bit data stores control words
 class InstructionMemory final : public ComponentWithParent {
  public:
   /// Construct InstructionMemory from a microcode program.

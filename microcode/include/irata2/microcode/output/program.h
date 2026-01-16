@@ -22,7 +22,7 @@ inline uint32_t EncodeKey(MicrocodeKey key) {
          static_cast<uint32_t>(key.status);
 }
 
-using MicrocodeTable = std::unordered_map<uint32_t, uint64_t>;
+using MicrocodeTable = std::unordered_map<uint32_t, __uint128_t>;
 
 struct StatusBitDefinition {
   std::string name;

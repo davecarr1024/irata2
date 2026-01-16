@@ -13,7 +13,7 @@ ControlEncoder::ControlEncoder(std::string name, Component& parent)
 void ControlEncoder::Initialize(
     const microcode::output::MicrocodeProgram& program,
     Cpu& cpu) {
-  if (program.control_paths.size() > 64) {
+  if (program.control_paths.size() > 128) {
     std::ostringstream message;
     message << "too many controls for instruction memory: "
             << program.control_paths.size();

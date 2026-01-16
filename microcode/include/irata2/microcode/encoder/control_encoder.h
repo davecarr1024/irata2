@@ -19,8 +19,8 @@ class ControlEncoder {
  public:
   explicit ControlEncoder(const hdl::Cpu& cpu);
 
-  uint64_t Encode(const std::vector<const hdl::ControlInfo*>& controls) const;
-  std::vector<std::string> Decode(uint64_t control_word) const;
+  __uint128_t Encode(const std::vector<const hdl::ControlInfo*>& controls) const;
+  std::vector<std::string> Decode(__uint128_t control_word) const;
 
   const std::vector<std::string>& control_paths() const { return control_paths_; }
 

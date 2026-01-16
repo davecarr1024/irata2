@@ -16,6 +16,7 @@
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
+#include "irata2/sim/word_register.h"
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
@@ -141,6 +142,8 @@ class Cpu : public Component {
   const ByteRegister& a() const { return a_; }
   ByteRegister& x() { return x_; }
   const ByteRegister& x() const { return x_; }
+  WordRegister& tmp() { return tmp_; }
+  const WordRegister& tmp() const { return tmp_; }
   Alu& alu() { return alu_; }
   const Alu& alu() const { return alu_; }
   Counter<base::Word>& pc() { return pc_; }
@@ -190,6 +193,7 @@ class Cpu : public Component {
   WordBus address_bus_;
   ByteRegister a_;
   ByteRegister x_;
+  WordRegister tmp_;
   Counter<base::Word> pc_;
   StatusRegister status_;
   Alu alu_;
