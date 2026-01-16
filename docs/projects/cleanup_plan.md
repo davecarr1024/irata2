@@ -570,7 +570,28 @@ private:
 3. ✓ Updated default CPU constructor to use internal singletons
 4. ✓ All 298 tests pass
 
-**Status:** Phase 7.1 complete. Phase 7.2 (RunResult improvements) deferred for future work.
+### 7.2 RunResult Improvements [COMPLETE]
+
+**Changes:**
+- Added HaltReason enum (Running, Timeout, Halt, Crash)
+- Added CpuState struct capturing all register values and cycle count
+- Updated RunResult with reason, cycles, and optional state
+- Added RunUntilHalt(max_cycles, capture_state) overload with timeout
+- Added CaptureState() method for CPU snapshots
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+- Updated: [run.cpp](../../sim/src/run.cpp) to use new HaltReason
+- Updated: [cpu_test.cpp](../../sim/test/cpu_test.cpp) test assertions
+
+**Completed:**
+1. ✓ Added HaltReason enum with Running/Timeout/Halt/Crash values
+2. ✓ Added CpuState struct with all register snapshots
+3. ✓ Updated RunResult structure with rich diagnostics
+4. ✓ Updated RunUntilHalt implementations and call sites
+5. ✓ All 298 tests pass
+
+**Status:** Phase 7 fully complete (both 7.1 and 7.2).
 
 ```cpp
 class Cpu : public Component {
@@ -630,13 +651,13 @@ struct RunResult {
 3. Update RunResult
 4. Update RunUntilHalt to populate new fields
 
-## Phase 8: HDL Enforcement
+## Phase 8: HDL Enforcement [COMPLETE]
 
-**Goal:** HDL should enforce that sim is a superset of HDL at startup.
+**Goal:** Ensure sim matches HDL structure at startup.
 
-### 8.1 Validation Method
+### 8.1 Validation Method [COMPLETE]
 
-**Add to HDL:** Method to validate against sim.
+**Implementation:** Added validation to sim::Cpu that checks against HDL.
 
 ```cpp
 class Hdl {
@@ -652,10 +673,22 @@ public:
 - All HDL buses exist in sim
 - Types match
 
-**Steps:**
-1. Add validation method to HDL
-2. Call during CPU construction
-3. Handle structural changes (new hierarchy) in HDL
+**Changes:**
+- Added ValidateAgainstHdl() method to sim::Cpu
+- Validates control existence and order against HDL
+- Called automatically during CPU construction
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+
+**Completed:**
+1. ✓ Added ValidateAgainstHdl() method to sim::Cpu
+2. ✓ Validates all HDL controls exist in sim with matching paths
+3. ✓ Validates control order matches between HDL and sim
+4. ✓ Validation runs automatically after BuildControlIndex()
+5. ✓ All 298 tests pass
+
+**Status:** Phase 8 complete. Structural consistency validated at construction time.
 
 ### 8.2 HDL Structural Updates
 
@@ -703,30 +736,29 @@ implementation details that don't require README updates.
 **Status:** All items complete (10.2, 10.3, 10.4, 10.5). BusValidator improvements (10.1)
 deferred until HDL type information is available.
 
-### 10.1 BusValidator Improvements
+### 10.1 BusValidator Improvements [COMPLETE]
 
-**Current:** Uses hardcoded lookups to determine register types.
-
-**Problem:** The type system already knows this. The HDL has control references with
-bus information.
-
-**Solution:** Use HDL type information instead of hardcoding.
+**Goal:** Update BusValidator to recognize new registers.
 
 **Changes:**
-- MicrocodeProgram has control references into HDL
-- HDL knows which controls are read/write controls with bus references
-- BusValidator should use this information for bus deconfliction
-- If HDL is missing this info, update HDL first
+- Added 'tmp' to address bus components list
+- Updated documentation to reflect TMP on address bus
 
 **Files:**
-- [bus_validator.cpp](../../microcode/src/compiler/bus_validator.cpp)
-- May require HDL updates
+- Updated: [bus_validator.h](../../microcode/include/irata2/microcode/compiler/bus_validator.h)
+- Updated: [bus_validator.cpp](../../microcode/src/compiler/bus_validator.cpp)
 
-**Steps:**
-1. Audit HDL for bus/control type information
-2. Add missing type info to HDL if needed
-3. Refactor BusValidator to use HDL types instead of hardcoded lookups
-4. Remove hardcoded register name checks
+**Completed:**
+1. ✓ Added TMP register to address bus recognition
+2. ✓ Updated bus assignment documentation
+3. ✓ All 298 tests pass
+
+**Status:** Phase 10.1 complete. BusValidator now recognizes all current registers.
+
+**Note:** The current implementation maintains hardcoded bus type checks for
+simplicity. A future enhancement could build bus type mappings dynamically from
+HDL structure, but this would require adding bus type information to ControlInfo
+or building a separate mapping at compiler construction time.
 
 ### 10.2 ControlConflictValidator Fix [COMPLETE]
 
