@@ -24,7 +24,7 @@ class TestParent : public Component {
   std::string path() const override { return "test_parent"; }
 
   irata2::base::TickPhase current_phase() const override {
-    return irata2::base::TickPhase::kClear;
+    return irata2::base::TickPhase::Clear;
   }
 };
 }  // namespace
