@@ -198,7 +198,7 @@ RegisterBase<Derived, ValueType> (base, not connected to bus)
 4. ✓ Updated all references and tests
 5. ✓ All 298 tests pass
 
-### 3.5 CPU-Level TMP Word Register
+### 3.5 CPU-Level TMP Word Register [COMPLETE]
 
 **Goal:** Add a tmp word register connected to both buses for complex addressing.
 
@@ -207,10 +207,25 @@ RegisterBase<Derived, ValueType> (base, not connected to bus)
 - Building addresses from memory bytes
 - Absolute addressing mode support
 
-**Steps:**
-1. Add TMP WordRegister to CPU
-2. Connect to word bus and byte bus
-3. Wire up controls in controller
+**Changes:**
+- Added TMP WordRegister to CPU connected to address bus
+- Expanded control word from 64-bit to 128-bit to support 67 total controls
+- Updated MicrocodeTable to use __uint128_t
+- Updated all encoders and ROM storage for 128-bit control words
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+- Updated: [hdl/cpu.h/cpp](../../hdl/include/irata2/hdl/cpu.h)
+- Updated: [control_encoder.h/cpp](../../microcode/include/irata2/microcode/encoder/control_encoder.h)
+- Updated: [program.h](../../microcode/include/irata2/microcode/output/program.h)
+- Updated: [instruction_memory.h/cpp](../../sim/include/irata2/sim/controller/instruction_memory.h)
+
+**Completed:**
+1. ✓ Added TMP WordRegister to CPU (connected to address bus)
+2. ✓ Added tmp register to HDL with write, read, reset controls
+3. ✓ Expanded control word capacity from 64 to 128 bits
+4. ✓ Updated component count tests (96 components, 14 registers, 67 controls)
+5. ✓ All 298 tests pass
 
 ## Phase 4: ComponentWithBus Abstraction [COMPLETE]
 
@@ -531,15 +546,31 @@ private:
 10. ✓ Controller.cpp reduced from 125 to 54 lines (57% reduction!)
 11. ✓ All 298 tests pass including integration tests
 
-## Phase 7: CPU Constructor Refactoring
+## Phase 7: CPU Constructor Refactoring [PARTIAL]
 
 **Goal:** CPU should statically lookup HDL and compiled microcode.
 
-### 7.1 Static HDL/Microcode Singletons
+### 7.1 Static HDL/Microcode Singletons [COMPLETE]
 
 **Current:** CPU accepts HDL and MicrocodeProgram as constructor args.
 
 **New:** Private static methods build singletons.
+
+**Changes:**
+- Added GetDefaultHdl() and GetDefaultMicrocodeProgram() as private static methods
+- Moved BuildStatusBits() and BuildMicrocodeProgram() from initialization.cpp to cpu.cpp
+- Default constructor now uses internal static methods instead of external functions
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+
+**Completed:**
+1. ✓ Created static singleton methods for HDL and MicrocodeProgram
+2. ✓ Moved initialization logic from initialization.h into CPU
+3. ✓ Updated default CPU constructor to use internal singletons
+4. ✓ All 298 tests pass
+
+**Status:** Phase 7.1 complete. Phase 7.2 (RunResult improvements) deferred for future work.
 
 ```cpp
 class Cpu : public Component {
