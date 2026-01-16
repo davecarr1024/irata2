@@ -15,7 +15,7 @@ namespace irata2::microcode::compiler {
  *
  * Bus assignments (from hdl::Cpu construction):
  * - Data bus (byte): a, x, alu, status, controller, memory
- * - Address bus (word): pc, memory
+ * - Address bus (word): pc, tmp, memory
  */
 class BusValidator final : public Pass {
  public:
