@@ -62,11 +62,36 @@ using controller::Controller;
 class Cpu : public Component {
  public:
   /**
+   * @brief Reason for CPU halt.
+   */
+  enum class HaltReason {
+    Running,   ///< CPU is still running (not halted)
+    Timeout,   ///< Maximum cycle count reached
+    Halt,      ///< Normal halt via halt control
+    Crash      ///< CPU crash via crash control
+  };
+
+  /**
+   * @brief Snapshot of CPU state at a point in time.
+   */
+  struct CpuState {
+    base::Byte a;           ///< A register value
+    base::Byte x;           ///< X register value
+    base::Word tmp;         ///< TMP register value
+    base::Word pc;          ///< Program counter value
+    base::Byte ir;          ///< Instruction register value
+    base::Byte sc;          ///< Step counter value
+    base::Byte status;      ///< Status register value
+    uint64_t cycle_count;   ///< Total cycles executed
+  };
+
+  /**
    * @brief Result of running until halt.
    */
   struct RunResult {
-    bool halted = false;   ///< True if CPU halted normally
-    bool crashed = false;  ///< True if crash control was asserted
+    HaltReason reason = HaltReason::Running;  ///< Why execution stopped
+    uint64_t cycles = 0;                      ///< Cycles executed
+    std::optional<CpuState> state;            ///< Final CPU state (if captured)
   };
 
   Cpu();
@@ -93,6 +118,20 @@ class Cpu : public Component {
    * @return RunResult indicating how execution terminated
    */
   RunResult RunUntilHalt();
+
+  /**
+   * @brief Run until halt or timeout.
+   * @param max_cycles Maximum cycles to execute before timeout
+   * @param capture_state If true, capture final CPU state in result
+   * @return RunResult with halt reason, cycle count, and optional state
+   */
+  RunResult RunUntilHalt(uint64_t max_cycles, bool capture_state = false);
+
+  /**
+   * @brief Capture current CPU state.
+   * @return Snapshot of all CPU registers and cycle count
+   */
+  CpuState CaptureState() const;
 
   /**
    * @brief Override current phase for testing.

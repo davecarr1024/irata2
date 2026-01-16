@@ -314,11 +314,51 @@ void Cpu::Tick() {
   cycle_count_++;
 }
 
+Cpu::CpuState Cpu::CaptureState() const {
+  CpuState state;
+  state.a = a_.value();
+  state.x = x_.value();
+  state.tmp = tmp_.value();
+  state.pc = pc_.value();
+  state.ir = controller_.ir().value();
+  state.sc = controller_.sc().value();
+  state.status = status_.value();
+  state.cycle_count = cycle_count_;
+  return state;
+}
+
 Cpu::RunResult Cpu::RunUntilHalt() {
   while (!halted_) {
     Tick();
   }
-  return {.halted = halted_, .crashed = crashed_};
+
+  RunResult result;
+  result.cycles = cycle_count_;
+  result.reason = crashed_ ? HaltReason::Crash : HaltReason::Halt;
+  return result;
+}
+
+Cpu::RunResult Cpu::RunUntilHalt(uint64_t max_cycles, bool capture_state) {
+  const uint64_t start_cycles = cycle_count_;
+
+  while (!halted_ && (cycle_count_ - start_cycles) < max_cycles) {
+    Tick();
+  }
+
+  RunResult result;
+  result.cycles = cycle_count_ - start_cycles;
+
+  if (halted_) {
+    result.reason = crashed_ ? HaltReason::Crash : HaltReason::Halt;
+  } else {
+    result.reason = HaltReason::Timeout;
+  }
+
+  if (capture_state) {
+    result.state = CaptureState();
+  }
+
+  return result;
 }
 
 void Cpu::EnableTrace(size_t depth) {

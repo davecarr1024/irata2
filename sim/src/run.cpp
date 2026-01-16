@@ -135,24 +135,17 @@ int main(int argc, char** argv) {
     if (max_cycles < 0) {
       result = cpu.RunUntilHalt();
     } else {
-      uint64_t remaining = static_cast<uint64_t>(max_cycles);
-      while (!cpu.halted() && remaining > 0) {
-        cpu.Tick();
-        --remaining;
-      }
-      result.halted = cpu.halted();
-      result.crashed = cpu.crashed();
-      if (!result.halted) {
-        timed_out = true;
-      }
+      result = cpu.RunUntilHalt(static_cast<uint64_t>(max_cycles));
     }
+
+    timed_out = (result.reason == irata2::sim::Cpu::HaltReason::Timeout);
 
     // Log lifecycle events
     if (timed_out) {
       IRATA2_LOG_INFO << "sim.timeout: max_cycles=" << max_cycles
                       << ", cycle_count=" << cpu.cycle_count()
                       << ", instruction_address=" << cpu.instruction_address().to_string();
-    } else if (result.crashed) {
+    } else if (result.reason == irata2::sim::Cpu::HaltReason::Crash) {
       IRATA2_LOG_INFO << "sim.crash: cycle_count=" << cpu.cycle_count()
                       << ", instruction_address=" << cpu.instruction_address().to_string();
     } else {
@@ -162,8 +155,8 @@ int main(int argc, char** argv) {
 
     // Log failure-path debug dump and trace
     if (!debug_path.empty()) {
-      const bool unexpected_crash = result.crashed && !expect_crash;
-      const bool unexpected_halt = !result.crashed && expect_crash;
+      const bool unexpected_crash = (result.reason == irata2::sim::Cpu::HaltReason::Crash) && !expect_crash;
+      const bool unexpected_halt = (result.reason == irata2::sim::Cpu::HaltReason::Halt) && expect_crash;
       if (timed_out || unexpected_crash || unexpected_halt) {
         const std::string reason = timed_out ? "timeout"
                                   : unexpected_crash ? "crash"
@@ -178,9 +171,9 @@ int main(int argc, char** argv) {
       return 4;
     }
     if (expect_crash) {
-      return result.crashed ? 0 : 2;
+      return (result.reason == irata2::sim::Cpu::HaltReason::Crash) ? 0 : 2;
     }
-    return result.crashed ? 2 : 0;
+    return (result.reason == irata2::sim::Cpu::HaltReason::Crash) ? 2 : 0;
   } catch (const std::exception& error) {
     std::cerr << "Error: " << error.what() << "\n";
     return 1;

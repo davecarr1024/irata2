@@ -120,8 +120,8 @@ TEST(SimCpuTest, RunUntilHaltReturnsHaltState) {
   test::AssertControl(sim.halt());
   const auto result = sim.RunUntilHalt();
 
-  EXPECT_TRUE(result.halted);
-  EXPECT_FALSE(result.crashed);
+  EXPECT_EQ(result.reason, Cpu::HaltReason::Halt);
+  EXPECT_GT(result.cycles, 0u);
 }
 
 TEST(SimCpuTest, RunUntilHaltReturnsCrashState) {
@@ -130,6 +130,6 @@ TEST(SimCpuTest, RunUntilHaltReturnsCrashState) {
   test::AssertControl(sim.crash());
   const auto result = sim.RunUntilHalt();
 
-  EXPECT_TRUE(result.halted);
-  EXPECT_TRUE(result.crashed);
+  EXPECT_EQ(result.reason, Cpu::HaltReason::Crash);
+  EXPECT_GT(result.cycles, 0u);
 }
