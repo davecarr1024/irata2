@@ -9,6 +9,7 @@
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
+#include "irata2/sim/controller/instruction_memory.h"
 #include "irata2/sim/local_counter.h"
 #include "irata2/sim/latched_word_register.h"
 #include "irata2/sim/word_bus.h"
@@ -32,24 +33,20 @@ class Controller final : public ComponentWithParent {
 
   void LoadProgram(
       std::shared_ptr<const microcode::output::MicrocodeProgram> program);
-  const microcode::output::MicrocodeProgram* program() const {
-    return program_.get();
+
+  const InstructionMemory* instruction_memory() const {
+    return instruction_memory_.get();
   }
 
   void TickControl() override;
   void TickProcess() override;
 
  private:
-  uint64_t LookupControlWord(uint8_t opcode, uint8_t step, uint8_t status) const;
-  void AssertControlWord(uint64_t control_word);
-  uint8_t EncodeStatus() const;
-
   ByteRegister ir_;
   LocalCounter<base::Byte> sc_;
   LatchedWordRegister ipc_;
   Bus<base::Word>& address_bus_;
-  std::shared_ptr<const microcode::output::MicrocodeProgram> program_;
-  std::vector<ControlBase*> control_lines_;
+  std::unique_ptr<InstructionMemory> instruction_memory_;
 };
 
 }  // namespace irata2::sim::controller

@@ -58,9 +58,9 @@ void StatusEncoder::Initialize(
 
 uint8_t StatusEncoder::Encode() const {
   uint8_t encoded = 0;
-  for (size_t i = 0; i < status_references_.size(); ++i) {
-    if (status_references_[i]->value()) {
-      encoded |= static_cast<uint8_t>(1U << i);
+  for (auto* status : status_references_) {
+    if (status->value()) {
+      encoded |= static_cast<uint8_t>(1U << status->bit_index());
     }
   }
   return encoded;
