@@ -328,8 +328,10 @@ Region::Region(Memory& parent, const std::string& name,
 **Goal:** Hardware-ish implementation with encoders and instruction memory.
 
 **Status:** All items complete. Controller now uses InstructionMemory with
-ControlEncoder and StatusEncoder for microcode lookup. The implementation uses
-a lookup table rather than a full ROM grid (future enhancement).
+ControlEncoder and StatusEncoder for microcode lookup. InstructionMemory uses
+actual ROM storage (RomStorage<uint32_t, uint64_t>) instead of lookup tables,
+making it truly hardware-ish - microcode is "burned" into ROM at initialization
+and the original program is discarded.
 
 ### 6.1 Directory Structure [COMPLETE]
 
@@ -517,13 +519,17 @@ private:
 3. Update Controller tests
 
 **Completed:**
-1. ✓ Controller now uses instruction_memory_ instead of program_/control_lines_
-2. ✓ LoadProgram() simplified to create InstructionMemory
-3. ✓ TickControl() simplified to use Lookup() and assert controls
-4. ✓ Removed helper methods (EncodeStatus, LookupControlWord, AssertControlWord)
-5. ✓ Controller.h reduced from 58 to 54 lines
-6. ✓ Controller.cpp reduced from 125 to 54 lines (57% reduction!)
-7. ✓ All 298 tests pass including integration tests
+1. ✓ Created generic RomStorage<AddressType, DataType> template component
+2. ✓ Type aliases: MemoryRomStorage (size_t, Byte), MicrocodeRomStorage (uint32_t, uint64_t)
+3. ✓ memory::Rom refactored to use MemoryRomStorage internally
+4. ✓ InstructionMemory uses MicrocodeRomStorage for hardware-ish behavior
+5. ✓ Controller now uses instruction_memory_ instead of program_/control_lines_
+6. ✓ LoadProgram() simplified to create InstructionMemory
+7. ✓ TickControl() simplified to use Lookup() and assert controls
+8. ✓ Removed helper methods (EncodeStatus, LookupControlWord, AssertControlWord)
+9. ✓ Controller.h reduced from 58 to 54 lines
+10. ✓ Controller.cpp reduced from 125 to 54 lines (57% reduction!)
+11. ✓ All 298 tests pass including integration tests
 
 ## Phase 7: CPU Constructor Refactoring
 

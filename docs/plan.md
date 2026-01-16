@@ -13,7 +13,7 @@ direction. Individual projects live in `docs/projects/`.
 - **Logging improvements complete** ✓: structured logging with lifecycle events, failure-path dumps, CLI/env configuration, and comprehensive documentation.
 - **Microcode compiler improvements complete** ✓: all 5 validators (BusValidator, StatusValidator, StageValidator, ControlConflictValidator, SequenceValidator), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring with preamble/validators/transformers pattern.
 - **Microcode debug visibility complete** ✓: decoder, YAML output, CLI utility (microcode_dump_main), all milestones M0-M2.
-- **Sim module cleanup in progress**: Phases 1, 2, 3.1-3.4, 4, 9, 10 of cleanup_plan.md complete. Register hierarchy redesign finished (RegisterBase/RegisterWithBus split, WordCounter, LatchedWordRegister refactoring). Component hierarchy improvements and directory organization done. Remaining phases (3.5, 5, 6, 7, 8) documented in cleanup_plan.md.
+- **Sim module cleanup in progress**: Phases 1, 2, 3.1-3.4, 4, 5, 6, 9, 10 of cleanup_plan.md complete. Register hierarchy redesign, memory refactoring with factory pattern, and controller submodule with hardware-ish ROM storage all finished. InstructionMemory now "burns" microcode into RomStorage at initialization and discards the program, just like real hardware. Remaining phases (3.5, 7, 8, 10.1) documented in cleanup_plan.md.
 
 ## Active Project Ideas
 
@@ -35,19 +35,20 @@ risk as the ISA grows.
 3. ~~Microcode compiler improvements (validators, optimizers)~~ - **Complete** ✓
 4. ~~Microcode debug visibility for control path transparency~~ - **Complete** ✓
 5. **Sim module cleanup** - Architectural refactoring per `cleanup_plan.md`. This is a
-   long-running effort that can be interleaved with other work. Phases 1, 2, 3.1-3.4, 4, 9, 10
-   complete. Remaining phases (3.5, 5, 6, 7, 8) provide foundation for advanced features.
+   long-running effort that can be interleaved with other work. Phases 1, 2, 3.1-3.4, 4, 5, 6, 9, 10
+   complete. Remaining phases (3.5, 7, 8, 10.1) are optional/deferred - 3.5 is not critical path,
+   7-8 can be done later, 10.1 needs HDL type information.
 6. Program tooling and cartridge inspection for safer workflows - **Optional/Deferred**.
 7. ISA expansion in batches - **Next priority** now that debugging/validation tooling is complete.
 
 ## Next Overall Steps
 
-With debugging support, logging, and microcode compiler improvements complete, the codebase is well-positioned for growth:
+With debugging support, logging, microcode compiler improvements, and major sim cleanup complete, the codebase is well-positioned for ISA expansion:
 
-1. **Continue sim module cleanup** - Complete remaining phases (3.5, 5, 6, 7, 8) of cleanup_plan.md as needed. These provide architectural improvements but are not blocking ISA expansion.
+1. **Begin ISA expansion** - Start with ALU instructions batch (ADD, AND, OR, XOR) per `docs/projects/isa-expansion.md`. The validation, debugging infrastructure, and hardware-ish controller are now in place to support safe ISA growth.
 
-2. **Begin ISA expansion** - Start with ALU instructions batch (ADD, AND, OR, XOR) per `docs/projects/isa-expansion.md`. The validation and debugging infrastructure is now in place to support safe ISA growth.
+2. **Maintain test coverage** - Add ASM integration tests for each new instruction, ensuring end-to-end validation through the full toolchain.
 
-3. **Maintain test coverage** - Add ASM integration tests for each new instruction, ensuring end-to-end validation through the full toolchain.
+3. **Monitor microcode complexity** - Use the microcode decoder and validators to ensure control sequences remain maintainable as the ISA expands.
 
-4. **Monitor microcode complexity** - Use the microcode decoder and validators to ensure control sequences remain maintainable as the ISA expands.
+4. **Optional: Complete remaining sim cleanup** - Phases 3.5, 7, 8, 10.1 of cleanup_plan.md provide additional polish but are not blocking. Phase 7 (CPU constructor refactoring) and Phase 8 (HDL enforcement) can be done after ISA expansion if desired.
