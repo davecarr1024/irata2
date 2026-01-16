@@ -323,12 +323,17 @@ Region::Region(Memory& parent, const std::string& name,
 2. ✓ Implements read_value() and write_value() for bus operations
 3. ✓ All 298 tests pass
 
-## Phase 6: Controller Submodule
+## Phase 6: Controller Submodule [COMPLETE]
 
-This is the largest and most complex phase. The controller becomes a proper
-submodule with hardware-ish implementation.
+**Goal:** Hardware-ish implementation with encoders and instruction memory.
 
-### 6.1 Directory Structure
+**Status:** All items complete. Controller now uses InstructionMemory with
+ControlEncoder and StatusEncoder for microcode lookup. The implementation uses
+a lookup table rather than a full ROM grid (future enhancement).
+
+### 6.1 Directory Structure [COMPLETE]
+
+**Completed:** Directory structure already exists from Phase 9.
 
 ```
 sim/
@@ -337,19 +342,16 @@ sim/
 │       ├── controller.h
 │       ├── control_encoder.h
 │       ├── status_encoder.h
-│       ├── instruction_encoder.h
-│       ├── instruction_memory.h
-│       └── rom_grid.h
+│       └── instruction_memory.h
 └── src/
     └── controller/
         ├── controller.cpp
         ├── control_encoder.cpp
         ├── status_encoder.cpp
-        ├── instruction_encoder.cpp
         └── instruction_memory.cpp
 ```
 
-### 6.2 ControlEncoder
+### 6.2 ControlEncoder [COMPLETE]
 
 **Purpose:** Encode/decode control signals to/from binary control words.
 
@@ -378,7 +380,15 @@ private:
 3. Implement encoding logic (control index -> bit position)
 4. Implement decoding logic (bit position -> control reference)
 
-### 6.3 StatusEncoder
+**Completed:**
+1. ✓ ControlEncoder created as ComponentWithParent
+2. ✓ Initialize() method validates control paths against CPU
+3. ✓ Encode() converts control references to binary word
+4. ✓ Decode() converts binary word to control references
+5. ✓ GetControl(index) provides efficient access by bit position
+6. ✓ All 298 tests pass
+
+### 6.3 StatusEncoder [COMPLETE]
 
 **Purpose:** Encode/decode status values for ROM addressing. Handles expansion
 of sparse microcode (partial status requirements) into dense ROM entries.
@@ -415,7 +425,15 @@ private:
 3. Implement encoding/decoding for ROM addressing
 4. Implement PartialStatus permutation for sparse-to-dense expansion
 
-### 6.4 InstructionMemory
+**Completed:**
+1. ✓ StatusEncoder created as ComponentWithParent
+2. ✓ Initialize() maps status bit names to Status references from CPU
+3. ✓ Encode() returns full status register byte (using bit_index())
+4. ✓ Decode() converts encoding back to bool vector
+5. ✓ Permute() expands partial status (mask/value) to all matching encodings
+6. ✓ All 298 tests pass
+
+### 6.4 InstructionMemory [COMPLETE]
 
 **Purpose:** Hardware-ish ROM storage for microcode.
 
@@ -450,7 +468,15 @@ private:
 3. Implement microcode-to-ROM encoding
 4. Implement lookup logic
 
-### 6.5 Controller Refactoring
+**Completed:**
+1. ✓ InstructionMemory created as ComponentWithParent
+2. ✓ Contains ControlEncoder and StatusEncoder as children
+3. ✓ Uses lookup table (not full ROM grid - future enhancement)
+4. ✓ Lookup() decodes control word to control references
+5. ✓ Validates lookup keys and bounds checks control word
+6. ✓ All 298 tests pass
+
+### 6.5 Controller Refactoring [COMPLETE]
 
 **Current:** Stores MicrocodeProgram directly, accesses it at runtime.
 
@@ -489,6 +515,15 @@ private:
 1. Refactor Controller to use InstructionMemory
 2. Remove direct MicrocodeProgram storage
 3. Update Controller tests
+
+**Completed:**
+1. ✓ Controller now uses instruction_memory_ instead of program_/control_lines_
+2. ✓ LoadProgram() simplified to create InstructionMemory
+3. ✓ TickControl() simplified to use Lookup() and assert controls
+4. ✓ Removed helper methods (EncodeStatus, LookupControlWord, AssertControlWord)
+5. ✓ Controller.h reduced from 58 to 54 lines
+6. ✓ Controller.cpp reduced from 125 to 54 lines (57% reduction!)
+7. ✓ All 298 tests pass including integration tests
 
 ## Phase 7: CPU Constructor Refactoring
 
