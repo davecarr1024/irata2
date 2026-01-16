@@ -89,4 +89,14 @@ std::vector<ControlBase*> ControlEncoder::Decode(
   return controls;
 }
 
+ControlBase* ControlEncoder::GetControl(size_t index) const {
+  if (index >= control_references_.size()) {
+    std::ostringstream message;
+    message << "control index out of range: " << index
+            << " (max: " << control_references_.size() << ")";
+    throw SimError(message.str());
+  }
+  return control_references_[index];
+}
+
 }  // namespace irata2::sim::controller

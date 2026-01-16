@@ -60,6 +60,13 @@ class ControlEncoder final : public ComponentWithParent {
   /// Get the number of controls.
   size_t control_count() const { return control_references_.size(); }
 
+  /// Get a control reference by index.
+  ///
+  /// \param index The control index (0 to control_count()-1)
+  /// \return The control reference at the given index
+  /// \throws SimError if index is out of range
+  ControlBase* GetControl(size_t index) const;
+
  private:
   std::vector<ControlBase*> control_references_;  // Ordered list
   size_t control_word_width_;  // Bytes needed to encode all controls
