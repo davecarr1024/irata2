@@ -175,6 +175,10 @@ class Cpu : public Component {
  private:
   void BuildControlIndex();
 
+  // Singleton accessors for default HDL and microcode
+  static std::shared_ptr<const hdl::Cpu> GetDefaultHdl();
+  static std::shared_ptr<const microcode::output::MicrocodeProgram> GetDefaultMicrocodeProgram();
+
   std::shared_ptr<const hdl::Cpu> hdl_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> microcode_;
   base::TickPhase current_phase_ = base::TickPhase::None;
