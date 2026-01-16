@@ -213,6 +213,7 @@ class Cpu : public Component {
 
  private:
   void BuildControlIndex();
+  void ValidateAgainstHdl();
 
   // Singleton accessors for default HDL and microcode
   static std::shared_ptr<const hdl::Cpu> GetDefaultHdl();

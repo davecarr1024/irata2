@@ -4,8 +4,10 @@
 #include "irata2/sim/initialization.h"
 #include "irata2/microcode/compiler/compiler.h"
 #include "irata2/microcode/ir/irata_instruction_set.h"
+#include "irata2/hdl/traits.h"
 
 #include <algorithm>
+#include <sstream>
 
 namespace irata2::sim {
 
@@ -231,6 +233,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().high().reset());
 
   BuildControlIndex();
+  ValidateAgainstHdl();
   controller_.LoadProgram(microcode_);
   controller_.ir().set_value(base::Byte{0x02});
   controller_.sc().set_value(base::Byte{0});
@@ -257,6 +260,44 @@ void Cpu::BuildControlIndex() {
       }
       control_paths_.push_back(component->path());
       control_order_.push_back(control);
+    }
+  }
+}
+
+void Cpu::ValidateAgainstHdl() {
+  // Collect all HDL control paths via visitor
+  std::vector<std::string> hdl_paths;
+  hdl_->visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (hdl::is_control_v<T>) {
+      hdl_paths.push_back(component.path());
+    }
+  });
+
+  // Check that sim has at least as many controls as HDL
+  if (control_paths_.size() < hdl_paths.size()) {
+    std::ostringstream message;
+    message << "sim has fewer controls (" << control_paths_.size()
+            << ") than HDL (" << hdl_paths.size() << ")";
+    throw SimError(message.str());
+  }
+
+  // Check that all HDL controls exist in sim with correct order
+  for (size_t i = 0; i < hdl_paths.size(); ++i) {
+    const auto& hdl_path = hdl_paths[i];
+
+    // Check existence
+    if (controls_by_path_.find(hdl_path) == controls_by_path_.end()) {
+      throw SimError("HDL control not found in sim: " + hdl_path);
+    }
+
+    // Check order (first N controls in sim should match HDL order)
+    if (i < control_paths_.size() && control_paths_[i] != hdl_path) {
+      std::ostringstream message;
+      message << "control order mismatch at index " << i
+              << ": HDL has '" << hdl_path
+              << "' but sim has '" << control_paths_[i] << "'";
+      throw SimError(message.str());
     }
   }
 }
