@@ -80,9 +80,9 @@ LoadedCartridge LoadCartridge(const std::string& path) {
   return result;
 }
 
-std::shared_ptr<memory::Module> LoadCartridgeRom(const std::string& path) {
+std::vector<base::Byte> LoadCartridgeRom(const std::string& path) {
   LoadedCartridge cartridge = LoadCartridge(path);
-  return memory::MakeRom(std::move(cartridge.rom));
+  return std::move(cartridge.rom);
 }
 
 }  // namespace irata2::sim

@@ -109,11 +109,10 @@ int main(int argc, char** argv) {
   try {
     irata2::sim::LoadedCartridge cartridge =
         irata2::sim::LoadCartridge(cartridge_path);
-    auto rom = irata2::sim::memory::MakeRom(std::move(cartridge.rom));
 
     irata2::sim::Cpu cpu(irata2::sim::DefaultHdl(),
                          irata2::sim::DefaultMicrocodeProgram(),
-                         std::move(rom));
+                         std::move(cartridge.rom));
     cpu.pc().set_value(cartridge.header.entry);
     cpu.controller().sc().set_value(irata2::base::Byte{0});
     cpu.controller().ir().set_value(cpu.memory().ReadAt(cartridge.header.entry));

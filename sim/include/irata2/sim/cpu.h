@@ -71,8 +71,8 @@ class Cpu : public Component {
   Cpu();
   explicit Cpu(std::shared_ptr<const hdl::Cpu> hdl,
                std::shared_ptr<const microcode::output::MicrocodeProgram> program,
-               std::shared_ptr<memory::Module> cartridge_rom = nullptr,
-               std::vector<memory::Region> extra_regions = {});
+               std::vector<base::Byte> cartridge_rom = {},
+               std::vector<memory::Memory::RegionFactory> extra_region_factories = {});
 
   Cpu& cpu() override { return *this; }
   const Cpu& cpu() const override { return *this; }

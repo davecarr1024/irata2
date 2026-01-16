@@ -11,9 +11,12 @@ bool IsPowerOfTwo(size_t value) {
 }  // namespace
 
 Region::Region(std::string name,
+               Component& parent,
                base::Word offset,
-               std::shared_ptr<Module> module)
-    : name_(std::move(name)), offset_(offset), module_(std::move(module)) {
+               ModuleFactory module_factory)
+    : ComponentWithParent(parent, std::move(name)),
+      offset_(offset),
+      module_(module_factory(*this)) {
   if (!module_) {
     throw SimError("memory region module is null");
   }

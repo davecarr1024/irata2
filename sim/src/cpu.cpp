@@ -7,12 +7,54 @@
 
 namespace irata2::sim {
 
+namespace {
+std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
+    std::vector<base::Byte> cartridge_rom,
+    std::vector<memory::Memory::RegionFactory> extra_region_factories) {
+  std::vector<memory::Memory::RegionFactory> factories;
+  factories.reserve(2 + extra_region_factories.size());
+
+  // RAM region at 0x0000
+  factories.push_back([](memory::Memory& mem) -> std::unique_ptr<memory::Region> {
+    return std::make_unique<memory::Region>(
+        "ram", mem, base::Word{0x0000},
+        [](memory::Region& reg) -> std::unique_ptr<memory::Module> {
+          return std::make_unique<memory::Ram>("ram", reg, 0x2000,
+                                                base::Byte{0x00});
+        });
+  });
+
+  // Cartridge ROM region at 0x8000
+  factories.push_back([rom_data = std::move(cartridge_rom)](
+                          memory::Memory& mem) mutable -> std::unique_ptr<memory::Region> {
+    return std::make_unique<memory::Region>(
+        "cartridge", mem, base::Word{0x8000},
+        [rom_data = std::move(rom_data)](
+            memory::Region& reg) mutable -> std::unique_ptr<memory::Module> {
+          if (rom_data.empty()) {
+            // Default empty ROM
+            return std::make_unique<memory::Rom>("rom", reg, 0x8000,
+                                                  base::Byte{0xFF});
+          }
+          return std::make_unique<memory::Rom>("rom", reg, std::move(rom_data));
+        });
+  });
+
+  // Add extra region factories
+  for (auto& factory : extra_region_factories) {
+    factories.push_back(std::move(factory));
+  }
+
+  return factories;
+}
+}  // namespace
+
 Cpu::Cpu() : Cpu(DefaultHdl(), DefaultMicrocodeProgram()) {}
 
 Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
          std::shared_ptr<const microcode::output::MicrocodeProgram> program,
-         std::shared_ptr<memory::Module> cartridge_rom,
-         std::vector<memory::Region> extra_regions)
+         std::vector<base::Byte> cartridge_rom,
+         std::vector<memory::Memory::RegionFactory> extra_region_factories)
     : hdl_(std::move(hdl)),
       microcode_(std::move(program)),
       halt_control_("halt", *this),
@@ -29,23 +71,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
               *this,
               data_bus_,
               address_bus_,
-              [&]() {
-                std::vector<memory::Region> regions;
-                regions.reserve(extra_regions.size() + 2);
-                regions.emplace_back("ram",
-                                     base::Word{0x0000},
-                                     memory::MakeRam(0x2000));
-                if (!cartridge_rom) {
-                  cartridge_rom = memory::MakeRom(0x8000);
-                }
-                regions.emplace_back("cartridge",
-                                     base::Word{0x8000},
-                                     cartridge_rom);
-                for (auto& region : extra_regions) {
-                  regions.push_back(std::move(region));
-                }
-                return regions;
-              }()) {
+              BuildRegionFactories(std::move(cartridge_rom),
+                                   std::move(extra_region_factories))) {
   if (!hdl_) {
     throw SimError("cpu constructed without HDL");
   }
