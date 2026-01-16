@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "irata2/microcode/output/program.h"
@@ -11,6 +10,7 @@
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller/control_encoder.h"
 #include "irata2/sim/controller/status_encoder.h"
+#include "irata2/sim/rom_storage.h"
 
 namespace irata2::sim {
 class Cpu;
@@ -18,17 +18,19 @@ class Cpu;
 
 namespace irata2::sim::controller {
 
+/// Type alias for microcode ROM storage (32-bit address, 64-bit data)
+using MicrocodeRomStorage = RomStorage<uint32_t, uint64_t>;
+
 /// Hardware-ish ROM storage for microcode.
 ///
 /// InstructionMemory encapsulates the microcode lookup functionality,
 /// containing ControlEncoder and StatusEncoder for bidirectional mapping.
-/// At construction, it processes the microcode program and builds an
-/// internal lookup table. The original program is not retained after
-/// initialization.
+/// At construction, it processes the microcode program and "burns" it into
+/// ROM storage. The original program is not retained after initialization.
 ///
-/// This implementation uses a lookup table rather than a full ROM grid.
-/// A future enhancement could implement actual ROM chips for a more
-/// hardware-accurate simulation.
+/// Uses RomStorage<uint32_t, uint64_t>:
+/// - 32-bit addresses encode (opcode << 16 | step << 8 | status)
+/// - 64-bit data stores control words
 class InstructionMemory final : public ComponentWithParent {
  public:
   /// Construct InstructionMemory from a microcode program.
@@ -65,12 +67,13 @@ class InstructionMemory final : public ComponentWithParent {
   /// Get the status encoder.
   const StatusEncoder& status_encoder() const { return status_encoder_; }
 
+  /// Get the ROM storage (for debugging/inspection).
+  const MicrocodeRomStorage* rom() const { return rom_.get(); }
+
  private:
   ControlEncoder control_encoder_;
   StatusEncoder status_encoder_;
-
-  // Lookup table: (opcode << 16) | (step << 8) | status -> control_word
-  std::unordered_map<uint32_t, uint64_t> table_;
+  std::unique_ptr<MicrocodeRomStorage> rom_;
 };
 
 }  // namespace irata2::sim::controller

@@ -38,23 +38,20 @@ void Ram::Write(base::Word address, base::Byte value) {
 }
 
 Rom::Rom(std::string name, Component& parent, size_t size, base::Byte fill)
-    : Module(std::move(name), parent), data_(size, fill) {
+    : Module(std::move(name), parent),
+      storage_("storage", *this, size, fill) {
   ValidateSize(size);
 }
 
 Rom::Rom(std::string name, Component& parent, std::vector<base::Byte> data)
-    : Module(std::move(name), parent), data_(std::move(data)) {
-  ValidateSize(data_.size());
+    : Module(std::move(name), parent),
+      storage_("storage", *this, std::move(data)) {
+  ValidateSize(storage_.size());
 }
 
 base::Byte Rom::Read(base::Word address) const {
-  const auto index = address.value();
-  if (index >= data_.size()) {
-    std::ostringstream message;
-    message << "ROM read out of range: " << index;
-    throw SimError(message.str());
-  }
-  return data_[index];
+  // Convert Word to size_t for RomStorage
+  return storage_.Read(static_cast<size_t>(address.value()));
 }
 
 void Rom::Write(base::Word address, base::Byte value) {

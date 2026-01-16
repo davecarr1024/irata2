@@ -1,9 +1,9 @@
 #include "irata2/sim/controller/instruction_memory.h"
 
-#include "irata2/microcode/encoder/instruction_encoder.h"
 #include "irata2/sim/cpu.h"
 #include "irata2/sim/error.h"
 
+#include <algorithm>
 #include <sstream>
 
 namespace irata2::sim::controller {
@@ -20,31 +20,45 @@ InstructionMemory::InstructionMemory(
   control_encoder_.Initialize(program, cpu);
   status_encoder_.Initialize(program, cpu);
 
-  // Copy the lookup table
-  table_ = program.table;
+  // Find the maximum address to size the ROM
+  // If table is empty, create minimal ROM
+  uint32_t max_address = 0;
+  for (const auto& [key, value] : program.table) {
+    max_address = std::max(max_address, key);
+  }
+
+  // Create ROM sized to fit all entries (add 1 because addresses are 0-indexed)
+  const size_t rom_size = static_cast<size_t>(max_address) + 1;
+  std::vector<uint64_t> rom_data(rom_size, 0);
+
+  // Burn the microcode into ROM
+  for (const auto& [key, value] : program.table) {
+    if (key >= rom_data.size()) {
+      std::ostringstream message;
+      message << "microcode key " << key << " exceeds ROM size "
+              << rom_data.size();
+      throw SimError(message.str());
+    }
+    rom_data[key] = value;
+  }
+
+  // Create the ROM with the burned microcode
+  rom_ = std::make_unique<MicrocodeRomStorage>("rom", *this, std::move(rom_data));
 }
 
 std::vector<ControlBase*> InstructionMemory::Lookup(uint8_t opcode,
                                                       uint8_t step,
                                                       uint8_t status) const {
-  // Build lookup key
-  const uint32_t key = (static_cast<uint32_t>(opcode) << 16) |
-                       (static_cast<uint32_t>(step) << 8) |
-                       static_cast<uint32_t>(status);
+  // Build ROM address from (opcode, step, status)
+  const uint32_t address = (static_cast<uint32_t>(opcode) << 16) |
+                           (static_cast<uint32_t>(step) << 8) |
+                           static_cast<uint32_t>(status);
 
-  // Lookup in table
-  const auto it = table_.find(key);
-  if (it == table_.end()) {
-    std::ostringstream message;
-    message << "microcode missing for opcode " << static_cast<int>(opcode)
-            << " step " << static_cast<int>(step) << " status "
-            << static_cast<int>(status);
-    throw SimError(message.str());
-  }
-
-  const uint64_t control_word = it->second;
+  // Read control word from ROM
+  const uint64_t control_word = rom_->Read(address);
 
   // Decode control word to get control references
+  // Note: control_word == 0 is valid (no controls asserted)
   std::vector<ControlBase*> controls;
   const size_t num_controls = control_encoder_.control_count();
 
