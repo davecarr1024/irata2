@@ -13,7 +13,7 @@ direction. Individual projects live in `docs/projects/`.
 - **Logging improvements complete** ✓: structured logging with lifecycle events, failure-path dumps, CLI/env configuration, and comprehensive documentation.
 - **Microcode compiler improvements complete** ✓: all 5 validators (BusValidator, StatusValidator, StageValidator, ControlConflictValidator, SequenceValidator), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring with preamble/validators/transformers pattern.
 - **Microcode debug visibility complete** ✓: decoder, YAML output, CLI utility (microcode_dump_main), all milestones M0-M2.
-- **Sim module cleanup in progress**: Phases 1, 2, 4, 9, 10 of cleanup_plan.md complete. Component hierarchy improvements, control hierarchy redesign, ComponentWithBus abstraction, directory/namespace organization done. Remaining phases (3, 5, 6, 7, 8) documented in cleanup_plan.md.
+- **Sim module cleanup in progress**: Phases 1, 2, 3.1-3.4, 4, 9, 10 of cleanup_plan.md complete. Register hierarchy redesign finished (RegisterBase/RegisterWithBus split, WordCounter, LatchedWordRegister refactoring). Component hierarchy improvements and directory organization done. Remaining phases (3.5, 5, 6, 7, 8) documented in cleanup_plan.md.
 
 ## Active Project Ideas
 
@@ -35,8 +35,8 @@ risk as the ISA grows.
 3. ~~Microcode compiler improvements (validators, optimizers)~~ - **Complete** ✓
 4. ~~Microcode debug visibility for control path transparency~~ - **Complete** ✓
 5. **Sim module cleanup** - Architectural refactoring per `cleanup_plan.md`. This is a
-   long-running effort that can be interleaved with other work. Phases 1, 2, 4, 9, 10
-   complete. Remaining phases (3, 5, 6, 7, 8) provide foundation for advanced features.
+   long-running effort that can be interleaved with other work. Phases 1, 2, 3.1-3.4, 4, 9, 10
+   complete. Remaining phases (3.5, 5, 6, 7, 8) provide foundation for advanced features.
 6. Program tooling and cartridge inspection for safer workflows - **Optional/Deferred**.
 7. ISA expansion in batches - **Next priority** now that debugging/validation tooling is complete.
 
@@ -44,7 +44,7 @@ risk as the ISA grows.
 
 With debugging support, logging, and microcode compiler improvements complete, the codebase is well-positioned for growth:
 
-1. **Continue sim module cleanup** - Complete remaining phases (3, 5, 6, 7, 8) of cleanup_plan.md as needed. These provide architectural improvements but are not blocking.
+1. **Continue sim module cleanup** - Complete remaining phases (3.5, 5, 6, 7, 8) of cleanup_plan.md as needed. These provide architectural improvements but are not blocking ISA expansion.
 
 2. **Begin ISA expansion** - Start with ALU instructions batch (ADD, AND, OR, XOR) per `docs/projects/isa-expansion.md`. The validation and debugging infrastructure is now in place to support safe ISA growth.
 
