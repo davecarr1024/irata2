@@ -254,10 +254,7 @@ See `docs/plan.md` for the authoritative list. Current status as of January 2026
 2. ✓ **Logging improvements** - Structured logging with CLI/env configuration complete
 3. ✓ **Microcode compiler improvements** - All 5 validators and 3 optimizers complete, compiler restructured
 4. ✓ **Microcode debug visibility** - Decoder, YAML output, CLI utility complete
-
-**Active Work:**
-1. **Sim module cleanup** - In progress (Phases 1, 2, 4, 9, 10 complete). Remaining phases (3, 5, 6, 7, 8) provide architectural improvements and can be interleaved with other work.
+5. ✓ **Sim module cleanup** - All 11 phases complete. Register hierarchy redesign, memory refactoring with factory pattern, controller submodule with hardware-ish ROM storage, TMP register with 128-bit control words, CPU singleton refactoring, RunResult improvements with HaltReason/CpuState, HDL validation, and BusValidator updates all complete
 
 **Next Priorities:**
-1. **ISA expansion** - Begin with ALU instructions batch (ADD, AND, OR, XOR). The validation and debugging infrastructure is now in place to support safe ISA growth.
-2. **Continue sim cleanup** - Complete remaining phases as needed to support advanced features
+1. **ISA expansion** - Begin with ALU instructions batch (ADD, AND, OR, XOR). All infrastructure is now in place (debugging tools, structured logging, robust microcode validation/optimization, clean sim architecture with hardware-ish components)

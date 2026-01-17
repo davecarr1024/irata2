@@ -17,6 +17,7 @@ include(GoogleTest)
 
 # Test executable for sim module
 add_executable(sim_tests
+  alu_test.cpp
   bus_test.cpp
   control_test.cpp
   counter_test.cpp
