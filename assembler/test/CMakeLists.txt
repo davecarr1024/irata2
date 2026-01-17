@@ -25,7 +25,38 @@ target_link_libraries(assembler_tests PRIVATE
 
 target_compile_features(assembler_tests PRIVATE cxx_std_20)
 
-gtest_discover_tests(assembler_tests)
+gtest_discover_tests(assembler_tests
+  PROPERTIES TIMEOUT 30
+)
+
+# Integration tests - run assembled programs end-to-end
+# These tests run actual CPU simulations and could hang if microcode is buggy
+add_executable(integration_tests
+  integration/system_test.cpp
+  integration/load_immediate_test.cpp
+)
+
+target_link_libraries(integration_tests PRIVATE
+  GTest::gtest_main
+  irata2::assembler
+  irata2::sim
+  irata2::base
+)
+
+target_compile_features(integration_tests PRIVATE cxx_std_20)
+
+target_include_directories(integration_tests PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+gtest_discover_tests(integration_tests
+  PROPERTIES TIMEOUT 60  # Longer timeout for integration tests
+)
+
+if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(integration_tests PRIVATE --coverage)
+  target_link_options(integration_tests PRIVATE --coverage)
+endif()
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)

@@ -24,6 +24,10 @@ ctest --test-dir build --output-on-failure -j 8
 ./build/base/test/base_tests --gtest_filter="ByteTest.*"
 ./build/hdl/test/hdl_tests --gtest_filter="CpuTest.*"
 
+# Integration tests (with timeout protection against infinite loops)
+./build/assembler/test/integration_tests
+ctest --test-dir build -R ".*IntegrationTest.*" --timeout 120
+
 # Build with coverage
 cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTING=ON
 cmake --build build --parallel
