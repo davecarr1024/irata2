@@ -35,7 +35,8 @@ TEST(SystemIntegrationTest, NopDoesNothing) {
   EXPECT_EQ(result.state->x, Byte{0x00});
 
   // Should complete in reasonable time
-  EXPECT_LE(result.cycles, 10);
+  // Each instruction is 4 cycles (3 fetch + 1 execute): 3 NOPs + HLT = 16 cycles
+  EXPECT_LE(result.cycles, 20);
 }
 
 TEST(SystemIntegrationTest, CrashStopsCpu) {

@@ -67,13 +67,13 @@ TEST(LoadImmediateTest, MultipleLoads) {
 }
 
 TEST(LoadImmediateTest, CmpEqual) {
-  // CMP with equal values
+  // CMP with equal values - carry is set when A >= operand (no borrow)
   RunAsmAndCheckFlags(R"(
     LDA #$42
     CMP #$42
     HLT
   )", /*expect_zero=*/true, /*expect_negative=*/false,
-      /*expect_carry=*/false, /*expect_overflow=*/false, /*max_cycles=*/100);
+      /*expect_carry=*/true, /*expect_overflow=*/false, /*max_cycles=*/100);
 }
 
 TEST(LoadImmediateTest, CmpGreater) {
