@@ -82,6 +82,34 @@ instructions:
           - [alu.opcode_bit_1, alu.opcode_bit_2]
           - [alu.result.write, a.read, status.analyzer.read]
 
+  ASL_IMP:
+    stages:
+      - steps:
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  LSR_IMP:
+    stages:
+      - steps:
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_3]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ROL_IMP:
+    stages:
+      - steps:
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_3]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ROR_IMP:
+    stages:
+      - steps:
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, a.read, status.analyzer.read]
+
   JEQ_ABS:
     variants:
       - when: { zero: true }

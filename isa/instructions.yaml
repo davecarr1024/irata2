@@ -125,6 +125,39 @@ instructions:
     category: Logic
     flags_affected: [Z, N]
 
+  # Shift Instructions (Accumulator)
+  - mnemonic: ASL
+    opcode: 0x25
+    addressing_mode: IMP
+    cycles: 1
+    description: "Arithmetic shift left (accumulator)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: LSR
+    opcode: 0x26
+    addressing_mode: IMP
+    cycles: 1
+    description: "Logical shift right (accumulator)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROL
+    opcode: 0x27
+    addressing_mode: IMP
+    cycles: 1
+    description: "Rotate left (accumulator)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROR
+    opcode: 0x28
+    addressing_mode: IMP
+    cycles: 1
+    description: "Rotate right (accumulator)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP
