@@ -292,6 +292,294 @@ TEST(AluTest, SubWithBorrow) {
 }
 
 // ============================================================================
+// AND Tests (Opcode 0x4)
+// ============================================================================
+
+TEST(AluTest, AndBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xF0 & 0x0F = 0x00
+  cpu.alu().lhs().set_value(Byte{0xF0});
+  cpu.alu().rhs().set_value(Byte{0x0F});
+  SetAluOpcode(cpu, 0x4);  // AND
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_FALSE(cpu.status().carry().value());  // AND clears carry
+  EXPECT_FALSE(cpu.status().overflow().value());  // AND clears overflow
+}
+
+TEST(AluTest, AndAllBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xFF & 0xFF = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xFF});
+  cpu.alu().rhs().set_value(Byte{0xFF});
+  SetAluOpcode(cpu, 0x4);  // AND
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+  EXPECT_FALSE(cpu.status().carry().value());
+  EXPECT_FALSE(cpu.status().overflow().value());
+}
+
+TEST(AluTest, AndPartialOverlap) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xAA (10101010) & 0x55 (01010101) = 0x00
+  cpu.alu().lhs().set_value(Byte{0xAA});
+  cpu.alu().rhs().set_value(Byte{0x55});
+  SetAluOpcode(cpu, 0x4);  // AND
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+}
+
+TEST(AluTest, AndClearsFlags) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify AND clears carry and overflow even if they were set
+  cpu.alu().lhs().set_value(Byte{0xF0});
+  cpu.alu().rhs().set_value(Byte{0xCC});
+  cpu.status().carry().Set(true);
+  cpu.status().overflow().Set(true);
+  SetAluOpcode(cpu, 0x4);  // AND
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xC0});
+  EXPECT_FALSE(cpu.status().carry().value());  // Cleared
+  EXPECT_FALSE(cpu.status().overflow().value());  // Cleared
+}
+
+TEST(AluTest, AndWithZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: anything & 0x00 = 0x00
+  cpu.alu().lhs().set_value(Byte{0xFF});
+  cpu.alu().rhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x4);  // AND
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+}
+
+// ============================================================================
+// OR Tests (Opcode 0x5)
+// ============================================================================
+
+TEST(AluTest, OrBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xF0 | 0x0F = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xF0});
+  cpu.alu().rhs().set_value(Byte{0x0F});
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+  EXPECT_FALSE(cpu.status().carry().value());  // OR clears carry
+  EXPECT_FALSE(cpu.status().overflow().value());  // OR clears overflow
+}
+
+TEST(AluTest, OrAllBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xFF | 0xFF = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xFF});
+  cpu.alu().rhs().set_value(Byte{0xFF});
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+  EXPECT_FALSE(cpu.status().carry().value());
+  EXPECT_FALSE(cpu.status().overflow().value());
+}
+
+TEST(AluTest, OrPartialOverlap) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xAA (10101010) | 0x55 (01010101) = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xAA});
+  cpu.alu().rhs().set_value(Byte{0x55});
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+}
+
+TEST(AluTest, OrClearsFlags) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify OR clears carry and overflow even if they were set
+  cpu.alu().lhs().set_value(Byte{0x0F});
+  cpu.alu().rhs().set_value(Byte{0x33});
+  cpu.status().carry().Set(true);
+  cpu.status().overflow().Set(true);
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x3F});
+  EXPECT_FALSE(cpu.status().carry().value());  // Cleared
+  EXPECT_FALSE(cpu.status().overflow().value());  // Cleared
+}
+
+TEST(AluTest, OrWithZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: X | 0x00 = X
+  cpu.alu().lhs().set_value(Byte{0xA5});
+  cpu.alu().rhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xA5});
+}
+
+TEST(AluTest, OrZeroWithZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 | 0x00 = 0x00
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.alu().rhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x5);  // OR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+}
+
+// ============================================================================
+// XOR Tests (Opcode 0x6)
+// ============================================================================
+
+TEST(AluTest, XorBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xF0 ^ 0x0F = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xF0});
+  cpu.alu().rhs().set_value(Byte{0x0F});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+  EXPECT_FALSE(cpu.status().carry().value());  // XOR clears carry
+  EXPECT_FALSE(cpu.status().overflow().value());  // XOR clears overflow
+}
+
+TEST(AluTest, XorSameBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xFF ^ 0xFF = 0x00 (same bits cancel)
+  cpu.alu().lhs().set_value(Byte{0xFF});
+  cpu.alu().rhs().set_value(Byte{0xFF});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_FALSE(cpu.status().carry().value());
+  EXPECT_FALSE(cpu.status().overflow().value());
+}
+
+TEST(AluTest, XorPartialOverlap) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xAA (10101010) ^ 0x55 (01010101) = 0xFF
+  cpu.alu().lhs().set_value(Byte{0xAA});
+  cpu.alu().rhs().set_value(Byte{0x55});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+}
+
+TEST(AluTest, XorClearsFlags) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify XOR clears carry and overflow even if they were set
+  cpu.alu().lhs().set_value(Byte{0x0F});
+  cpu.alu().rhs().set_value(Byte{0x33});
+  cpu.status().carry().Set(true);
+  cpu.status().overflow().Set(true);
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x3C});
+  EXPECT_FALSE(cpu.status().carry().value());  // Cleared
+  EXPECT_FALSE(cpu.status().overflow().value());  // Cleared
+}
+
+TEST(AluTest, XorWithZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: X ^ 0x00 = X
+  cpu.alu().lhs().set_value(Byte{0xA5});
+  cpu.alu().rhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xA5});
+}
+
+TEST(AluTest, XorZeroWithZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 ^ 0x00 = 0x00
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.alu().rhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+}
+
+TEST(AluTest, XorInvertBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: X ^ 0xFF inverts all bits
+  cpu.alu().lhs().set_value(Byte{0xA5});
+  cpu.alu().rhs().set_value(Byte{0xFF});
+  SetAluOpcode(cpu, 0x6);  // XOR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x5A});  // Inverted
+}
+
+// ============================================================================
 // No-Op Tests (Opcode 0x0)
 // ============================================================================
 
