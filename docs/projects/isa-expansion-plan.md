@@ -47,11 +47,25 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 5. **Microcode Validation** - Use validators/optimizers to ensure correctness
 6. **6502-Inspired** - Follow 6502 conventions where reasonable, simplify where beneficial
 
-## Phase 1: ALU Core Operations
+## Phase 1: ALU Core Operations ✓ COMPLETE
 
 **Goal:** Implement fundamental ALU operations used by multiple instruction families.
 
-### 1.1 Basic Arithmetic (Addition)
+**Status:** Complete - All 11 ALU operations implemented with 61 comprehensive unit tests. All 359 tests passing.
+
+**Implementation Summary:**
+- Phase 1.1: ADD (0x1), INC (0x3) - 17 tests
+- Phase 1.2: AND (0x4), OR (0x5), XOR (0x6) - 18 tests
+- Phase 1.3: ASL (0x7), LSR (0x8), ROL (0x9), ROR (0xA) - 20 tests
+- Phase 1.4: DEC (0xB) - 6 tests
+- Existing: SUB (0x2)
+
+**Files Modified:**
+- `sim/src/alu/alu.cpp` - Added 10 new ALU operation cases
+- `sim/test/alu_test.cpp` - Created with 61 comprehensive tests
+- `sim/test/CMakeLists.txt` - Added alu_test.cpp to build
+
+### 1.1 Basic Arithmetic (Addition) ✓
 
 **ALU Opcodes:**
 - `0x1` - ADD (with carry in)
@@ -68,7 +82,9 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 **Estimated Complexity:** Low (extend existing ALU pattern)
 
-### 1.2 Basic Logic Operations
+**Status:** ✓ Complete
+
+### 1.2 Basic Logic Operations ✓
 
 **ALU Opcodes:**
 - `0x4` - AND (bitwise and)
@@ -85,7 +101,9 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 **Estimated Complexity:** Low (no carry/overflow logic)
 
-### 1.3 Shifts and Rotates
+**Status:** ✓ Complete
+
+### 1.3 Shifts and Rotates ✓
 
 **ALU Opcodes:**
 - `0x7` - ASL (arithmetic shift left)
@@ -104,7 +122,9 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 **Estimated Complexity:** Medium (carry flag interactions)
 
-### 1.4 Remaining Arithmetic
+**Status:** ✓ Complete
+
+### 1.4 Remaining Arithmetic ✓
 
 **ALU Opcodes:**
 - `0xB` - DEC (subtract 1, ignore carry)
@@ -120,7 +140,9 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 **Estimated Complexity:** Low (mirror of INC)
 
-**Phase 1 Deliverable:** ALU supports 11 operations total (SUB + 10 new)
+**Status:** ✓ Complete
+
+**Phase 1 Deliverable:** ✓ ALU supports 11 operations total (SUB + 10 new)
 
 ## Phase 2: Immediate Mode Instructions
 
@@ -854,17 +876,17 @@ BIT_ZP:
 | Opcode | Operation | Phase | Status |
 |--------|-----------|-------|--------|
 | 0x0 | NOP | - | Reserved (no-op) |
-| 0x1 | ADD | 1.1 | Planned |
+| 0x1 | ADD | 1.1 | ✓ Implemented |
 | 0x2 | SUB | - | ✓ Implemented |
-| 0x3 | INC | 1.1 | Planned |
-| 0x4 | AND | 1.2 | Planned |
-| 0x5 | OR | 1.2 | Planned |
-| 0x6 | XOR | 1.2 | Planned |
-| 0x7 | ASL | 1.3 | Planned |
-| 0x8 | LSR | 1.3 | Planned |
-| 0x9 | ROL | 1.3 | Planned |
-| 0xA | ROR | 1.3 | Planned |
-| 0xB | DEC | 1.4 | Planned |
+| 0x3 | INC | 1.1 | ✓ Implemented |
+| 0x4 | AND | 1.2 | ✓ Implemented |
+| 0x5 | OR | 1.2 | ✓ Implemented |
+| 0x6 | XOR | 1.2 | ✓ Implemented |
+| 0x7 | ASL | 1.3 | ✓ Implemented |
+| 0x8 | LSR | 1.3 | ✓ Implemented |
+| 0x9 | ROL | 1.3 | ✓ Implemented |
+| 0xA | ROR | 1.3 | ✓ Implemented |
+| 0xB | DEC | 1.4 | ✓ Implemented |
 | 0xC-0xF | - | - | Reserved (future) |
 
 ## Implementation Strategy
