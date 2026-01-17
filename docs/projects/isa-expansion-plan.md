@@ -144,11 +144,13 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 **Phase 1 Deliverable:** ✓ ALU supports 11 operations total (SUB + 10 new)
 
-## Phase 2: Immediate Mode Instructions
+## Phase 2: Immediate Mode Instructions ✓ COMPLETE
 
 **Goal:** Add instructions using existing immediate addressing mode with new ALU operations.
 
 **Rationale:** Immediate mode is already implemented for LDA/CMP. This phase adds functionality without addressing mode complexity.
+
+**Status:** Complete - All 9 instructions implemented with 56 integration tests and 9 e2e assembly tests. All 440 tests passing.
 
 ### 2.1 Arithmetic Instructions (Immediate)
 
@@ -213,7 +215,12 @@ ASL_IMP:
 
 **Estimated Complexity:** Low (implied mode already exists)
 
-**Phase 2 Deliverable:** 9 new instructions (all immediate/implied mode)
+**Status:** ✓ Complete
+
+**Phase 2 Deliverable:** ✓ 9 new instructions implemented:
+- Arithmetic: ADC_IMM (0x20), SBC_IMM (0x21)
+- Logic: AND_IMM (0x22), ORA_IMM (0x23), EOR_IMM (0x24)
+- Shifts: ASL_IMP (0x25), LSR_IMP (0x26), ROL_IMP (0x27), ROR_IMP (0x28)
 
 ## Phase 3: Register Transfer Operations
 
