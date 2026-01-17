@@ -37,6 +37,7 @@ add_executable(integration_tests
   integration/arithmetic_immediate_test.cpp
   integration/logic_immediate_test.cpp
   integration/shift_accumulator_test.cpp
+  integration/register_transfer_test.cpp
 )
 
 target_link_libraries(integration_tests PRIVATE

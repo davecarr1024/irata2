@@ -59,6 +59,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::LSR_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROL_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROR_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
@@ -111,6 +114,9 @@ TEST(CompilerTest, RejectsStepIndexOverflow) {
   set.instructions.push_back(MakeInstruction(Opcode::LSR_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROL_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROR_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

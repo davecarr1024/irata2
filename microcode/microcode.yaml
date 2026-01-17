@@ -110,6 +110,22 @@ instructions:
           - [alu.opcode_bit_1, alu.opcode_bit_3]
           - [alu.result.write, a.read, status.analyzer.read]
 
+  TAX_IMP:
+    stages:
+      - steps:
+          - [a.write, x.read, status.analyzer.read]
+
+  TXA_IMP:
+    stages:
+      - steps:
+          - [x.write, a.read, status.analyzer.read]
+
+  LDX_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, x.read, status.analyzer.read, pc.increment]
+
   JEQ_ABS:
     variants:
       - when: { zero: true }
