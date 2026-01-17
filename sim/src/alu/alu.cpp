@@ -101,6 +101,44 @@ void Alu::TickProcess() {
       overflow_.Set(false);
       break;
     }
+    case 0x7: {  // ASL (arithmetic shift left)
+      const uint8_t lhs_byte = static_cast<uint8_t>(lhs);
+      const bool bit7 = (lhs_byte & 0x80u) != 0;
+      const uint8_t result = static_cast<uint8_t>(lhs_byte << 1);
+      result_.set_value(base::Byte{result});
+      SetCarryOut(bit7);  // Bit 7 goes to carry
+      overflow_.Set(false);  // Shifts clear overflow
+      break;
+    }
+    case 0x8: {  // LSR (logical shift right)
+      const uint8_t lhs_byte = static_cast<uint8_t>(lhs);
+      const bool bit0 = (lhs_byte & 0x01u) != 0;
+      const uint8_t result = static_cast<uint8_t>(lhs_byte >> 1);
+      result_.set_value(base::Byte{result});
+      SetCarryOut(bit0);  // Bit 0 goes to carry
+      overflow_.Set(false);  // Shifts clear overflow
+      break;
+    }
+    case 0x9: {  // ROL (rotate left through carry)
+      const uint8_t lhs_byte = static_cast<uint8_t>(lhs);
+      const bool bit7 = (lhs_byte & 0x80u) != 0;
+      const bool carry_in = CarryIn();
+      const uint8_t result = static_cast<uint8_t>((lhs_byte << 1) | (carry_in ? 1u : 0u));
+      result_.set_value(base::Byte{result});
+      SetCarryOut(bit7);  // Bit 7 goes to carry
+      overflow_.Set(false);  // Rotates clear overflow
+      break;
+    }
+    case 0xA: {  // ROR (rotate right through carry)
+      const uint8_t lhs_byte = static_cast<uint8_t>(lhs);
+      const bool bit0 = (lhs_byte & 0x01u) != 0;
+      const bool carry_in = CarryIn();
+      const uint8_t result = static_cast<uint8_t>((lhs_byte >> 1) | (carry_in ? 0x80u : 0u));
+      result_.set_value(base::Byte{result});
+      SetCarryOut(bit0);  // Bit 0 goes to carry
+      overflow_.Set(false);  // Rotates clear overflow
+      break;
+    }
     default:
       break;
   }

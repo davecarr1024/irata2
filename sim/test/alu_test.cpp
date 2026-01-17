@@ -580,6 +580,316 @@ TEST(AluTest, XorInvertBits) {
 }
 
 // ============================================================================
+// ASL Tests (Opcode 0x7) - Arithmetic Shift Left
+// ============================================================================
+
+TEST(AluTest, AslBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x01 << 1 = 0x02
+  cpu.alu().lhs().set_value(Byte{0x01});
+  SetAluOpcode(cpu, 0x7);  // ASL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x02});
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 7
+  EXPECT_FALSE(cpu.status().overflow().value());  // ASL clears overflow
+}
+
+TEST(AluTest, AslWithCarryOut) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x80 (bit 7 set) << 1 = 0x00, carry set
+  cpu.alu().lhs().set_value(Byte{0x80});
+  SetAluOpcode(cpu, 0x7);  // ASL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 7 -> carry
+}
+
+TEST(AluTest, AslMultipleBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x55 (01010101) << 1 = 0xAA (10101010)
+  cpu.alu().lhs().set_value(Byte{0x55});
+  SetAluOpcode(cpu, 0x7);  // ASL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xAA});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+TEST(AluTest, AslZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 << 1 = 0x00
+  cpu.alu().lhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x7);  // ASL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+TEST(AluTest, AslClearsOverflow) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify ASL clears overflow flag
+  cpu.alu().lhs().set_value(Byte{0x02});
+  cpu.status().overflow().Set(true);  // Set overflow
+  SetAluOpcode(cpu, 0x7);  // ASL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x04});
+  EXPECT_FALSE(cpu.status().overflow().value());  // Cleared
+}
+
+// ============================================================================
+// LSR Tests (Opcode 0x8) - Logical Shift Right
+// ============================================================================
+
+TEST(AluTest, LsrBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x02 >> 1 = 0x01
+  cpu.alu().lhs().set_value(Byte{0x02});
+  SetAluOpcode(cpu, 0x8);  // LSR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x01});
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 0
+  EXPECT_FALSE(cpu.status().overflow().value());  // LSR clears overflow
+}
+
+TEST(AluTest, LsrWithCarryOut) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x01 (bit 0 set) >> 1 = 0x00, carry set
+  cpu.alu().lhs().set_value(Byte{0x01});
+  SetAluOpcode(cpu, 0x8);  // LSR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 0 -> carry
+}
+
+TEST(AluTest, LsrMultipleBits) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xAA (10101010) >> 1 = 0x55 (01010101)
+  cpu.alu().lhs().set_value(Byte{0xAA});
+  SetAluOpcode(cpu, 0x8);  // LSR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x55});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+TEST(AluTest, LsrHighBit) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x80 (10000000) >> 1 = 0x40 (01000000)
+  // High bit becomes 0 (logical shift, not arithmetic)
+  cpu.alu().lhs().set_value(Byte{0x80});
+  SetAluOpcode(cpu, 0x8);  // LSR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x40});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+TEST(AluTest, LsrZero) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 >> 1 = 0x00
+  cpu.alu().lhs().set_value(Byte{0x00});
+  SetAluOpcode(cpu, 0x8);  // LSR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+// ============================================================================
+// ROL Tests (Opcode 0x9) - Rotate Left through Carry
+// ============================================================================
+
+TEST(AluTest, RolBasicNoCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x01 rotated left (carry clear) = 0x02
+  cpu.alu().lhs().set_value(Byte{0x01});
+  cpu.status().carry().Set(false);
+  SetAluOpcode(cpu, 0x9);  // ROL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x02});
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 7
+}
+
+TEST(AluTest, RolBasicWithCarryIn) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 rotated left (carry set) = 0x01
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.status().carry().Set(true);  // Carry in
+  SetAluOpcode(cpu, 0x9);  // ROL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x01});  // Carry went to bit 0
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 7
+}
+
+TEST(AluTest, RolWithCarryInAndOut) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x80 rotated left (carry set) = 0x01, carry set
+  cpu.alu().lhs().set_value(Byte{0x80});
+  cpu.status().carry().Set(true);
+  SetAluOpcode(cpu, 0x9);  // ROL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x01});  // 0x80 << 1 = 0x00, + carry = 0x01
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 7 -> carry
+}
+
+TEST(AluTest, RolFullRotation) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0xAA (10101010) rotated left (carry clear) = 0x54 (01010100)
+  cpu.alu().lhs().set_value(Byte{0xAA});
+  cpu.status().carry().Set(false);
+  SetAluOpcode(cpu, 0x9);  // ROL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x54});
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 7 was set
+}
+
+TEST(AluTest, RolZeroWithCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 rotated left (carry set) = 0x01
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.status().carry().Set(true);
+  SetAluOpcode(cpu, 0x9);  // ROL
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x01});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+// ============================================================================
+// ROR Tests (Opcode 0xA) - Rotate Right through Carry
+// ============================================================================
+
+TEST(AluTest, RorBasicNoCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x02 rotated right (carry clear) = 0x01
+  cpu.alu().lhs().set_value(Byte{0x02});
+  cpu.status().carry().Set(false);
+  SetAluOpcode(cpu, 0xA);  // ROR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x01});
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 0
+}
+
+TEST(AluTest, RorBasicWithCarryIn) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 rotated right (carry set) = 0x80
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.status().carry().Set(true);  // Carry in
+  SetAluOpcode(cpu, 0xA);  // ROR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x80});  // Carry went to bit 7
+  EXPECT_FALSE(cpu.status().carry().value());  // No bit 0
+}
+
+TEST(AluTest, RorWithCarryInAndOut) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x01 rotated right (carry set) = 0x80, carry set
+  cpu.alu().lhs().set_value(Byte{0x01});
+  cpu.status().carry().Set(true);
+  SetAluOpcode(cpu, 0xA);  // ROR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x80});  // 0x01 >> 1 = 0x00, + carry at bit 7 = 0x80
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 0 -> carry
+}
+
+TEST(AluTest, RorFullRotation) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x55 (01010101) rotated right (carry clear) = 0x2A (00101010)
+  cpu.alu().lhs().set_value(Byte{0x55});
+  cpu.status().carry().Set(false);
+  SetAluOpcode(cpu, 0xA);  // ROR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x2A});
+  EXPECT_TRUE(cpu.status().carry().value());  // Bit 0 was set
+}
+
+TEST(AluTest, RorZeroWithCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 rotated right (carry set) = 0x80
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.status().carry().Set(true);
+  SetAluOpcode(cpu, 0xA);  // ROR
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x80});
+  EXPECT_FALSE(cpu.status().carry().value());
+}
+
+// ============================================================================
 // No-Op Tests (Opcode 0x0)
 // ============================================================================
 
