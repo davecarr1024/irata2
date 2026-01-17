@@ -83,6 +83,23 @@ instructions:
     category: Branch
     flags_affected: []
 
+  # Arithmetic Instructions
+  - mnemonic: ADC
+    opcode: 0x20
+    addressing_mode: IMM
+    cycles: 2
+    description: "Add with carry (immediate)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0x21
+    addressing_mode: IMM
+    cycles: 2
+    description: "Subtract with carry (immediate)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

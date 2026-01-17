@@ -34,6 +34,7 @@ gtest_discover_tests(assembler_tests
 add_executable(integration_tests
   integration/system_test.cpp
   integration/load_immediate_test.cpp
+  integration/arithmetic_immediate_test.cpp
 )
 
 target_link_libraries(integration_tests PRIVATE

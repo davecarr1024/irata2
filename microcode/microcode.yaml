@@ -37,6 +37,24 @@ instructions:
           - [alu.opcode_bit_1]
           - [alu.result.write, status.analyzer.read]
 
+  ADC_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  SBC_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, a.read, status.analyzer.read]
+
   JEQ_ABS:
     variants:
       - when: { zero: true }
