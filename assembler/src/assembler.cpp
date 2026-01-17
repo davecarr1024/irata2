@@ -86,10 +86,16 @@ const isa::InstructionInfo* FindInstructionByMnemonic(std::string_view mnemonic)
   return nullptr;
 }
 
-void RequireOperandCount(const InstructionStmt& stmt, size_t expected) {
-  if (stmt.operands.size() != expected) {
-    throw AssemblerError(stmt.span, "unexpected operand count");
+const isa::InstructionInfo* FindInstructionByMnemonicAndMode(std::string_view mnemonic,
+                                                              isa::AddressingMode mode) {
+  const std::string lowered = ToLower(mnemonic);
+  const auto& instructions = isa::IsaInfo::GetInstructions();
+  for (const auto& inst : instructions) {
+    if (ToLower(inst.mnemonic) == lowered && inst.addressing_mode == mode) {
+      return &inst;
+    }
   }
+  return nullptr;
 }
 
 void RequireNumberOperand(const Operand& operand, const std::string& message) {
@@ -98,8 +104,34 @@ void RequireNumberOperand(const Operand& operand, const std::string& message) {
   }
 }
 
-size_t ExpectedOperands(uint8_t operand_bytes) {
-  return operand_bytes == 0 ? 0 : 1;
+const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
+  std::vector<isa::AddressingMode> candidates;
+  if (stmt.operands.empty()) {
+    candidates = {isa::AddressingMode::IMP};
+  } else if (stmt.operands.size() == 1) {
+    const Operand& operand = stmt.operands.front();
+    if (operand.immediate) {
+      candidates = {isa::AddressingMode::IMM};
+    } else if (operand.kind == Operand::Kind::Number) {
+      if (operand.number <= 0xFFu) {
+        candidates = {isa::AddressingMode::ZP, isa::AddressingMode::ABS};
+      } else {
+        candidates = {isa::AddressingMode::ABS};
+      }
+    } else {
+      candidates = {isa::AddressingMode::ABS, isa::AddressingMode::ZP};
+    }
+  } else {
+    throw AssemblerError(stmt.span, "unexpected operand count");
+  }
+
+  for (isa::AddressingMode mode : candidates) {
+    if (const auto* info = FindInstructionByMnemonicAndMode(stmt.mnemonic, mode)) {
+      return info;
+    }
+  }
+
+  throw AssemblerError(stmt.span, "unsupported addressing mode");
 }
 
 struct FirstPassResult {
@@ -175,7 +207,7 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
     }
 
     if (const auto* instruction = std::get_if<InstructionStmt>(&statement)) {
-      const isa::InstructionInfo* info = FindInstructionByMnemonic(instruction->mnemonic);
+      const isa::InstructionInfo* info = SelectInstruction(*instruction);
       if (!info) {
         throw AssemblerError(instruction->span, "unknown instruction mnemonic");
       }
@@ -184,7 +216,6 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
       if (!mode_info) {
         throw AssemblerError(instruction->span, "unknown addressing mode");
       }
-      RequireOperandCount(*instruction, ExpectedOperands(mode_info->operand_bytes));
 
       Emittable item;
       item.kind = Emittable::Kind::Instruction;

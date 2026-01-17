@@ -16,6 +16,7 @@ struct Operand {
   Kind kind = Kind::Number;
   uint32_t number = 0;
   std::string label;
+  bool immediate = false;
   Span span;
 };
 

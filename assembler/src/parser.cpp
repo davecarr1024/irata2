@@ -108,6 +108,7 @@ Operand Parser::ParseOperand() {
     Operand operand;
     operand.kind = Operand::Kind::Number;
     operand.number = token.number.value_or(0);
+    operand.immediate = !token.text.empty() && token.text.front() == '#';
     operand.span = token.span;
     return operand;
   }
