@@ -2,17 +2,106 @@
 
 #include "irata2/sim/error.h"
 #include "irata2/sim/initialization.h"
+#include "irata2/microcode/compiler/compiler.h"
+#include "irata2/microcode/ir/irata_instruction_set.h"
+#include "irata2/hdl/traits.h"
 
 #include <algorithm>
+#include <sstream>
 
 namespace irata2::sim {
 
-Cpu::Cpu() : Cpu(DefaultHdl(), DefaultMicrocodeProgram()) {}
+namespace {
+using irata2::microcode::output::MicrocodeProgram;
+using irata2::microcode::output::StatusBitDefinition;
+
+std::vector<StatusBitDefinition> BuildStatusBits(const hdl::StatusRegister& status) {
+  return {
+      {status.negative().name(), static_cast<uint8_t>(status.negative().bit_index())},
+      {status.overflow().name(), static_cast<uint8_t>(status.overflow().bit_index())},
+      {status.unused().name(), static_cast<uint8_t>(status.unused().bit_index())},
+      {status.brk().name(), static_cast<uint8_t>(status.brk().bit_index())},
+      {status.decimal().name(), static_cast<uint8_t>(status.decimal().bit_index())},
+      {status.interrupt_disable().name(),
+       static_cast<uint8_t>(status.interrupt_disable().bit_index())},
+      {status.zero().name(), static_cast<uint8_t>(status.zero().bit_index())},
+      {status.carry().name(), static_cast<uint8_t>(status.carry().bit_index())},
+  };
+}
+
+MicrocodeProgram BuildMicrocodeProgram(const hdl::Cpu& hdl) {
+  microcode::ir::InstructionSet instruction_set =
+      microcode::ir::BuildIrataInstructionSet(hdl);
+
+  microcode::encoder::ControlEncoder control_encoder(hdl);
+  microcode::encoder::StatusEncoder status_encoder(BuildStatusBits(hdl.status()));
+  microcode::compiler::Compiler compiler(control_encoder,
+                                         status_encoder,
+                                         hdl.controller().sc().increment().control_info(),
+                                         hdl.controller().sc().reset().control_info());
+  return compiler.Compile(std::move(instruction_set));
+}
+
+std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
+    std::vector<base::Byte> cartridge_rom,
+    std::vector<memory::Memory::RegionFactory> extra_region_factories) {
+  std::vector<memory::Memory::RegionFactory> factories;
+  factories.reserve(2 + extra_region_factories.size());
+
+  // RAM region at 0x0000
+  factories.push_back([](memory::Memory& mem) -> std::unique_ptr<memory::Region> {
+    return std::make_unique<memory::Region>(
+        "ram", mem, base::Word{0x0000},
+        [](memory::Region& reg) -> std::unique_ptr<memory::Module> {
+          return std::make_unique<memory::Ram>("ram", reg, 0x2000,
+                                                base::Byte{0x00});
+        });
+  });
+
+  // Cartridge ROM region at 0x8000
+  factories.push_back([rom_data = std::move(cartridge_rom)](
+                          memory::Memory& mem) mutable -> std::unique_ptr<memory::Region> {
+    return std::make_unique<memory::Region>(
+        "cartridge", mem, base::Word{0x8000},
+        [rom_data = std::move(rom_data)](
+            memory::Region& reg) mutable -> std::unique_ptr<memory::Module> {
+          if (rom_data.empty()) {
+            // Default empty ROM
+            return std::make_unique<memory::Rom>("rom", reg, 0x8000,
+                                                  base::Byte{0xFF});
+          }
+          return std::make_unique<memory::Rom>("rom", reg, std::move(rom_data));
+        });
+  });
+
+  // Add extra region factories
+  for (auto& factory : extra_region_factories) {
+    factories.push_back(std::move(factory));
+  }
+
+  return factories;
+}
+}  // namespace
+
+std::shared_ptr<const hdl::Cpu> Cpu::GetDefaultHdl() {
+  static const auto hdl = std::make_shared<const hdl::Cpu>();
+  return hdl;
+}
+
+std::shared_ptr<const microcode::output::MicrocodeProgram> Cpu::GetDefaultMicrocodeProgram() {
+  static const auto program = []() {
+    auto built = BuildMicrocodeProgram(*GetDefaultHdl());
+    return std::make_shared<const microcode::output::MicrocodeProgram>(std::move(built));
+  }();
+  return program;
+}
+
+Cpu::Cpu() : Cpu(GetDefaultHdl(), GetDefaultMicrocodeProgram()) {}
 
 Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
          std::shared_ptr<const microcode::output::MicrocodeProgram> program,
-         std::shared_ptr<memory::Module> cartridge_rom,
-         std::vector<memory::Region> extra_regions)
+         std::vector<base::Byte> cartridge_rom,
+         std::vector<memory::Memory::RegionFactory> extra_region_factories)
     : hdl_(std::move(hdl)),
       microcode_(std::move(program)),
       halt_control_("halt", *this),
@@ -21,6 +110,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       address_bus_("address_bus", *this),
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
+      tmp_("tmp", *this, address_bus_),
       pc_("pc", *this, address_bus_),
       status_("status", *this, data_bus_),
       alu_("alu", *this, data_bus_, status_),
@@ -29,23 +119,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
               *this,
               data_bus_,
               address_bus_,
-              [&]() {
-                std::vector<memory::Region> regions;
-                regions.reserve(extra_regions.size() + 2);
-                regions.emplace_back("ram",
-                                     base::Word{0x0000},
-                                     memory::MakeRam(0x2000));
-                if (!cartridge_rom) {
-                  cartridge_rom = memory::MakeRom(0x8000);
-                }
-                regions.emplace_back("cartridge",
-                                     base::Word{0x8000},
-                                     cartridge_rom);
-                for (auto& region : extra_regions) {
-                  regions.push_back(std::move(region));
-                }
-                return regions;
-              }()) {
+              BuildRegionFactories(std::move(cartridge_rom),
+                                   std::move(extra_region_factories))) {
   if (!hdl_) {
     throw SimError("cpu constructed without HDL");
   }
@@ -67,6 +142,11 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(x_.write());
   RegisterChild(x_.read());
   RegisterChild(x_.reset());
+
+  RegisterChild(tmp_);
+  RegisterChild(tmp_.write());
+  RegisterChild(tmp_.read());
+  RegisterChild(tmp_.reset());
 
   RegisterChild(alu_);
   RegisterChild(alu_.lhs());
@@ -134,7 +214,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
   RegisterChild(controller_.ipc());
-  RegisterChild(controller_.ipc_latch());
+  RegisterChild(controller_.ipc().latch());
 
   RegisterChild(memory_);
   RegisterChild(memory_.write());
@@ -153,6 +233,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().high().reset());
 
   BuildControlIndex();
+  ValidateAgainstHdl();
   controller_.LoadProgram(microcode_);
   controller_.ir().set_value(base::Byte{0x02});
   controller_.sc().set_value(base::Byte{0});
@@ -179,6 +260,44 @@ void Cpu::BuildControlIndex() {
       }
       control_paths_.push_back(component->path());
       control_order_.push_back(control);
+    }
+  }
+}
+
+void Cpu::ValidateAgainstHdl() {
+  // Collect all HDL control paths via visitor
+  std::vector<std::string> hdl_paths;
+  hdl_->visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (hdl::is_control_v<T>) {
+      hdl_paths.push_back(component.path());
+    }
+  });
+
+  // Check that sim has at least as many controls as HDL
+  if (control_paths_.size() < hdl_paths.size()) {
+    std::ostringstream message;
+    message << "sim has fewer controls (" << control_paths_.size()
+            << ") than HDL (" << hdl_paths.size() << ")";
+    throw SimError(message.str());
+  }
+
+  // Check that all HDL controls exist in sim with correct order
+  for (size_t i = 0; i < hdl_paths.size(); ++i) {
+    const auto& hdl_path = hdl_paths[i];
+
+    // Check existence
+    if (controls_by_path_.find(hdl_path) == controls_by_path_.end()) {
+      throw SimError("HDL control not found in sim: " + hdl_path);
+    }
+
+    // Check order (first N controls in sim should match HDL order)
+    if (i < control_paths_.size() && control_paths_[i] != hdl_path) {
+      std::ostringstream message;
+      message << "control order mismatch at index " << i
+              << ": HDL has '" << hdl_path
+              << "' but sim has '" << control_paths_[i] << "'";
+      throw SimError(message.str());
     }
   }
 }
@@ -236,11 +355,51 @@ void Cpu::Tick() {
   cycle_count_++;
 }
 
+Cpu::CpuState Cpu::CaptureState() const {
+  CpuState state;
+  state.a = a_.value();
+  state.x = x_.value();
+  state.tmp = tmp_.value();
+  state.pc = pc_.value();
+  state.ir = controller_.ir().value();
+  state.sc = controller_.sc().value();
+  state.status = status_.value();
+  state.cycle_count = cycle_count_;
+  return state;
+}
+
 Cpu::RunResult Cpu::RunUntilHalt() {
   while (!halted_) {
     Tick();
   }
-  return {.halted = halted_, .crashed = crashed_};
+
+  RunResult result;
+  result.cycles = cycle_count_;
+  result.reason = crashed_ ? HaltReason::Crash : HaltReason::Halt;
+  return result;
+}
+
+Cpu::RunResult Cpu::RunUntilHalt(uint64_t max_cycles, bool capture_state) {
+  const uint64_t start_cycles = cycle_count_;
+
+  while (!halted_ && (cycle_count_ - start_cycles) < max_cycles) {
+    Tick();
+  }
+
+  RunResult result;
+  result.cycles = cycle_count_ - start_cycles;
+
+  if (halted_) {
+    result.reason = crashed_ ? HaltReason::Crash : HaltReason::Halt;
+  } else {
+    result.reason = HaltReason::Timeout;
+  }
+
+  if (capture_state) {
+    result.state = CaptureState();
+  }
+
+  return result;
 }
 
 void Cpu::EnableTrace(size_t depth) {
@@ -286,7 +445,7 @@ void Cpu::TickProcess() {
     crashed_ = true;
     halted_ = true;
   }
-  if (controller_.ipc_latch().asserted()) {
+  if (controller_.ipc().latch().asserted()) {
     ipc_valid_ = true;
     if (trace_.enabled()) {
       DebugTraceEntry entry;

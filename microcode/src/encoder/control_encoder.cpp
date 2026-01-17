@@ -19,17 +19,17 @@ ControlEncoder::ControlEncoder(const hdl::Cpu& cpu) {
     }
   });
 
-  if (control_paths_.size() > 64) {
+  if (control_paths_.size() > 128) {
     std::ostringstream message;
-    message << "too many controls for 64-bit control word: "
+    message << "too many controls for 128-bit control word: "
             << control_paths_.size();
     throw microcode::MicrocodeError(message.str());
   }
 }
 
-uint64_t ControlEncoder::Encode(
+__uint128_t ControlEncoder::Encode(
     const std::vector<const hdl::ControlInfo*>& controls) const {
-  uint64_t word = 0;
+  __uint128_t word = 0;
   for (const auto* info : controls) {
     const auto it = control_index_.find(info);
     if (it == control_index_.end()) {
@@ -37,12 +37,12 @@ uint64_t ControlEncoder::Encode(
       message << "control not registered: " << info->path;
       throw microcode::MicrocodeError(message.str());
     }
-    word |= (uint64_t{1} << it->second);
+    word |= (__uint128_t{1} << it->second);
   }
   return word;
 }
 
-std::vector<std::string> ControlEncoder::Decode(uint64_t control_word) const {
+std::vector<std::string> ControlEncoder::Decode(__uint128_t control_word) const {
   std::vector<std::string> controls;
   for (size_t i = 0; i < control_paths_.size(); ++i) {
     if ((control_word >> i) & 1U) {

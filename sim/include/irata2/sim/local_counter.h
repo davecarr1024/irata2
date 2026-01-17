@@ -4,15 +4,15 @@
 #include <utility>
 
 #include "irata2/sim/control.h"
-#include "irata2/sim/local_register.h"
+#include "irata2/sim/register_base.h"
 
 namespace irata2::sim {
 
 template <typename ValueType>
-class LocalCounter : public LocalRegister<LocalCounter<ValueType>, ValueType> {
+class LocalCounter : public RegisterBase<LocalCounter<ValueType>, ValueType> {
  public:
   LocalCounter(std::string name, Component& parent)
-      : LocalRegister<LocalCounter<ValueType>, ValueType>(std::move(name),
+      : RegisterBase<LocalCounter<ValueType>, ValueType>(std::move(name),
                                                           parent),
         increment_control_("increment", *this) {}
 

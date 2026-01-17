@@ -1,5 +1,9 @@
 # Debugging Support (Assembler + Sim)
 
+**Status: COMPLETE** ✓
+
+All milestones (M0-M2) achieved. Debug symbols, trace buffer, IPC register, and failure diagnostics fully implemented and tested.
+
 ## Goals
 
 - Make debugging first-class for ASM programs and tests.

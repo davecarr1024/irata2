@@ -3,20 +3,31 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "irata2/base/types.h"
+#include "irata2/sim/component.h"
 #include "irata2/sim/error.h"
 #include "irata2/sim/memory/module.h"
 
 namespace irata2::sim::memory {
 
-class Region {
+/// Memory region that maps a module at a specific offset.
+///
+/// Regions are components that own a module and provide address translation.
+/// They extend ComponentWithParent to participate in the component tree.
+class Region : public ComponentWithParent {
  public:
-  Region(std::string name, base::Word offset, std::shared_ptr<Module> module);
+  using ModuleFactory = std::function<std::unique_ptr<Module>(Region&)>;
 
-  const std::string& name() const { return name_; }
+  Region(std::string name,
+         Component& parent,
+         base::Word offset,
+         ModuleFactory module_factory);
+
   base::Word offset() const { return offset_; }
   size_t size() const { return module_->size(); }
 
@@ -29,9 +40,8 @@ class Region {
  private:
   base::Word Translate(base::Word address) const;
 
-  std::string name_;
   base::Word offset_;
-  std::shared_ptr<Module> module_;
+  std::unique_ptr<Module> module_;
 };
 
 }  // namespace irata2::sim::memory

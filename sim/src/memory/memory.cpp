@@ -8,16 +8,22 @@ Memory::Memory(std::string name,
                Component& parent,
                Bus<base::Byte>& data_bus,
                Bus<base::Word>& address_bus,
-               std::vector<Region> regions)
+               std::vector<RegionFactory> region_factories)
     : ComponentWithBus<Memory, base::Byte>(std::move(name), parent, data_bus),
-      mar_("mar", *this, address_bus, data_bus),
-      regions_(std::move(regions)) {
+      mar_("mar", *this, address_bus, data_bus) {
+  // Build regions using factory pattern
+  regions_.reserve(region_factories.size());
+  for (auto& factory : region_factories) {
+    regions_.push_back(factory(*this));
+  }
+
+  // Validate no overlapping regions
   for (size_t i = 0; i < regions_.size(); ++i) {
     for (size_t j = i + 1; j < regions_.size(); ++j) {
-      if (regions_[i].Overlaps(regions_[j])) {
+      if (regions_[i]->Overlaps(*regions_[j])) {
         std::ostringstream message;
-        message << "memory regions overlap: " << regions_[i].name()
-                << " vs " << regions_[j].name();
+        message << "memory regions overlap: " << regions_[i]->path()
+                << " vs " << regions_[j]->path();
         throw SimError(message.str());
       }
     }
@@ -26,8 +32,8 @@ Memory::Memory(std::string name,
 
 Region* Memory::FindRegion(base::Word address) {
   for (auto& region : regions_) {
-    if (region.Contains(address)) {
-      return &region;
+    if (region->Contains(address)) {
+      return region.get();
     }
   }
   return nullptr;
@@ -35,8 +41,8 @@ Region* Memory::FindRegion(base::Word address) {
 
 const Region* Memory::FindRegion(base::Word address) const {
   for (const auto& region : regions_) {
-    if (region.Contains(address)) {
-      return &region;
+    if (region->Contains(address)) {
+      return region.get();
     }
   }
   return nullptr;

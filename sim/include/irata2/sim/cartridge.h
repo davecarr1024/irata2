@@ -29,7 +29,7 @@ struct LoadedCartridge {
 };
 
 LoadedCartridge LoadCartridge(const std::string& path);
-std::shared_ptr<memory::Module> LoadCartridgeRom(const std::string& path);
+std::vector<base::Byte> LoadCartridgeRom(const std::string& path);
 
 }  // namespace irata2::sim
 

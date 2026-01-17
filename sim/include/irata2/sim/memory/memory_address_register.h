@@ -8,12 +8,12 @@
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
 #include "irata2/sim/read_control.h"
-#include "irata2/sim/register.h"
+#include "irata2/sim/register_with_bus.h"
 #include "irata2/sim/write_control.h"
 
 namespace irata2::sim::memory {
 
-class MemoryAddressRegister final : public Register<MemoryAddressRegister, base::Word> {
+class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister, base::Word> {
  public:
   class BytePort final : public ComponentWithParent {
    public:

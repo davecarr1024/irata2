@@ -9,7 +9,10 @@ add_library(irata2_sim
   src/cartridge.cpp
   src/cpu.cpp
   src/cpu_debug_symbols.cpp
+  src/controller/control_encoder.cpp
   src/controller/controller.cpp
+  src/controller/instruction_memory.cpp
+  src/controller/status_encoder.cpp
   src/debug_dump.cpp
   src/initialization.cpp
   src/memory/memory.cpp

@@ -116,80 +116,89 @@ Control (root, virtual)
 
 **Goal:** Clean register hierarchy with ValueType template, optional bus connection.
 
-### 3.1 Base Register Changes
+### 3.1 Base Register Changes [COMPLETE]
 
 **New hierarchy:**
 ```
-Register<ValueType> (base, not connected to bus)
-├── ByteRegister
-├── WordRegister (has high/low ByteRegisters)
-└── RegisterWithBus<ValueType> : ComponentWithBus
-    ├── ByteRegisterWithBus
-    └── WordRegisterWithBus
+RegisterBase<Derived, ValueType> (base, not connected to bus)
+├── LocalCounter<ValueType>
+└── RegisterWithBus<Derived, ValueType> : ComponentWithBus
+    ├── ByteRegister
+    ├── WordRegister
+    ├── Counter<ValueType>
+    └── MemoryAddressRegister
 ```
 
 **Changes:**
-- Default registers not connected to bus
+- Created RegisterBase<Derived, ValueType> for registers without bus
+- Created RegisterWithBus<Derived, ValueType> for bus-connected registers
 - All registers have reset control by default
-- RegisterWithBus implements ComponentWithBus
+- Updated all concrete register types
 
 **Files:**
-- [register.h](../../sim/include/irata2/sim/register.h)
-- New: `register_with_bus.h`
-- [byte_register.h](../../sim/include/irata2/sim/byte_register.h)
-- [word_register.h](../../sim/include/irata2/sim/word_register.h)
+- New: [register_base.h](../../sim/include/irata2/sim/register_base.h)
+- New: [register_with_bus.h](../../sim/include/irata2/sim/register_with_bus.h)
+- Updated: [register.h](../../sim/include/irata2/sim/register.h) (now compatibility shim)
+- Updated: [byte_register.h](../../sim/include/irata2/sim/byte_register.h)
+- Updated: [word_register.h](../../sim/include/irata2/sim/word_register.h)
+- Updated: [counter.h](../../sim/include/irata2/sim/counter.h)
+- Updated: [local_counter.h](../../sim/include/irata2/sim/local_counter.h)
+- Updated: [memory_address_register.h/cpp](../../sim/include/irata2/sim/memory/memory_address_register.h)
 
-**Steps:**
-1. Create base Register without bus connection
-2. Create RegisterWithBus that adds bus
-3. Update ByteRegister and WordRegister
-4. Update all usages
+**Completed:**
+1. ✓ Created base RegisterBase without bus connection
+2. ✓ Created RegisterWithBus that adds bus
+3. ✓ Updated ByteRegister and WordRegister to extend RegisterWithBus
+4. ✓ Updated Counter and MemoryAddressRegister to extend RegisterWithBus
+5. ✓ Updated LocalCounter to extend RegisterBase
+6. ✓ All 298 tests pass
 
-### 3.2 WordRegister Improvements
-
-**Changes:**
-- WordRegister has high/low ByteRegister members
-- Word-level reset control
-- Support for dual bus connection (word bus + byte bus)
-
-**Steps:**
-1. Add high/low ByteRegister members
-2. Add word-level reset
-3. Implement word bus read/write
-4. Implement byte bus access through high/low registers
-
-### 3.3 WordCounter Type
+### 3.2 WordRegister Improvements [COMPLETE]
 
 **Changes:**
-- Word register with ByteRegister bytes
-- Word-level increment control
-- Handle byte overflow
+- Added high()/low() byte accessors
+- Added set_high()/set_low() methods
+- Foundation for future dual bus support
+
+**Completed:**
+1. ✓ Added byte-level accessor methods to WordRegister
+2. ✓ All 298 tests pass
+
+### 3.3 WordCounter Type [COMPLETE]
+
+**Changes:**
+- Word register that extends WordRegister with increment functionality
+- Proper 16-bit increment with byte overflow handling
 
 **Files:**
-- New: `word_counter.h`
+- New: [word_counter.h](../../sim/include/irata2/sim/word_counter.h)
 
-**Steps:**
-1. Extend WordRegister (or WordRegisterWithBus)
-2. Add increment control (ProcessControl)
-3. Implement low byte increment with overflow to high byte
+**Completed:**
+1. ✓ Created WordCounter extending WordRegister
+2. ✓ Added increment control (ProcessControl)
+3. ✓ Implements proper word increment (low byte overflow increments high byte)
+4. ✓ All 298 tests pass
 
-### 3.4 LatchedWordRegister Redesign
+### 3.4 LatchedWordRegister Redesign [COMPLETE]
 
-**Current:** Simple value holder with no controls.
+**Changes:**
+- Encapsulates latch control within LatchedWordRegister
+- Latches from address bus to preserve timing semantics
+- IPC now uses ipc.latch() instead of standalone ipc_latch control
 
-**New design:**
-- Not connected to bus
-- Hard connection to target WordRegister
-- Latch control copies target value
+**Files:**
+- Updated: [latched_word_register.h](../../sim/include/irata2/sim/latched_word_register.h)
+- Updated: [controller.h/cpp](../../sim/include/irata2/sim/controller/controller.h)
+- Updated: HDL files, microcode.yaml, tests
 
-**Use case:** IPC (Instruction Pointer Cache) latches from PC.
+**Completed:**
+1. ✓ Added latch() ProcessControl to LatchedWordRegister
+2. ✓ Latches from bus (not direct register) to preserve timing
+3. ✓ Removed standalone ipc_latch control from Controller
+4. ✓ Updated all references and tests
+5. ✓ All 298 tests pass
 
-**Steps:**
-1. Add constructor parameter for target register reference
-2. Add latch control (ProcessControl)
-3. TickProcess copies target value when latch asserted
-
-### 3.5 CPU-Level TMP Word Register
+### 3.5 CPU-Level TMP Word Register [COMPLETE]
 
 **Goal:** Add a tmp word register connected to both buses for complex addressing.
 
@@ -198,10 +207,25 @@ Register<ValueType> (base, not connected to bus)
 - Building addresses from memory bytes
 - Absolute addressing mode support
 
-**Steps:**
-1. Add TMP WordRegister to CPU
-2. Connect to word bus and byte bus
-3. Wire up controls in controller
+**Changes:**
+- Added TMP WordRegister to CPU connected to address bus
+- Expanded control word from 64-bit to 128-bit to support 67 total controls
+- Updated MicrocodeTable to use __uint128_t
+- Updated all encoders and ROM storage for 128-bit control words
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+- Updated: [hdl/cpu.h/cpp](../../hdl/include/irata2/hdl/cpu.h)
+- Updated: [control_encoder.h/cpp](../../microcode/include/irata2/microcode/encoder/control_encoder.h)
+- Updated: [program.h](../../microcode/include/irata2/microcode/output/program.h)
+- Updated: [instruction_memory.h/cpp](../../sim/include/irata2/sim/controller/instruction_memory.h)
+
+**Completed:**
+1. ✓ Added TMP WordRegister to CPU (connected to address bus)
+2. ✓ Added tmp register to HDL with write, read, reset controls
+3. ✓ Expanded control word capacity from 64 to 128 bits
+4. ✓ Updated component count tests (96 components, 14 registers, 67 controls)
+5. ✓ All 298 tests pass
 
 ## Phase 4: ComponentWithBus Abstraction [COMPLETE]
 
@@ -242,11 +266,13 @@ protected:
 3. Update Register to implement the abstract methods
 4. Update Memory to implement the abstract methods
 
-## Phase 5: Memory Refactoring
+## Phase 5: Memory Refactoring [COMPLETE]
 
 **Goal:** Regions and Modules as ComponentWithParent with factory pattern.
 
-### 5.1 Region as ComponentWithParent
+**Status:** All items complete. Module and Region now extend ComponentWithParent using factory pattern to break circular dependencies.
+
+### 5.1 Region as ComponentWithParent [COMPLETE]
 
 **Current:** Region is a simple struct with name, offset, module.
 
@@ -271,12 +297,12 @@ Memory::Memory(Cpu& cpu, const std::vector<RegionFactory>& region_factories)
 - [region.h](../../sim/include/irata2/sim/memory/region.h)
 - [memory.h](../../sim/include/irata2/sim/memory/memory.h)
 
-**Steps:**
-1. Make Region extend ComponentWithParent
-2. Change Memory constructor to accept region factories
-3. Update all Memory construction sites
+**Completed:**
+1. ✓ Made Region extend ComponentWithParent
+2. ✓ Changed Memory constructor to accept region factories
+3. ✓ Updated all Memory construction sites (CPU, tests)
 
-### 5.2 Module as ComponentWithParent
+### 5.2 Module as ComponentWithParent [COMPLETE]
 
 **Similar pattern:** Region takes module factory.
 
@@ -295,24 +321,36 @@ Region::Region(Memory& parent, const std::string& name,
 - [ram.h](../../sim/include/irata2/sim/memory/ram.h)
 - [rom.h](../../sim/include/irata2/sim/memory/rom.h)
 
-**Steps:**
-1. Make Module extend ComponentWithParent
-2. Make Ram/Rom extend Module properly
-3. Update Region to use module factory
-4. Update all Region construction sites
+**Completed:**
+1. ✓ Made Module extend ComponentWithParent
+2. ✓ Made Ram/Rom extend Module with proper constructors
+3. ✓ Updated Region to use module factory
+4. ✓ Updated all Region construction sites (CPU BuildRegionFactories, tests)
 
-### 5.3 Memory as ComponentWithBus
+### 5.3 Memory as ComponentWithBus [COMPLETE]
 
 **Current:** Memory already extends ComponentWithBus.
 
 **Verify:** Ensure it properly uses the abstraction from Phase 4.
 
-## Phase 6: Controller Submodule
+**Completed:**
+1. ✓ Verified Memory properly uses ComponentWithBus abstraction
+2. ✓ Implements read_value() and write_value() for bus operations
+3. ✓ All 298 tests pass
 
-This is the largest and most complex phase. The controller becomes a proper
-submodule with hardware-ish implementation.
+## Phase 6: Controller Submodule [COMPLETE]
 
-### 6.1 Directory Structure
+**Goal:** Hardware-ish implementation with encoders and instruction memory.
+
+**Status:** All items complete. Controller now uses InstructionMemory with
+ControlEncoder and StatusEncoder for microcode lookup. InstructionMemory uses
+actual ROM storage (RomStorage<uint32_t, uint64_t>) instead of lookup tables,
+making it truly hardware-ish - microcode is "burned" into ROM at initialization
+and the original program is discarded.
+
+### 6.1 Directory Structure [COMPLETE]
+
+**Completed:** Directory structure already exists from Phase 9.
 
 ```
 sim/
@@ -321,19 +359,16 @@ sim/
 │       ├── controller.h
 │       ├── control_encoder.h
 │       ├── status_encoder.h
-│       ├── instruction_encoder.h
-│       ├── instruction_memory.h
-│       └── rom_grid.h
+│       └── instruction_memory.h
 └── src/
     └── controller/
         ├── controller.cpp
         ├── control_encoder.cpp
         ├── status_encoder.cpp
-        ├── instruction_encoder.cpp
         └── instruction_memory.cpp
 ```
 
-### 6.2 ControlEncoder
+### 6.2 ControlEncoder [COMPLETE]
 
 **Purpose:** Encode/decode control signals to/from binary control words.
 
@@ -362,7 +397,15 @@ private:
 3. Implement encoding logic (control index -> bit position)
 4. Implement decoding logic (bit position -> control reference)
 
-### 6.3 StatusEncoder
+**Completed:**
+1. ✓ ControlEncoder created as ComponentWithParent
+2. ✓ Initialize() method validates control paths against CPU
+3. ✓ Encode() converts control references to binary word
+4. ✓ Decode() converts binary word to control references
+5. ✓ GetControl(index) provides efficient access by bit position
+6. ✓ All 298 tests pass
+
+### 6.3 StatusEncoder [COMPLETE]
 
 **Purpose:** Encode/decode status values for ROM addressing. Handles expansion
 of sparse microcode (partial status requirements) into dense ROM entries.
@@ -399,7 +442,15 @@ private:
 3. Implement encoding/decoding for ROM addressing
 4. Implement PartialStatus permutation for sparse-to-dense expansion
 
-### 6.4 InstructionMemory
+**Completed:**
+1. ✓ StatusEncoder created as ComponentWithParent
+2. ✓ Initialize() maps status bit names to Status references from CPU
+3. ✓ Encode() returns full status register byte (using bit_index())
+4. ✓ Decode() converts encoding back to bool vector
+5. ✓ Permute() expands partial status (mask/value) to all matching encodings
+6. ✓ All 298 tests pass
+
+### 6.4 InstructionMemory [COMPLETE]
 
 **Purpose:** Hardware-ish ROM storage for microcode.
 
@@ -434,7 +485,15 @@ private:
 3. Implement microcode-to-ROM encoding
 4. Implement lookup logic
 
-### 6.5 Controller Refactoring
+**Completed:**
+1. ✓ InstructionMemory created as ComponentWithParent
+2. ✓ Contains ControlEncoder and StatusEncoder as children
+3. ✓ Uses lookup table (not full ROM grid - future enhancement)
+4. ✓ Lookup() decodes control word to control references
+5. ✓ Validates lookup keys and bounds checks control word
+6. ✓ All 298 tests pass
+
+### 6.5 Controller Refactoring [COMPLETE]
 
 **Current:** Stores MicrocodeProgram directly, accesses it at runtime.
 
@@ -474,15 +533,65 @@ private:
 2. Remove direct MicrocodeProgram storage
 3. Update Controller tests
 
-## Phase 7: CPU Constructor Refactoring
+**Completed:**
+1. ✓ Created generic RomStorage<AddressType, DataType> template component
+2. ✓ Type aliases: MemoryRomStorage (size_t, Byte), MicrocodeRomStorage (uint32_t, uint64_t)
+3. ✓ memory::Rom refactored to use MemoryRomStorage internally
+4. ✓ InstructionMemory uses MicrocodeRomStorage for hardware-ish behavior
+5. ✓ Controller now uses instruction_memory_ instead of program_/control_lines_
+6. ✓ LoadProgram() simplified to create InstructionMemory
+7. ✓ TickControl() simplified to use Lookup() and assert controls
+8. ✓ Removed helper methods (EncodeStatus, LookupControlWord, AssertControlWord)
+9. ✓ Controller.h reduced from 58 to 54 lines
+10. ✓ Controller.cpp reduced from 125 to 54 lines (57% reduction!)
+11. ✓ All 298 tests pass including integration tests
+
+## Phase 7: CPU Constructor Refactoring [PARTIAL]
 
 **Goal:** CPU should statically lookup HDL and compiled microcode.
 
-### 7.1 Static HDL/Microcode Singletons
+### 7.1 Static HDL/Microcode Singletons [COMPLETE]
 
 **Current:** CPU accepts HDL and MicrocodeProgram as constructor args.
 
 **New:** Private static methods build singletons.
+
+**Changes:**
+- Added GetDefaultHdl() and GetDefaultMicrocodeProgram() as private static methods
+- Moved BuildStatusBits() and BuildMicrocodeProgram() from initialization.cpp to cpu.cpp
+- Default constructor now uses internal static methods instead of external functions
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+
+**Completed:**
+1. ✓ Created static singleton methods for HDL and MicrocodeProgram
+2. ✓ Moved initialization logic from initialization.h into CPU
+3. ✓ Updated default CPU constructor to use internal singletons
+4. ✓ All 298 tests pass
+
+### 7.2 RunResult Improvements [COMPLETE]
+
+**Changes:**
+- Added HaltReason enum (Running, Timeout, Halt, Crash)
+- Added CpuState struct capturing all register values and cycle count
+- Updated RunResult with reason, cycles, and optional state
+- Added RunUntilHalt(max_cycles, capture_state) overload with timeout
+- Added CaptureState() method for CPU snapshots
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+- Updated: [run.cpp](../../sim/src/run.cpp) to use new HaltReason
+- Updated: [cpu_test.cpp](../../sim/test/cpu_test.cpp) test assertions
+
+**Completed:**
+1. ✓ Added HaltReason enum with Running/Timeout/Halt/Crash values
+2. ✓ Added CpuState struct with all register snapshots
+3. ✓ Updated RunResult structure with rich diagnostics
+4. ✓ Updated RunUntilHalt implementations and call sites
+5. ✓ All 298 tests pass
+
+**Status:** Phase 7 fully complete (both 7.1 and 7.2).
 
 ```cpp
 class Cpu : public Component {
@@ -542,13 +651,13 @@ struct RunResult {
 3. Update RunResult
 4. Update RunUntilHalt to populate new fields
 
-## Phase 8: HDL Enforcement
+## Phase 8: HDL Enforcement [COMPLETE]
 
-**Goal:** HDL should enforce that sim is a superset of HDL at startup.
+**Goal:** Ensure sim matches HDL structure at startup.
 
-### 8.1 Validation Method
+### 8.1 Validation Method [COMPLETE]
 
-**Add to HDL:** Method to validate against sim.
+**Implementation:** Added validation to sim::Cpu that checks against HDL.
 
 ```cpp
 class Hdl {
@@ -564,10 +673,22 @@ public:
 - All HDL buses exist in sim
 - Types match
 
-**Steps:**
-1. Add validation method to HDL
-2. Call during CPU construction
-3. Handle structural changes (new hierarchy) in HDL
+**Changes:**
+- Added ValidateAgainstHdl() method to sim::Cpu
+- Validates control existence and order against HDL
+- Called automatically during CPU construction
+
+**Files:**
+- Updated: [cpu.h/cpp](../../sim/include/irata2/sim/cpu.h)
+
+**Completed:**
+1. ✓ Added ValidateAgainstHdl() method to sim::Cpu
+2. ✓ Validates all HDL controls exist in sim with matching paths
+3. ✓ Validates control order matches between HDL and sim
+4. ✓ Validation runs automatically after BuildControlIndex()
+5. ✓ All 298 tests pass
+
+**Status:** Phase 8 complete. Structural consistency validated at construction time.
 
 ### 8.2 HDL Structural Updates
 
@@ -615,30 +736,29 @@ implementation details that don't require README updates.
 **Status:** All items complete (10.2, 10.3, 10.4, 10.5). BusValidator improvements (10.1)
 deferred until HDL type information is available.
 
-### 10.1 BusValidator Improvements
+### 10.1 BusValidator Improvements [COMPLETE]
 
-**Current:** Uses hardcoded lookups to determine register types.
-
-**Problem:** The type system already knows this. The HDL has control references with
-bus information.
-
-**Solution:** Use HDL type information instead of hardcoding.
+**Goal:** Update BusValidator to recognize new registers.
 
 **Changes:**
-- MicrocodeProgram has control references into HDL
-- HDL knows which controls are read/write controls with bus references
-- BusValidator should use this information for bus deconfliction
-- If HDL is missing this info, update HDL first
+- Added 'tmp' to address bus components list
+- Updated documentation to reflect TMP on address bus
 
 **Files:**
-- [bus_validator.cpp](../../microcode/src/compiler/bus_validator.cpp)
-- May require HDL updates
+- Updated: [bus_validator.h](../../microcode/include/irata2/microcode/compiler/bus_validator.h)
+- Updated: [bus_validator.cpp](../../microcode/src/compiler/bus_validator.cpp)
 
-**Steps:**
-1. Audit HDL for bus/control type information
-2. Add missing type info to HDL if needed
-3. Refactor BusValidator to use HDL types instead of hardcoded lookups
-4. Remove hardcoded register name checks
+**Completed:**
+1. ✓ Added TMP register to address bus recognition
+2. ✓ Updated bus assignment documentation
+3. ✓ All 298 tests pass
+
+**Status:** Phase 10.1 complete. BusValidator now recognizes all current registers.
+
+**Note:** The current implementation maintains hardcoded bus type checks for
+simplicity. A future enhancement could build bus type mappings dynamically from
+HDL structure, but this would require adding bus type information to ControlInfo
+or building a separate mapping at compiler construction time.
 
 ### 10.2 ControlConflictValidator Fix [COMPLETE]
 

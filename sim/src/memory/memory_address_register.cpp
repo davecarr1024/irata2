@@ -49,7 +49,7 @@ MemoryAddressRegister::MemoryAddressRegister(std::string name,
                                              Component& parent,
                                              Bus<base::Word>& address_bus,
                                              Bus<base::Byte>& data_bus)
-    : Register<MemoryAddressRegister, base::Word>(std::move(name), parent, address_bus),
+    : RegisterWithBus<MemoryAddressRegister, base::Word>(std::move(name), parent, address_bus),
       data_bus_(data_bus),
       low_("low", *this, data_bus, *this, false),
       high_("high", *this, data_bus, *this, true) {}

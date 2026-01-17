@@ -44,7 +44,7 @@ BusInfo AnalyzeControl(std::string_view control_path) {
   BusType bus_type = BusType::kNone;
 
   // Address bus components
-  if (component == "pc") {
+  if (component == "pc" || component == "tmp") {
     bus_type = BusType::kAddress;
   }
   // Data bus components

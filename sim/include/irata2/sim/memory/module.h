@@ -4,15 +4,28 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "irata2/base/types.h"
+#include "irata2/sim/component.h"
 #include "irata2/sim/error.h"
+#include "irata2/sim/rom_storage.h"
 
 namespace irata2::sim::memory {
 
-class Module {
+/// Type alias for memory ROM storage (size_t address, 8-bit data)
+using MemoryRomStorage = RomStorage<size_t, base::Byte>;
+
+/// Base class for memory modules (RAM/ROM).
+///
+/// Modules are components that store data. They extend ComponentWithParent
+/// to participate in the component tree and tick propagation.
+class Module : public ComponentWithParent {
  public:
+  Module(std::string name, Component& parent)
+      : ComponentWithParent(parent, std::move(name)) {}
+
   virtual ~Module() = default;
 
   virtual size_t size() const = 0;
@@ -20,9 +33,10 @@ class Module {
   virtual void Write(base::Word address, base::Byte value) = 0;
 };
 
+/// RAM module that allows both read and write operations.
 class Ram final : public Module {
  public:
-  Ram(size_t size, base::Byte fill);
+  Ram(std::string name, Component& parent, size_t size, base::Byte fill);
 
   size_t size() const override { return data_.size(); }
   base::Byte Read(base::Word address) const override;
@@ -32,22 +46,21 @@ class Ram final : public Module {
   std::vector<base::Byte> data_;
 };
 
+/// ROM module that only allows read operations.
 class Rom final : public Module {
  public:
-  Rom(size_t size, base::Byte fill);
-  explicit Rom(std::vector<base::Byte> data);
+  Rom(std::string name, Component& parent, size_t size, base::Byte fill);
+  Rom(std::string name, Component& parent, std::vector<base::Byte> data);
 
-  size_t size() const override { return data_.size(); }
+  size_t size() const override { return storage_.size(); }
   base::Byte Read(base::Word address) const override;
   void Write(base::Word address, base::Byte value) override;
 
- private:
-  std::vector<base::Byte> data_;
-};
+  const MemoryRomStorage& storage() const { return storage_; }
 
-std::shared_ptr<Module> MakeRam(size_t size, base::Byte fill = base::Byte{0x00});
-std::shared_ptr<Module> MakeRom(size_t size, base::Byte fill = base::Byte{0xFF});
-std::shared_ptr<Module> MakeRom(std::vector<base::Byte> data);
+ private:
+  MemoryRomStorage storage_;
+};
 
 }  // namespace irata2::sim::memory
 

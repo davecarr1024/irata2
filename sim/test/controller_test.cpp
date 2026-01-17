@@ -84,10 +84,10 @@ TEST(SimControllerTest, RejectsControlWordOverflow) {
   irata2::microcode::encoder::ControlEncoder encoder(*hdl);
   program->control_paths = encoder.control_paths();
   if (!program->control_paths.empty() &&
-      program->control_paths.size() < 64) {
+      program->control_paths.size() < 128) {
     MicrocodeKey key{0x01, 0, 0};
     program->table[EncodeKey(key)] =
-        (uint64_t{1} << program->control_paths.size());
+        (__uint128_t{1} << program->control_paths.size());
   }
 
   Cpu sim(hdl, program);
@@ -101,7 +101,7 @@ TEST(SimControllerTest, IpcLatchCapturesPreIncrementPc) {
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
   auto program = MakeProgramWithControls(
       *hdl,
-      {"pc.write", "pc.increment", "controller.ipc_latch"},
+      {"pc.write", "pc.increment", "controller.ipc.latch"},
       0x02);
 
   Cpu sim(hdl, program);

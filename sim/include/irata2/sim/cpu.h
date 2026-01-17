@@ -16,6 +16,7 @@
 #include "irata2/sim/byte_bus.h"
 #include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
+#include "irata2/sim/word_register.h"
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
@@ -61,18 +62,43 @@ using controller::Controller;
 class Cpu : public Component {
  public:
   /**
+   * @brief Reason for CPU halt.
+   */
+  enum class HaltReason {
+    Running,   ///< CPU is still running (not halted)
+    Timeout,   ///< Maximum cycle count reached
+    Halt,      ///< Normal halt via halt control
+    Crash      ///< CPU crash via crash control
+  };
+
+  /**
+   * @brief Snapshot of CPU state at a point in time.
+   */
+  struct CpuState {
+    base::Byte a;           ///< A register value
+    base::Byte x;           ///< X register value
+    base::Word tmp;         ///< TMP register value
+    base::Word pc;          ///< Program counter value
+    base::Byte ir;          ///< Instruction register value
+    base::Byte sc;          ///< Step counter value
+    base::Byte status;      ///< Status register value
+    uint64_t cycle_count;   ///< Total cycles executed
+  };
+
+  /**
    * @brief Result of running until halt.
    */
   struct RunResult {
-    bool halted = false;   ///< True if CPU halted normally
-    bool crashed = false;  ///< True if crash control was asserted
+    HaltReason reason = HaltReason::Running;  ///< Why execution stopped
+    uint64_t cycles = 0;                      ///< Cycles executed
+    std::optional<CpuState> state;            ///< Final CPU state (if captured)
   };
 
   Cpu();
   explicit Cpu(std::shared_ptr<const hdl::Cpu> hdl,
                std::shared_ptr<const microcode::output::MicrocodeProgram> program,
-               std::shared_ptr<memory::Module> cartridge_rom = nullptr,
-               std::vector<memory::Region> extra_regions = {});
+               std::vector<base::Byte> cartridge_rom = {},
+               std::vector<memory::Memory::RegionFactory> extra_region_factories = {});
 
   Cpu& cpu() override { return *this; }
   const Cpu& cpu() const override { return *this; }
@@ -92,6 +118,20 @@ class Cpu : public Component {
    * @return RunResult indicating how execution terminated
    */
   RunResult RunUntilHalt();
+
+  /**
+   * @brief Run until halt or timeout.
+   * @param max_cycles Maximum cycles to execute before timeout
+   * @param capture_state If true, capture final CPU state in result
+   * @return RunResult with halt reason, cycle count, and optional state
+   */
+  RunResult RunUntilHalt(uint64_t max_cycles, bool capture_state = false);
+
+  /**
+   * @brief Capture current CPU state.
+   * @return Snapshot of all CPU registers and cycle count
+   */
+  CpuState CaptureState() const;
 
   /**
    * @brief Override current phase for testing.
@@ -141,6 +181,8 @@ class Cpu : public Component {
   const ByteRegister& a() const { return a_; }
   ByteRegister& x() { return x_; }
   const ByteRegister& x() const { return x_; }
+  WordRegister& tmp() { return tmp_; }
+  const WordRegister& tmp() const { return tmp_; }
   Alu& alu() { return alu_; }
   const Alu& alu() const { return alu_; }
   Counter<base::Word>& pc() { return pc_; }
@@ -171,6 +213,11 @@ class Cpu : public Component {
 
  private:
   void BuildControlIndex();
+  void ValidateAgainstHdl();
+
+  // Singleton accessors for default HDL and microcode
+  static std::shared_ptr<const hdl::Cpu> GetDefaultHdl();
+  static std::shared_ptr<const microcode::output::MicrocodeProgram> GetDefaultMicrocodeProgram();
 
   std::shared_ptr<const hdl::Cpu> hdl_;
   std::shared_ptr<const microcode::output::MicrocodeProgram> microcode_;
@@ -190,6 +237,7 @@ class Cpu : public Component {
   WordBus address_bus_;
   ByteRegister a_;
   ByteRegister x_;
+  WordRegister tmp_;
   Counter<base::Word> pc_;
   StatusRegister status_;
   Alu alu_;

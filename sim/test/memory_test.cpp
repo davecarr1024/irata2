@@ -6,36 +6,85 @@
 using namespace irata2::sim;
 using namespace irata2::sim::memory;
 
+namespace {
+// Simple test fixture for memory component tests
+class TestCpu;
+class TestParent : public Component {
+ public:
+  TestParent() {}
+
+  Cpu& cpu() override {
+    throw SimError("TestParent::cpu() not supported");
+  }
+
+  const Cpu& cpu() const override {
+    throw SimError("TestParent::cpu() not supported");
+  }
+
+  std::string path() const override { return "test_parent"; }
+
+  irata2::base::TickPhase current_phase() const override {
+    return irata2::base::TickPhase::Clear;
+  }
+};
+}  // namespace
+
 TEST(SimMemoryModuleTest, RamReadWrite) {
-  Ram ram(4, irata2::base::Byte{0x00});
+  TestParent parent;
+  Ram ram("ram", parent, 4, irata2::base::Byte{0x00});
   ram.Write(irata2::base::Word{1}, irata2::base::Byte{0xAA});
   EXPECT_EQ(ram.Read(irata2::base::Word{1}), irata2::base::Byte{0xAA});
 }
 
 TEST(SimMemoryModuleTest, RomRejectsWrite) {
-  Rom rom(4, irata2::base::Byte{0xFF});
+  TestParent parent;
+  Rom rom("rom", parent, 4, irata2::base::Byte{0xFF});
   EXPECT_THROW(rom.Write(irata2::base::Word{0}, irata2::base::Byte{0x11}),
                SimError);
 }
 
 TEST(SimMemoryRegionTest, RejectsNonPowerOfTwoSize) {
-  auto module = MakeRam(3);
-  EXPECT_THROW(Region("bad", irata2::base::Word{0}, module), SimError);
+  TestParent parent;
+  EXPECT_THROW((Region("bad", parent, irata2::base::Word{0},
+                       [](Region& r) -> std::unique_ptr<Module> {
+                         return std::make_unique<Ram>("ram", r, 3,
+                                                       irata2::base::Byte{0});
+                       })),
+               SimError);
 }
 
 TEST(SimMemoryRegionTest, RejectsMisalignedOffset) {
-  auto module = MakeRam(4);
-  EXPECT_THROW(Region("bad", irata2::base::Word{2}, module), SimError);
+  TestParent parent;
+  EXPECT_THROW((Region("bad", parent, irata2::base::Word{2},
+                       [](Region& r) -> std::unique_ptr<Module> {
+                         return std::make_unique<Ram>("ram", r, 4,
+                                                       irata2::base::Byte{0});
+                       })),
+               SimError);
 }
 
 TEST(SimMemoryTest, RejectsOverlappingRegions) {
   Cpu sim = test::MakeTestCpu();
-  std::vector<Region> regions;
-  regions.emplace_back("one", irata2::base::Word{0x0000}, MakeRam(0x2000));
-  regions.emplace_back("two", irata2::base::Word{0x1000}, MakeRam(0x1000));
+  std::vector<Memory::RegionFactory> region_factories;
+  region_factories.push_back([](Memory& m) -> std::unique_ptr<Region> {
+    return std::make_unique<Region>(
+        "one", m, irata2::base::Word{0x0000},
+        [](Region& r) -> std::unique_ptr<Module> {
+          return std::make_unique<Ram>("ram", r, 0x2000,
+                                        irata2::base::Byte{0});
+        });
+  });
+  region_factories.push_back([](Memory& m) -> std::unique_ptr<Region> {
+    return std::make_unique<Region>(
+        "two", m, irata2::base::Word{0x1000},
+        [](Region& r) -> std::unique_ptr<Module> {
+          return std::make_unique<Ram>("ram", r, 0x1000,
+                                        irata2::base::Byte{0});
+        });
+  });
 
   EXPECT_THROW(Memory("memory", sim, sim.data_bus(), sim.address_bus(),
-                      std::move(regions)),
+                      std::move(region_factories)),
                SimError);
 }
 

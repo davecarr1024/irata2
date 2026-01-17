@@ -38,7 +38,7 @@ std::shared_ptr<irata2::microcode::output::MicrocodeProgram> MakeTraceProgram(
 TEST(DebugDumpTest, IncludesTraceAndSourceLocation) {
   irata2::microcode::encoder::ControlEncoder encoder(*DefaultHdl());
   auto program = MakeTraceProgram(encoder.control_paths(),
-                                  {"pc.write", "controller.ipc_latch"});
+                                  {"pc.write", "controller.ipc.latch"});
 
   Cpu cpu(DefaultHdl(), program);
   cpu.pc().set_value(Word{0x4000});
@@ -69,7 +69,7 @@ TEST(DebugDumpTest, IncludesTraceAndSourceLocation) {
 TEST(DebugDumpTest, IncludesAllExpectedFields) {
   irata2::microcode::encoder::ControlEncoder encoder(*DefaultHdl());
   auto program = MakeTraceProgram(encoder.control_paths(),
-                                  {"pc.write", "controller.ipc_latch"});
+                                  {"pc.write", "controller.ipc.latch"});
 
   Cpu cpu(DefaultHdl(), program);
   cpu.pc().set_value(Word{0x8000});
@@ -135,7 +135,7 @@ TEST(DebugDumpTest, IncludesAllExpectedFields) {
 TEST(DebugDumpTest, HandlesUnknownSourceLocation) {
   irata2::microcode::encoder::ControlEncoder encoder(*DefaultHdl());
   auto program = MakeTraceProgram(encoder.control_paths(),
-                                  {"pc.write", "controller.ipc_latch"});
+                                  {"pc.write", "controller.ipc.latch"});
 
   Cpu cpu(DefaultHdl(), program);
   cpu.pc().set_value(Word{0x9000});

@@ -21,9 +21,11 @@
 #include "irata2/sim/local_register.h"
 #include "irata2/sim/latched_word_register.h"
 #include "irata2/sim/read_control.h"
-#include "irata2/sim/register.h"
+#include "irata2/sim/register_base.h"
+#include "irata2/sim/register_with_bus.h"
 #include "irata2/sim/status_register.h"
 #include "irata2/sim/word_bus.h"
+#include "irata2/sim/word_counter.h"
 #include "irata2/sim/word_register.h"
 #include "irata2/sim/write_control.h"
 

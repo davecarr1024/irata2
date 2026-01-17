@@ -9,41 +9,53 @@ direction. Individual projects live in `docs/projects/`.
 - LDA/CMP/JEQ and ALU wiring are implemented.
 - Status analyzer and status bit controls exist.
 - ASM integration tests are split by instruction.
-- **Debugging support complete**: debug symbols, trace buffer, IPC, dump output, and test harness integration finished.
-- **Logging improvements complete**: structured logging with lifecycle events, failure-path dumps, CLI/env configuration, and comprehensive documentation.
-- **Microcode compiler improvements complete**: all 5 validators (M0-M4), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring done.
-- **Microcode debug visibility complete**: decoder, YAML output, CLI utility (M0-M2).
-- **Microcode module cleanup complete**: Phase 10 of cleanup_plan.md - ControlConflictValidator fix, PhaseOrderingValidator removal, step-merging optimizer, compiler restructuring.
-- **Sim module cleanup in progress**: Phases 1, 2, 4, 9, 10 of cleanup_plan.md complete. Component hierarchy improvements, control hierarchy redesign, ComponentWithBus abstraction, directory/namespace organization done.
+- **Debugging support complete** ✓: debug symbols, trace buffer, IPC, dump output, and test harness integration finished.
+- **Logging improvements complete** ✓: structured logging with lifecycle events, failure-path dumps, CLI/env configuration, and comprehensive documentation.
+- **Microcode compiler improvements complete** ✓: all 5 validators (BusValidator, StatusValidator, StageValidator, ControlConflictValidator, SequenceValidator), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring with preamble/validators/transformers pattern.
+- **Microcode debug visibility complete** ✓: decoder, YAML output, CLI utility (microcode_dump_main), all milestones M0-M2.
+- **Sim module cleanup complete** ✓: All 11 phases of cleanup_plan.md finished (100%). Register hierarchy redesign, memory refactoring with factory pattern, controller submodule with hardware-ish ROM storage, TMP register with 128-bit control words, CPU singleton refactoring, RunResult improvements with HaltReason/CpuState, HDL validation, and BusValidator updates all complete. The sim module now has clean architecture with proper separation of concerns, hardware-ish components, and comprehensive validation.
 
 ## Active Project Ideas
 
-- Debugging support in assembler + sim: see `docs/projects/debugging-support.md` (complete)
-- Logging improvements for sim debugging: see `docs/projects/logging-improvements.md` (complete)
-- ISA expansion in batches: see `docs/projects/isa-expansion.md`
-- Microcode debug visibility: see `docs/projects/microcode-debugging.md`
-- Microcode compiler improvements: see `docs/projects/microcode-compiler-improvements.md`
-- Program tooling and cartridge inspection: see `docs/projects/cartridge-tools.md`
-- Sim module cleanup and refactoring: see `docs/projects/cleanup.md` (principles) and `docs/projects/cleanup_plan.md` (implementation plan)
+- ~~Debugging support in assembler + sim~~ - **Complete** ✓ - see `docs/projects/debugging-support.md`
+- ~~Logging improvements for sim debugging~~ - **Complete** ✓ - see `docs/projects/logging-improvements.md`
+- ~~Microcode debug visibility~~ - **Complete** ✓ - see `docs/projects/microcode-debugging.md`
+- ~~Microcode compiler improvements~~ - **Complete** ✓ - see `docs/projects/microcode-compiler-improvements.md`
+- ~~Sim module cleanup~~ - **Complete** ✓ - see `docs/projects/cleanup.md` and `docs/projects/cleanup_plan.md`
+- **ISA expansion** (next priority) - see `docs/projects/isa-expansion.md`
+- Program tooling and cartridge inspection (optional/deferred) - see `docs/projects/cartridge-tools.md`
 
 ## Planned Project Order (Defensive)
 
 This ordering is intentionally conservative to maximize stability and reduce
 risk as the ISA grows.
 
-1. ~~Debugging support (assembler + sim)~~ - **Complete**.
-2. ~~Logging improvements for sim debugging~~ - **Complete**.
-3. Microcode compiler improvements (validators, optimizers) to harden correctness early.
-4. Microcode debug visibility for control path transparency.
-5. Program tooling and cartridge inspection for safer workflows.
-6. **Sim module cleanup** - Architectural refactoring per `cleanup_plan.md`. This is a
-   long-running effort that can be interleaved with other work. Early phases (1-4)
-   provide immediate code quality benefits. Later phases (5-8) are prerequisites
-   for more sophisticated ISA features.
-7. ISA expansion in batches - **Deferred** until tooling supports safe vertical growth.
+1. ~~Debugging support (assembler + sim)~~ - **Complete** ✓
+2. ~~Logging improvements for sim debugging~~ - **Complete** ✓
+3. ~~Microcode compiler improvements (validators, optimizers)~~ - **Complete** ✓
+4. ~~Microcode debug visibility for control path transparency~~ - **Complete** ✓
+5. ~~Sim module cleanup~~ - **Complete** ✓ - All 11 phases of `cleanup_plan.md` finished.
+   Register hierarchy, memory factory pattern, hardware-ish controller with ROM storage,
+   TMP register with 128-bit control words, CPU singleton refactoring, RunResult improvements,
+   HDL validation, and BusValidator updates all complete.
+6. Program tooling and cartridge inspection for safer workflows - **Optional/Deferred**.
+7. **ISA expansion in batches** - **Next priority**. All infrastructure complete.
 
 ## Next Overall Steps
 
-1. Pick one project in `docs/projects/` and drive it to a minimal MVP.
-2. Add small, focused tests (unit + ASM integration) per milestone.
-3. Keep microcode/HDL/sim structure aligned as the ISA grows.
+With all foundational projects complete (debugging support, logging, microcode compiler improvements, and sim cleanup), the codebase is fully prepared for ISA expansion:
+
+1. **Begin ISA expansion** - Start with ALU instructions batch (ADD, AND, OR, XOR) per `docs/projects/isa-expansion.md`. All infrastructure is in place:
+   - Comprehensive debugging tools (symbols, trace, IPC, dump output)
+   - Structured logging with failure diagnostics
+   - Robust microcode validation and optimization
+   - Clean sim architecture with hardware-ish components
+   - TMP register for complex addressing modes
+   - 128-bit control words for future growth
+   - HDL validation for structural consistency
+
+2. **Maintain test coverage** - Add ASM integration tests for each new instruction, ensuring end-to-end validation through the full toolchain.
+
+3. **Monitor microcode complexity** - Use the microcode decoder and validators to ensure control sequences remain maintainable as the ISA expands.
+
+4. **Leverage the infrastructure** - The complete tooling suite (validators, optimizers, debuggers, tracers) enables confident, incremental ISA growth with immediate feedback on errors.
