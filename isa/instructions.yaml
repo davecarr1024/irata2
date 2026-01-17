@@ -100,6 +100,31 @@ instructions:
     category: Arithmetic
     flags_affected: [Z, N, C, V]
 
+  # Logic Instructions
+  - mnemonic: AND
+    opcode: 0x22
+    addressing_mode: IMM
+    cycles: 2
+    description: "Logical AND (immediate)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0x23
+    addressing_mode: IMM
+    cycles: 2
+    description: "Logical OR (immediate)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0x24
+    addressing_mode: IMM
+    cycles: 2
+    description: "Logical XOR (immediate)"
+    category: Logic
+    flags_affected: [Z, N]
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

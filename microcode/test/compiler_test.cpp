@@ -52,6 +52,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ADC_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::SBC_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_IMM, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
@@ -97,6 +100,9 @@ TEST(CompilerTest, RejectsStepIndexOverflow) {
   set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ADC_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::SBC_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_IMM, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

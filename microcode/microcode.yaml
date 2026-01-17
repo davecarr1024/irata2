@@ -55,6 +55,33 @@ instructions:
           - [alu.opcode_bit_1]
           - [alu.result.write, a.read, status.analyzer.read]
 
+  AND_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ORA_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  EOR_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
   JEQ_ABS:
     variants:
       - when: { zero: true }
