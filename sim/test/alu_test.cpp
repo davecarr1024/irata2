@@ -890,6 +890,96 @@ TEST(AluTest, RorZeroWithCarry) {
 }
 
 // ============================================================================
+// DEC Tests (Opcode 0xB) - Decrement
+// ============================================================================
+
+TEST(AluTest, DecBasic) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x10 - 1 = 0x0F
+  cpu.alu().lhs().set_value(Byte{0x10});
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x0F});
+}
+
+TEST(AluTest, DecIgnoresCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x10 - 1 = 0x0F (carry flag should be ignored)
+  cpu.alu().lhs().set_value(Byte{0x10});
+  cpu.status().carry().Set(true);  // Carry set, but DEC ignores it
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x0F});
+  EXPECT_TRUE(cpu.status().carry().value());  // Carry unchanged
+}
+
+TEST(AluTest, DecWrapAround) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x00 - 1 = 0xFF (wraps around)
+  cpu.alu().lhs().set_value(Byte{0x00});
+  cpu.status().carry().Set(false);
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0xFF});
+  EXPECT_FALSE(cpu.status().carry().value());  // DEC doesn't set carry
+}
+
+TEST(AluTest, DecDoesNotAffectCarry) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify DEC doesn't modify carry flag
+  cpu.alu().lhs().set_value(Byte{0x81});
+  cpu.status().carry().Set(true);
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x80});
+  EXPECT_TRUE(cpu.status().carry().value());  // Carry still set
+}
+
+TEST(AluTest, DecDoesNotAffectOverflow) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Verify DEC doesn't modify overflow flag
+  cpu.alu().lhs().set_value(Byte{0x81});
+  cpu.status().overflow().Set(false);
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x80});
+  EXPECT_FALSE(cpu.status().overflow().value());  // Overflow still clear
+}
+
+TEST(AluTest, DecOne) {
+  Cpu cpu = test::MakeTestCpu();
+
+  // Setup: 0x01 - 1 = 0x00
+  cpu.alu().lhs().set_value(Byte{0x01});
+  SetAluOpcode(cpu, 0xB);  // DEC
+
+  test::SetPhase(cpu, irata2::base::TickPhase::Process);
+  cpu.alu().TickProcess();
+
+  EXPECT_EQ(cpu.alu().result().value(), Byte{0x00});
+}
+
+// ============================================================================
 // No-Op Tests (Opcode 0x0)
 // ============================================================================
 

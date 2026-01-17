@@ -139,6 +139,12 @@ void Alu::TickProcess() {
       overflow_.Set(false);  // Rotates clear overflow
       break;
     }
+    case 0xB: {  // DEC (decrement, ignores carry)
+      const uint16_t result = static_cast<uint16_t>(lhs - 1u);
+      result_.set_value(base::Byte{static_cast<uint8_t>(result & 0xFFu)});
+      // DEC doesn't affect carry or overflow flags
+      break;
+    }
     default:
       break;
   }
