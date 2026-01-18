@@ -48,6 +48,7 @@ class Cpu final : public Component<Cpu> {
 
   const ByteRegister& a() const { return a_; }
   const ByteRegister& x() const { return x_; }
+  const ByteRegister& y() const { return y_; }
   const WordRegister& tmp() const { return tmp_; }
   const Alu& alu() const { return alu_; }
   const ProgramCounter& pc() const { return pc_; }
@@ -66,6 +67,7 @@ class Cpu final : public Component<Cpu> {
     address_bus_.visit(visitor);
     a_.visit(visitor);
     x_.visit(visitor);
+    y_.visit(visitor);
     tmp_.visit(visitor);
     alu_.visit(visitor);
     pc_.visit(visitor);
@@ -81,6 +83,7 @@ class Cpu final : public Component<Cpu> {
   const WordBus address_bus_;
   const ByteRegister a_;
   const ByteRegister x_;
+  const ByteRegister y_;
   const WordRegister tmp_;
   const Alu alu_;
   const ProgramCounter pc_;

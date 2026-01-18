@@ -53,8 +53,8 @@ BusInfo AnalyzeControl(std::string_view control_path) {
     bus_type = BusType::kAddress;
   }
   // Data bus components
-  else if (component == "a" || component == "x" || component == "alu" ||
-           component == "status" || component == "controller") {
+  else if (component == "a" || component == "x" || component == "y" ||
+           component == "alu" || component == "status" || component == "controller") {
     bus_type = BusType::kData;
   }
   // Memory uses both buses (address for MAR word operations, data for everything else)

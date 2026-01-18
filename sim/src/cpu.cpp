@@ -110,6 +110,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       address_bus_("address_bus", *this),
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
+      y_("y", *this, data_bus_),
       tmp_("tmp", *this, address_bus_),
       pc_("pc", *this, address_bus_, data_bus_),
       status_("status", *this, data_bus_),
@@ -142,6 +143,11 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(x_.write());
   RegisterChild(x_.read());
   RegisterChild(x_.reset());
+
+  RegisterChild(y_);
+  RegisterChild(y_.write());
+  RegisterChild(y_.read());
+  RegisterChild(y_.reset());
 
   RegisterChild(tmp_);
   RegisterChild(tmp_.write());
@@ -364,6 +370,7 @@ Cpu::CpuState Cpu::CaptureState() const {
   CpuState state;
   state.a = a_.value();
   state.x = x_.value();
+  state.y = y_.value();
   state.tmp = tmp_.value();
   state.pc = pc_.value();
   state.ir = controller_.ir().value();

@@ -78,6 +78,7 @@ class Cpu : public Component {
   struct CpuState {
     base::Byte a;           ///< A register value
     base::Byte x;           ///< X register value
+    base::Byte y;           ///< Y register value
     base::Word tmp;         ///< TMP register value
     base::Word pc;          ///< Program counter value
     base::Byte ir;          ///< Instruction register value
@@ -182,6 +183,8 @@ class Cpu : public Component {
   const ByteRegister& a() const { return a_; }
   ByteRegister& x() { return x_; }
   const ByteRegister& x() const { return x_; }
+  ByteRegister& y() { return y_; }
+  const ByteRegister& y() const { return y_; }
   WordRegister& tmp() { return tmp_; }
   const WordRegister& tmp() const { return tmp_; }
   Alu& alu() { return alu_; }
@@ -238,6 +241,7 @@ class Cpu : public Component {
   WordBus address_bus_;
   ByteRegister a_;
   ByteRegister x_;
+  ByteRegister y_;
   WordRegister tmp_;
   ProgramCounter pc_;
   StatusRegister status_;
