@@ -268,6 +268,35 @@ const auto& data_bus = cpu.data_bus();
 const auto& a_reg = cpu.a();
 ```
 
+## Anti-patterns
+
+### Hidden State in Controls
+
+**Problem:** A control that reads a value from a bus and stores it internally for later use.
+
+**Example (bad):**
+```cpp
+class ProgramCounter {
+  // BAD: add_offset reads from bus and stores value internally
+  const ReadControl<base::Byte> add_offset_control_;
+  // The offset value is hidden in the sim implementation, not visible in HDL
+};
+```
+
+**Why it's wrong:** This violates the hardware-ish principle. In real hardware, data read from a bus must be stored in an explicit register. The state is hidden in the control/sim implementation rather than being visible in the component hierarchy.
+
+**Correct approach:**
+```cpp
+class ProgramCounter {
+  // GOOD: explicit offset register holds the value
+  const ByteRegister offset_;  // Child register, visible in HDL
+  // add_offset is a ProcessControl that uses offset_.value()
+  const ProcessControl<true> add_offset_control_;
+};
+```
+
+**Rule:** If a control needs to remember a value, that value must live in an explicit child register that's part of the HDL component tree.
+
 ## Files
 
 - `component.h` - CRTP base classes
