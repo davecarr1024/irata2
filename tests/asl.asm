@@ -12,4 +12,13 @@ CMP #$AA
 JEQ asl_multi_ok
 CRS
 asl_multi_ok:
+; Zero page shift
+LDA #$01
+STA $10
+ASL $10
+LDA $10
+CMP #$02
+JEQ asl_zp_ok
+CRS
+asl_zp_ok:
 HLT

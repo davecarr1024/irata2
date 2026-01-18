@@ -144,3 +144,145 @@ instructions:
               - [memory.write, memory.mar.low.read, pc.increment]
               - [pc.write, memory.mar.read]
               - [memory.write, memory.mar.high.read, pc.increment]
+
+  # Zero Page Load/Store Instructions
+  LDA_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, a.read, status.analyzer.read]
+
+  STA_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [a.write, memory.read]
+
+  LDX_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, x.read, status.analyzer.read]
+
+  STX_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [x.write, memory.read]
+
+  # Zero Page ALU Instructions
+  ADC_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  SBC_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  AND_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ORA_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  EOR_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  CMP_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  # Zero Page Shift Instructions (read-modify-write)
+  ASL_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  LSR_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROL_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROR_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]

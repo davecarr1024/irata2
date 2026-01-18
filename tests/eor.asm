@@ -11,4 +11,13 @@ EOR #$42
 JEQ eor_zero_ok
 CRS
 eor_zero_ok:
+; Zero page EOR
+LDA #$F0
+STA $10
+LDA #$FF
+EOR $10
+CMP #$0F
+JEQ eor_zp_ok
+CRS
+eor_zp_ok:
 HLT

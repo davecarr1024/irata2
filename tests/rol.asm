@@ -15,4 +15,15 @@ CMP #$01
 JEQ rol_carry_ok
 CRS
 rol_carry_ok:
+; Zero page rotate
+LDA #$00
+CMP #$01
+LDA #$01
+STA $10
+ROL $10
+LDA $10
+CMP #$02
+JEQ rol_zp_ok
+CRS
+rol_zp_ok:
 HLT

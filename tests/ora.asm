@@ -12,4 +12,13 @@ CMP #$42
 JEQ ora_zero_ok
 CRS
 ora_zero_ok:
+; Zero page ORA
+LDA #$0F
+STA $10
+LDA #$F0
+ORA $10
+CMP #$FF
+JEQ ora_zp_ok
+CRS
+ora_zp_ok:
 HLT

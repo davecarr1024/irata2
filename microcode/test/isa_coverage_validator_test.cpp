@@ -38,6 +38,20 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZP));
 
   IsaCoverageValidator validator;
   EXPECT_NO_THROW(validator.Run(set));

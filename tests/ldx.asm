@@ -27,4 +27,24 @@ CMP #$11
 JEQ ldx_indep_ok
 CRS
 ldx_indep_ok:
+; Zero page load
+LDA #$77
+STA $10
+LDX #$00
+LDX $10
+TXA
+CMP #$77
+JEQ ldx_zp_ok
+CRS
+ldx_zp_ok:
+; Zero page load zero
+LDA #$00
+STA $11
+LDX #$FF
+LDX $11
+TXA
+CMP #$00
+JEQ ldx_zp_zero_ok
+CRS
+ldx_zp_zero_ok:
 HLT

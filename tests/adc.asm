@@ -14,4 +14,26 @@ CMP #$02
 JEQ adc_carry_ok
 CRS
 adc_carry_ok:
+; Zero page add without carry
+LDA #$00
+CMP #$01
+LDA #$05
+STA $10
+LDA #$10
+ADC $10
+CMP #$15
+JEQ adc_zp_ok
+CRS
+adc_zp_ok:
+; Zero page add with carry
+LDA #$01
+CMP #$00
+LDA #$01
+STA $11
+LDA #$FF
+ADC $11
+CMP #$01
+JEQ adc_zp_carry_ok
+CRS
+adc_zp_carry_ok:
 HLT

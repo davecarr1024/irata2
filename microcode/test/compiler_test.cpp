@@ -62,6 +62,20 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZP, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
@@ -117,6 +131,20 @@ TEST(CompilerTest, RejectsStepIndexOverflow) {
   set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZP, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

@@ -18,6 +18,11 @@ addressing_modes:
     operands: 2
     description: "Absolute 16-bit address"
 
+  - name: ZeroPage
+    code: ZP
+    operands: 1
+    description: "Zero page address (0x00XX)"
+
 # Status Flags
 status_flags:
   - name: Zero
@@ -182,6 +187,121 @@ instructions:
     description: "Load X register (immediate)"
     category: Load
     flags_affected: [Z, N]
+
+  # Zero Page Load/Store Instructions
+  - mnemonic: LDA
+    opcode: 0x40
+    addressing_mode: ZP
+    cycles: 3
+    description: "Load accumulator (zero page)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0x41
+    addressing_mode: ZP
+    cycles: 3
+    description: "Store accumulator (zero page)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDX
+    opcode: 0x42
+    addressing_mode: ZP
+    cycles: 3
+    description: "Load X register (zero page)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STX
+    opcode: 0x43
+    addressing_mode: ZP
+    cycles: 3
+    description: "Store X register (zero page)"
+    category: Store
+    flags_affected: []
+
+  # Zero Page ALU Instructions
+  - mnemonic: ADC
+    opcode: 0x44
+    addressing_mode: ZP
+    cycles: 4
+    description: "Add with carry (zero page)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0x45
+    addressing_mode: ZP
+    cycles: 4
+    description: "Subtract with carry (zero page)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0x46
+    addressing_mode: ZP
+    cycles: 4
+    description: "Logical AND (zero page)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0x47
+    addressing_mode: ZP
+    cycles: 4
+    description: "Logical OR (zero page)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0x48
+    addressing_mode: ZP
+    cycles: 4
+    description: "Logical XOR (zero page)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0x49
+    addressing_mode: ZP
+    cycles: 4
+    description: "Compare accumulator (zero page)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  # Zero Page Shift Instructions
+  - mnemonic: ASL
+    opcode: 0x4A
+    addressing_mode: ZP
+    cycles: 5
+    description: "Arithmetic shift left (zero page)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: LSR
+    opcode: 0x4B
+    addressing_mode: ZP
+    cycles: 5
+    description: "Logical shift right (zero page)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROL
+    opcode: 0x4C
+    addressing_mode: ZP
+    cycles: 5
+    description: "Rotate left (zero page)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROR
+    opcode: 0x4D
+    addressing_mode: ZP
+    cycles: 5
+    description: "Rotate right (zero page)"
+    category: Shift
+    flags_affected: [Z, N, C]
 
   - mnemonic: CRS
     opcode: 0xFF
