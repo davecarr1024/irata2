@@ -91,6 +91,7 @@ Control paths use dot notation with no root prefix. This syntax is shared betwee
 | `a.read` | `a.read` |
 | `memory.mar.low.write` | `memory.mar.low.write` |
 | `pc.increment` | `pc.increment` |
+| `pc.add_offset` | `pc.add_offset` |
 
 Path resolution happens when the generated C++ IR is instantiated using the `ir::Builder`. Invalid paths fail immediately with descriptive errors.
 

@@ -20,6 +20,7 @@
 #include "irata2/sim/control.h"
 #include "irata2/sim/controller/controller.h"
 #include "irata2/sim/counter.h"
+#include "irata2/sim/program_counter.h"
 #include "irata2/sim/debug_symbols.h"
 #include "irata2/sim/debug_trace.h"
 #include "irata2/sim/memory/memory.h"
@@ -185,8 +186,8 @@ class Cpu : public Component {
   const WordRegister& tmp() const { return tmp_; }
   Alu& alu() { return alu_; }
   const Alu& alu() const { return alu_; }
-  Counter<base::Word>& pc() { return pc_; }
-  const Counter<base::Word>& pc() const { return pc_; }
+  ProgramCounter& pc() { return pc_; }
+  const ProgramCounter& pc() const { return pc_; }
   StatusRegister& status() { return status_; }
   const StatusRegister& status() const { return status_; }
   Controller& controller() { return controller_; }
@@ -238,7 +239,7 @@ class Cpu : public Component {
   ByteRegister a_;
   ByteRegister x_;
   WordRegister tmp_;
-  Counter<base::Word> pc_;
+  ProgramCounter pc_;
   StatusRegister status_;
   Alu alu_;
   Controller controller_;

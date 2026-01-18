@@ -14,4 +14,12 @@ LDA $11
 JEQ stx_zero_ok
 CRS
 stx_zero_ok:
+LDX #$55
+STX $0200
+LDA #$00
+LDA $0200
+CMP #$55
+JEQ stx_abs_ok
+CRS
+stx_abs_ok:
 HLT

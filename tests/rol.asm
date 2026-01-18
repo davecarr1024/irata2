@@ -26,4 +26,15 @@ CMP #$02
 JEQ rol_zp_ok
 CRS
 rol_zp_ok:
+; Absolute rotate
+LDA #$00
+CMP #$01
+LDA #$01
+STA $0200
+ROL $0200
+LDA $0200
+CMP #$02
+JEQ rol_abs_ok
+CRS
+rol_abs_ok:
 HLT

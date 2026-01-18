@@ -6,16 +6,22 @@ This document provides a phased, detailed plan for expanding the IRATA2 instruct
 
 ## Current State (Baseline)
 
-**Implemented Instructions (6 total):**
+**Implemented Instructions (~60 total):**
 - System: HLT, NOP, CRS
-- Load: LDA (IMM)
-- Compare: CMP (IMM)
-- Branch: JEQ (ABS)
+- Loads/Stores: LDA/STA/LDX/STX (IMM, ZP, ABS)
+- Compare: CMP (IMM, ZP, ABS)
+- ALU: ADC/SBC/AND/ORA/EOR (IMM, ZP, ABS)
+- Shifts: ASL/LSR/ROL/ROR (IMP, ZP, ABS)
+- Transfers: TAX, TXA
+- Inc/Dec: INX/DEX + INC/DEC (ZP, ABS)
+- Branch: JEQ (ABS), BEQ/BNE/BCS/BCC/BMI/BPL/BVS/BVC (REL)
 
-**Implemented Addressing Modes (3 total):**
+**Implemented Addressing Modes (5 total):**
 - Implied (IMP) - 0 operands
 - Immediate (IMM) - 1 operand
+- Zero Page (ZP) - 1 operand
 - Absolute (ABS) - 2 operands
+- Relative (REL) - 1 operand
 
 **Current ALU Support:**
 - 4-bit opcode (16 possible operations)
@@ -222,7 +228,7 @@ ASL_IMP:
 - Logic: AND_IMM (0x22), ORA_IMM (0x23), EOR_IMM (0x24)
 - Shifts: ASL_IMP (0x25), LSR_IMP (0x26), ROL_IMP (0x27), ROR_IMP (0x28)
 
-## Phase 3: Register Transfer Operations
+## Phase 3: Register Transfer Operations ✓ COMPLETE
 
 **Goal:** Move data between registers and enable X register usage.
 
@@ -251,9 +257,9 @@ TAX_IMP:
 
 **Estimated Complexity:** Low
 
-**Phase 3 Deliverable:** 3 new instructions (register operations)
+**Phase 3 Deliverable:** ✓ 3 new instructions (register operations)
 
-## Phase 4: Zero Page Addressing Mode
+## Phase 4: Zero Page Addressing Mode ✓ COMPLETE
 
 **Goal:** Add efficient single-byte address mode for common memory operations.
 
@@ -352,9 +358,9 @@ ASL_ZP:
 
 **Estimated Complexity:** Medium (read-modify-write pattern)
 
-**Phase 4 Deliverable:** 1 new addressing mode + 14 new instruction variants
+**Phase 4 Deliverable:** ✓ 1 new addressing mode + 14 new instruction variants
 
-## Phase 5: Absolute Addressing Mode Expansion
+## Phase 5: Absolute Addressing Mode Expansion ✓ COMPLETE
 
 **Goal:** Expand absolute mode beyond JEQ to include loads, stores, and ALU operations.
 
@@ -401,9 +407,9 @@ LDA_ABS:
 
 **Estimated Complexity:** Medium (read-modify-write with 2-byte address)
 
-**Phase 5 Deliverable:** 14 new instruction variants (absolute mode)
+**Phase 5 Deliverable:** ✓ 14 new instruction variants (absolute mode)
 
-## Phase 6: Increment/Decrement Instructions
+## Phase 6: Increment/Decrement Instructions ✓ COMPLETE
 
 **Goal:** Add memory and register increment/decrement operations.
 
@@ -437,9 +443,9 @@ INX_IMP:
 
 **Estimated Complexity:** Medium (read-modify-write pattern)
 
-**Phase 6 Deliverable:** 6 new instructions
+**Phase 6 Deliverable:** ✓ 6 new instructions
 
-## Phase 7: Conditional Branches
+## Phase 7: Conditional Branches ✓ COMPLETE
 
 **Goal:** Complete branch instruction family.
 
@@ -471,21 +477,17 @@ BEQ_REL:
       stages:
         - steps:
             - [pc.write, memory.mar.read]
-            - [memory.write, alu.rhs.read, pc.increment]  # signed offset
-            - [pc.write, alu.lhs.low.read]
-            - [alu.opcode_bit_0]  # ADD
-            - [alu.result.write, pc.low.read]
-            # TODO: handle carry to high byte for signed arithmetic
+            - [memory.write, pc.increment, pc.add_offset]
     - when: { zero: false }
       stages:
         - steps:
             - [pc.write, memory.mar.read]
-            - [memory.write, pc.increment]  # skip offset byte
+            - [memory.write, pc.increment]
 ```
 
-**Note:** Relative branches require signed byte addition to PC. May need ALU enhancement or separate adder.
+**Note:** Relative branches use the ProgramCounter `pc.add_offset` control, which latches a signed byte from the data bus and applies it during the Process phase.
 
-**Estimated Complexity:** High (signed arithmetic, PC manipulation)
+**Estimated Complexity:** Medium (PC manipulation)
 
 ### 7.2 Replace JEQ with BEQ
 
@@ -493,7 +495,7 @@ BEQ_REL:
 
 **Rationale:** Relative branches are more efficient and 6502-like than absolute jumps for conditionals.
 
-**Phase 7 Deliverable:** 1 new addressing mode + 8 new branch instructions
+**Phase 7 Deliverable:** ✓ 1 new addressing mode + 8 new branch instructions
 
 ## Phase 8: Indexed Addressing Modes
 
@@ -852,17 +854,17 @@ BIT_ZP:
 | 1 (ALU ops) | 0 | 0 | 6 |
 | 2 (Immediate) | 9 | 0 | 15 |
 | 3 (Register) | 3 | 0 | 18 |
-| 4 (Zero Page) | 4 | 14 | 36 |
-| 5 (Absolute) | 0 | 14 | 50 |
-| 6 (Inc/Dec) | 6 | 0 | 56 |
-| 7 (Branches) | 8 | 0 | 64 |
-| 8 (Indexed) | 0 | 24 | 88 |
-| 9 (Stack) | 6 | 0 | 94 |
-| 10 (Indirect) | 1 | 17 | 112 |
-| 11 (Jump) | 1 | 0 | 113 |
-| 12 (Flags) | 7 | 0 | 120 |
-| 13 (Compare) | 0 | 6 | 126 |
-| 14 (BIT) | 0 | 2 | 128 |
+| 4 (Zero Page) | 4 | 14 | 32 |
+| 5 (Absolute) | 0 | 14 | 46 |
+| 6 (Inc/Dec) | 6 | 0 | 52 |
+| 7 (Branches) | 8 | 0 | 60 |
+| 8 (Indexed) | 0 | 24 | 84 |
+| 9 (Stack) | 6 | 0 | 90 |
+| 10 (Indirect) | 1 | 17 | 107 |
+| 11 (Jump) | 1 | 0 | 108 |
+| 12 (Flags) | 7 | 0 | 115 |
+| 13 (Compare) | 0 | 6 | 121 |
+| 14 (BIT) | 0 | 2 | 123 |
 
 **Target:** ~128 instructions (close to 6502's 56 official opcodes × variants)
 
@@ -955,14 +957,7 @@ For each phase:
 
 ### Q1: Signed Arithmetic for Relative Branches
 
-**Problem:** Relative branches need signed byte addition to PC.
-
-**Options:**
-1. Add signed addition to ALU (new opcode)
-2. Implement in microcode using complement logic
-3. Add dedicated PC offset adder
-
-**Recommendation:** Evaluate in Phase 7.
+**Resolved:** Added a ProgramCounter `add_offset` control that latches a signed byte from the data bus and applies it during the Process phase. Assembler encodes signed offsets and range-checks branches.
 
 ### Q2: Y Register Timing
 

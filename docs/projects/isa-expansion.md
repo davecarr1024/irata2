@@ -10,6 +10,8 @@
 
 This is a high-level overview. See **[isa-expansion-plan.md](isa-expansion-plan.md)** for the detailed implementation plan with 14 phases, microcode patterns, and instruction/addressing mode combinations.
 
+**Progress:** Phases 1-7 complete (ALU core, immediate ops, register transfer, zero page, absolute addressing, inc/dec, branches).
+
 ## Target ISA
 
 **~128 instructions** across 10 addressing modes, inspired by the 6502 architecture:
@@ -74,7 +76,7 @@ For each phase:
 
 ## Current Priority
 
-**Phase 1: ALU Core Operations** - Implement ADD, INC, AND, OR, XOR, ASL, LSR, ROL, ROR, DEC in the ALU. This unlocks all arithmetic and logic instructions.
+**Phase 8: Indexed Addressing** - Implement ZPX/ABX modes for core load/store/ALU operations.
 
 ## Open Questions
 

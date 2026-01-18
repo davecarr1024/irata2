@@ -21,6 +21,14 @@ LDA $11
 JEQ lda_zp_zero_ok
 CRS
 lda_zp_zero_ok:
+LDA #$7F
+STA $0200
+LDA #$00
+LDA $0200
+CMP #$7F
+JEQ lda_abs_ok
+CRS
+lda_abs_ok:
 HLT
 lda_zero_fail:
 CRS

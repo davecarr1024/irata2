@@ -21,4 +21,13 @@ CMP #$FF
 JEQ ora_zp_ok
 CRS
 ora_zp_ok:
+; Absolute ORA
+LDA #$0F
+STA $0200
+LDA #$F0
+ORA $0200
+CMP #$FF
+JEQ ora_abs_ok
+CRS
+ora_abs_ok:
 HLT

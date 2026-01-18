@@ -19,8 +19,20 @@ cmp_zp_equal_ok:
 LDA #$41
 CMP $10
 JEQ cmp_zp_not_equal_fail
+LDA #$55
+STA $0200
+LDA #$55
+CMP $0200
+JEQ cmp_abs_equal_ok
+CRS
+cmp_abs_equal_ok:
+LDA #$54
+CMP $0200
+JEQ cmp_abs_not_equal_fail
 HLT
 cmp_not_equal_fail:
 CRS
 cmp_zp_not_equal_fail:
+CRS
+cmp_abs_not_equal_fail:
 CRS

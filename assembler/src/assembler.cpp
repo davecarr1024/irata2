@@ -1,5 +1,6 @@
 #include "irata2/assembler/assembler.h"
 
+#include <array>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
@@ -29,6 +30,7 @@ struct Emittable {
   Span span;
   std::string text;
   enum class Kind { Instruction, Bytes } kind = Kind::Instruction;
+  isa::AddressingMode addressing_mode = isa::AddressingMode::IMP;
   uint8_t opcode = 0;
   uint8_t operand_bytes = 0;
   std::vector<Operand> operands;
@@ -104,13 +106,30 @@ void RequireNumberOperand(const Operand& operand, const std::string& message) {
   }
 }
 
+bool IsRelativeMnemonic(std::string_view mnemonic) {
+  const std::string lowered = ToLower(mnemonic);
+  constexpr std::array<std::string_view, 8> kRelativeMnemonics = {
+      "beq", "bne", "bcs", "bcc", "bmi", "bpl", "bvs", "bvc"};
+  for (std::string_view candidate : kRelativeMnemonics) {
+    if (candidate == lowered) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
   std::vector<isa::AddressingMode> candidates;
   if (stmt.operands.empty()) {
     candidates = {isa::AddressingMode::IMP};
   } else if (stmt.operands.size() == 1) {
     const Operand& operand = stmt.operands.front();
-    if (operand.immediate) {
+    if (IsRelativeMnemonic(stmt.mnemonic)) {
+      if (operand.immediate) {
+        throw AssemblerError(stmt.span, "relative branches do not use immediate operands");
+      }
+      candidates = {isa::AddressingMode::REL};
+    } else if (operand.immediate) {
       candidates = {isa::AddressingMode::IMM};
     } else if (operand.kind == Operand::Kind::Number) {
       if (operand.number <= 0xFFu) {
@@ -223,6 +242,7 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
       item.span = instruction->span;
       item.text = FormatInstructionText(*instruction);
       item.opcode = static_cast<uint8_t>(info->opcode);
+      item.addressing_mode = info->addressing_mode;
       item.operand_bytes = mode_info->operand_bytes;
       item.operands = instruction->operands;
       result.items.push_back(item);
@@ -273,6 +293,31 @@ uint16_t ResolveWordOperand(const Operand& operand,
     throw AssemblerError(operand.span, "unknown label");
   }
   return static_cast<uint16_t>(it->second.value());
+}
+
+uint8_t ResolveRelativeOperand(const Operand& operand,
+                               const std::unordered_map<std::string, base::Word>& symbols,
+                               base::Word instruction_address) {
+  uint32_t target = 0;
+  if (operand.kind == Operand::Kind::Number) {
+    if (operand.number > 0xFFFFu) {
+      throw AssemblerError(operand.span, "relative branch target out of range");
+    }
+    target = operand.number;
+  } else {
+    auto it = symbols.find(operand.label);
+    if (it == symbols.end()) {
+      throw AssemblerError(operand.span, "unknown label");
+    }
+    target = it->second.value();
+  }
+
+  int32_t base = static_cast<int32_t>(instruction_address.value()) + 2;
+  int32_t offset = static_cast<int32_t>(target) - base;
+  if (offset < -128 || offset > 127) {
+    throw AssemblerError(operand.span, "relative branch out of range");
+  }
+  return static_cast<uint8_t>(static_cast<int8_t>(offset));
 }
 
 AssemblerResult Encode(const FirstPassResult& pass,
@@ -350,7 +395,10 @@ AssemblerResult Encode(const FirstPassResult& pass,
         if (item.operands.empty()) {
           throw AssemblerError(item.span, "missing operand");
         }
-        uint8_t value = ResolveByteOperand(item.operands[0], pass.symbols);
+        uint8_t value = item.addressing_mode == isa::AddressingMode::REL
+                            ? ResolveRelativeOperand(item.operands[0], pass.symbols,
+                                                     item.address)
+                            : ResolveByteOperand(item.operands[0], pass.symbols);
         if (offset + 1 >= rom.size()) {
           throw AssemblerError(item.span, "address exceeds cartridge size");
         }

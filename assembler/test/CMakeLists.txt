@@ -38,6 +38,9 @@ add_executable(integration_tests
   integration/logic_immediate_test.cpp
   integration/shift_accumulator_test.cpp
   integration/register_transfer_test.cpp
+  integration/absolute_test.cpp
+  integration/branch_test.cpp
+  integration/inc_dec_test.cpp
   integration/zero_page_test.cpp
 )
 

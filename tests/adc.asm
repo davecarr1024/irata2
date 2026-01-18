@@ -36,4 +36,26 @@ CMP #$01
 JEQ adc_zp_carry_ok
 CRS
 adc_zp_carry_ok:
+; Absolute add without carry
+LDA #$00
+CMP #$01
+LDA #$07
+STA $0200
+LDA #$08
+ADC $0200
+CMP #$0F
+JEQ adc_abs_ok
+CRS
+adc_abs_ok:
+; Absolute add with carry
+LDA #$01
+CMP #$00
+LDA #$FF
+STA $0201
+LDA #$01
+ADC $0201
+CMP #$01
+JEQ adc_abs_carry_ok
+CRS
+adc_abs_carry_ok:
 HLT

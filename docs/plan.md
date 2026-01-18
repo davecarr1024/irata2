@@ -14,6 +14,7 @@ direction. Individual projects live in `docs/projects/`.
 - **Microcode compiler improvements complete** ✓: all 5 validators (BusValidator, StatusValidator, StageValidator, ControlConflictValidator, SequenceValidator), 3 optimizers (EmptyStep/DuplicateStep/StepMerging), compiler restructuring with preamble/validators/transformers pattern.
 - **Microcode debug visibility complete** ✓: decoder, YAML output, CLI utility (microcode_dump_main), all milestones M0-M2.
 - **Sim module cleanup complete** ✓: All 11 phases of cleanup_plan.md finished (100%). Register hierarchy redesign, memory refactoring with factory pattern, controller submodule with hardware-ish ROM storage, TMP register with 128-bit control words, CPU singleton refactoring, RunResult improvements with HaltReason/CpuState, HDL validation, and BusValidator updates all complete. The sim module now has clean architecture with proper separation of concerns, hardware-ish components, and comprehensive validation.
+- **ISA expansion in progress**: Phases 1-7 complete (ALU core, immediate ops, register transfer, zero page, absolute addressing, inc/dec, conditional branches). Next up: indexed addressing per `docs/projects/isa-expansion-plan.md`.
 
 ## Active Project Ideas
 
@@ -45,7 +46,7 @@ risk as the ISA grows.
 
 With all foundational projects complete (debugging support, logging, microcode compiler improvements, and sim cleanup), the codebase is fully prepared for ISA expansion:
 
-1. **Begin ISA expansion** - Start with ALU instructions batch (ADD, AND, OR, XOR) per `docs/projects/isa-expansion.md`. All infrastructure is in place:
+1. **Continue ISA expansion** - Next batch is indexed addressing modes (Phase 8) per `docs/projects/isa-expansion.md`. All infrastructure is in place:
    - Comprehensive debugging tools (symbols, trace, IPC, dump output)
    - Structured logging with failure diagnostics
    - Robust microcode validation and optimization

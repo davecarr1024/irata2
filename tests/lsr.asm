@@ -21,4 +21,13 @@ CMP #$02
 JEQ lsr_zp_ok
 CRS
 lsr_zp_ok:
+; Absolute shift
+LDA #$08
+STA $0200
+LSR $0200
+LDA $0200
+CMP #$04
+JEQ lsr_abs_ok
+CRS
+lsr_abs_ok:
 HLT

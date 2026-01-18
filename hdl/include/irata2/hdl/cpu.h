@@ -7,6 +7,7 @@
 #include "irata2/hdl/component.h"
 #include "irata2/hdl/controller.h"
 #include "irata2/hdl/counter.h"
+#include "irata2/hdl/program_counter.h"
 #include "irata2/hdl/memory.h"
 #include "irata2/hdl/process_control.h"
 #include "irata2/hdl/status_register.h"
@@ -49,7 +50,7 @@ class Cpu final : public Component<Cpu> {
   const ByteRegister& x() const { return x_; }
   const WordRegister& tmp() const { return tmp_; }
   const Alu& alu() const { return alu_; }
-  const Counter<base::Word>& pc() const { return pc_; }
+  const ProgramCounter& pc() const { return pc_; }
   const StatusRegister& status() const { return status_; }
   const Controller& controller() const { return controller_; }
   const Memory& memory() const { return memory_; }
@@ -82,7 +83,7 @@ class Cpu final : public Component<Cpu> {
   const ByteRegister x_;
   const WordRegister tmp_;
   const Alu alu_;
-  const Counter<base::Word> pc_;
+  const ProgramCounter pc_;
   const StatusRegister status_;
   const Controller controller_;
   const Memory memory_;

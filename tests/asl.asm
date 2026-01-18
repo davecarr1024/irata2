@@ -21,4 +21,13 @@ CMP #$02
 JEQ asl_zp_ok
 CRS
 asl_zp_ok:
+; Absolute shift
+LDA #$02
+STA $0200
+ASL $0200
+LDA $0200
+CMP #$04
+JEQ asl_abs_ok
+CRS
+asl_abs_ok:
 HLT

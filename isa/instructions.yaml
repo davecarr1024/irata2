@@ -23,6 +23,11 @@ addressing_modes:
     operands: 1
     description: "Zero page address (0x00XX)"
 
+  - name: Relative
+    code: REL
+    operands: 1
+    description: "Signed byte offset from PC"
+
 # Status Flags
 status_flags:
   - name: Zero
@@ -302,6 +307,236 @@ instructions:
     description: "Rotate right (zero page)"
     category: Shift
     flags_affected: [Z, N, C]
+
+  # Absolute Load/Store Instructions
+  - mnemonic: LDA
+    opcode: 0x50
+    addressing_mode: ABS
+    cycles: 4
+    description: "Load accumulator (absolute)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0x51
+    addressing_mode: ABS
+    cycles: 4
+    description: "Store accumulator (absolute)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDX
+    opcode: 0x52
+    addressing_mode: ABS
+    cycles: 4
+    description: "Load X register (absolute)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STX
+    opcode: 0x53
+    addressing_mode: ABS
+    cycles: 4
+    description: "Store X register (absolute)"
+    category: Store
+    flags_affected: []
+
+  # Absolute ALU Instructions
+  - mnemonic: ADC
+    opcode: 0x54
+    addressing_mode: ABS
+    cycles: 5
+    description: "Add with carry (absolute)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0x55
+    addressing_mode: ABS
+    cycles: 5
+    description: "Subtract with carry (absolute)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0x56
+    addressing_mode: ABS
+    cycles: 5
+    description: "Logical AND (absolute)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0x57
+    addressing_mode: ABS
+    cycles: 5
+    description: "Logical OR (absolute)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0x58
+    addressing_mode: ABS
+    cycles: 5
+    description: "Logical XOR (absolute)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0x59
+    addressing_mode: ABS
+    cycles: 5
+    description: "Compare accumulator (absolute)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  # Absolute Shift Instructions
+  - mnemonic: ASL
+    opcode: 0x5A
+    addressing_mode: ABS
+    cycles: 6
+    description: "Arithmetic shift left (absolute)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: LSR
+    opcode: 0x5B
+    addressing_mode: ABS
+    cycles: 6
+    description: "Logical shift right (absolute)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROL
+    opcode: 0x5C
+    addressing_mode: ABS
+    cycles: 6
+    description: "Rotate left (absolute)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROR
+    opcode: 0x5D
+    addressing_mode: ABS
+    cycles: 6
+    description: "Rotate right (absolute)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  # Register Increment/Decrement Instructions
+  - mnemonic: INX
+    opcode: 0x60
+    addressing_mode: IMP
+    cycles: 1
+    description: "Increment X register"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEX
+    opcode: 0x61
+    addressing_mode: IMP
+    cycles: 1
+    description: "Decrement X register"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  # Memory Increment/Decrement Instructions
+  - mnemonic: INC
+    opcode: 0x62
+    addressing_mode: ZP
+    cycles: 5
+    description: "Increment memory (zero page)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEC
+    opcode: 0x63
+    addressing_mode: ZP
+    cycles: 5
+    description: "Decrement memory (zero page)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: INC
+    opcode: 0x64
+    addressing_mode: ABS
+    cycles: 6
+    description: "Increment memory (absolute)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEC
+    opcode: 0x65
+    addressing_mode: ABS
+    cycles: 6
+    description: "Decrement memory (absolute)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  # Relative Branch Instructions
+  - mnemonic: BEQ
+    opcode: 0x70
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if equal (zero set)"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BNE
+    opcode: 0x71
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if not equal (zero clear)"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BCS
+    opcode: 0x72
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if carry set"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BCC
+    opcode: 0x73
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if carry clear"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BMI
+    opcode: 0x74
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if minus (negative set)"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BPL
+    opcode: 0x75
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if plus (negative clear)"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BVS
+    opcode: 0x76
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if overflow set"
+    category: Branch
+    flags_affected: []
+
+  - mnemonic: BVC
+    opcode: 0x77
+    addressing_mode: REL
+    cycles: 2
+    description: "Branch if overflow clear"
+    category: Branch
+    flags_affected: []
 
   - mnemonic: CRS
     opcode: 0xFF

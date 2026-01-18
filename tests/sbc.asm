@@ -18,4 +18,15 @@ CMP #$0A
 JEQ sbc_zp_ok
 CRS
 sbc_zp_ok:
+; Absolute subtract with carry clear
+LDA #$00
+CMP #$01
+LDA #$08
+STA $0200
+LDA #$20
+SBC $0200
+CMP #$17
+JEQ sbc_abs_ok
+CRS
+sbc_abs_ok:
 HLT

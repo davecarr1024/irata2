@@ -20,4 +20,13 @@ CMP #$0F
 JEQ eor_zp_ok
 CRS
 eor_zp_ok:
+; Absolute EOR
+LDA #$0F
+STA $0200
+LDA #$F0
+EOR $0200
+CMP #$FF
+JEQ eor_abs_ok
+CRS
+eor_abs_ok:
 HLT

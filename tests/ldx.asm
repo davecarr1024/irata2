@@ -47,4 +47,14 @@ CMP #$00
 JEQ ldx_zp_zero_ok
 CRS
 ldx_zp_zero_ok:
+; Absolute load
+LDA #$33
+STA $0200
+LDX #$00
+LDX $0200
+TXA
+CMP #$33
+JEQ ldx_abs_ok
+CRS
+ldx_abs_ok:
 HLT

@@ -12,7 +12,7 @@ Cpu::Cpu()
       x_("x", *this, data_bus_),
       tmp_("tmp", *this, address_bus_),
       alu_("alu", *this, data_bus_),
-      pc_("pc", *this, address_bus_),
+      pc_("pc", *this, address_bus_, data_bus_),
       status_("status", *this, data_bus_),
       controller_("controller", *this, data_bus_),
       memory_("memory", *this, data_bus_, address_bus_) {}
