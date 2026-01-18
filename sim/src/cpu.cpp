@@ -170,8 +170,12 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(pc_.write());
   RegisterChild(pc_.read());
   RegisterChild(pc_.reset());
+  RegisterChild(pc_.signed_offset());
+  RegisterChild(pc_.signed_offset().write());
+  RegisterChild(pc_.signed_offset().read());
+  RegisterChild(pc_.signed_offset().reset());
   RegisterChild(pc_.increment());
-  RegisterChild(pc_.add_offset());
+  RegisterChild(pc_.add_signed_offset());
 
   RegisterChild(status_);
   RegisterChild(status_.write());

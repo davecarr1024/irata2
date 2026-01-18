@@ -59,10 +59,10 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 97);
+  EXPECT_EQ(visitor.components, 101);  // +4 for pc.signed_offset and its controls
   EXPECT_EQ(visitor.buses, 2);
-  EXPECT_EQ(visitor.registers, 14);
-  EXPECT_EQ(visitor.controls, 68);
+  EXPECT_EQ(visitor.registers, 15);    // +1 for pc.signed_offset
+  EXPECT_EQ(visitor.controls, 71);     // +3 for signed_offset controls
 }
 
 TEST(HdlCpuTest, GetCpuReturnsSingleton) {

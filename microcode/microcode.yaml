@@ -151,7 +151,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { zero: false }
         stages:
           - steps:
@@ -164,7 +164,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { zero: true }
         stages:
           - steps:
@@ -177,7 +177,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { carry: false }
         stages:
           - steps:
@@ -190,7 +190,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { carry: true }
         stages:
           - steps:
@@ -203,7 +203,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { negative: false }
         stages:
           - steps:
@@ -216,7 +216,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { negative: true }
         stages:
           - steps:
@@ -229,7 +229,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { overflow: false }
         stages:
           - steps:
@@ -242,7 +242,7 @@ instructions:
         stages:
           - steps:
               - [pc.write, memory.mar.read]
-              - [memory.write, pc.increment, pc.add_offset]
+              - [memory.write, pc.increment, pc.signed_offset.read, pc.add_signed_offset]
       - when: { overflow: true }
         stages:
           - steps:

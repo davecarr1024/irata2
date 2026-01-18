@@ -43,8 +43,13 @@ BusInfo AnalyzeControl(std::string_view control_path) {
   // Determine bus type based on component
   BusType bus_type = BusType::kNone;
 
+  // Handle nested components first (before checking top-level component)
+  // pc.signed_offset is a ByteRegister on the data bus
+  if (control_path.find("pc.signed_offset") != std::string_view::npos) {
+    bus_type = BusType::kData;
+  }
   // Address bus components
-  if (component == "pc" || component == "tmp") {
+  else if (component == "pc" || component == "tmp") {
     bus_type = BusType::kAddress;
   }
   // Data bus components
