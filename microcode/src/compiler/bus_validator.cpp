@@ -59,13 +59,14 @@ BusInfo AnalyzeControl(std::string_view control_path) {
   }
   // Memory uses both buses (address for MAR word operations, data for everything else)
   else if (component == "memory") {
-    // memory.mar.low and memory.mar.high use data bus (byte operations)
-    // memory.mar (without .low/.high) uses address bus (word operations)
+    // memory.mar.low, memory.mar.high, memory.mar.offset use data bus (byte operations)
+    // memory.mar (without .low/.high/.offset) uses address bus (word operations)
     // memory.read/write use data bus
     if (control_path.find("mar") != std::string_view::npos) {
-      // Check if it's a byte operation (.low or .high) or word operation
+      // Check if it's a byte operation (.low, .high, or .offset) or word operation
       if (control_path.find("mar.low") != std::string_view::npos ||
-          control_path.find("mar.high") != std::string_view::npos) {
+          control_path.find("mar.high") != std::string_view::npos ||
+          control_path.find("mar.offset") != std::string_view::npos) {
         bus_type = BusType::kData;  // Byte operations use data bus
       } else {
         bus_type = BusType::kAddress;  // Word operations use address bus

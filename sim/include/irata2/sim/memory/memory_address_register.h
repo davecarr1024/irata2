@@ -5,6 +5,7 @@
 
 #include "irata2/base/types.h"
 #include "irata2/sim/bus.h"
+#include "irata2/sim/byte_register.h"
 #include "irata2/sim/component.h"
 #include "irata2/sim/control.h"
 #include "irata2/sim/read_control.h"
@@ -13,6 +14,21 @@
 
 namespace irata2::sim::memory {
 
+/**
+ * @brief Memory Address Register with indexed addressing support.
+ *
+ * The MAR holds a 16-bit address for memory operations. It supports:
+ * - Word read/write from address bus (inherited from RegisterWithBus)
+ * - Byte read/write for low/high bytes from data bus
+ * - Indexed addressing via offset register and add_offset control
+ *
+ * For indexed addressing (ZPX, ZPY, ABX, ABY), microcode loads the index
+ * register value into the offset register, then asserts add_offset. The
+ * addition is unsigned with carry from low to high byte.
+ *
+ * For zero page indexed modes, microcode should assert mar.high.reset after
+ * add_offset to wrap within zero page ($00-$FF).
+ */
 class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister, base::Word> {
  public:
   class BytePort final : public ComponentWithParent {
@@ -55,6 +71,12 @@ class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister
   const BytePort& low() const { return low_; }
   BytePort& high() { return high_; }
   const BytePort& high() const { return high_; }
+  ByteRegister& offset() { return offset_; }
+  const ByteRegister& offset() const { return offset_; }
+  ProcessControl<true>& add_offset() { return add_offset_control_; }
+  const ProcessControl<true>& add_offset() const { return add_offset_control_; }
+
+  void TickProcess() override;
 
  private:
   base::Byte LowValue() const;
@@ -65,6 +87,8 @@ class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister
   Bus<base::Byte>& data_bus_;
   BytePort low_;
   BytePort high_;
+  ByteRegister offset_;
+  ProcessControl<true> add_offset_control_;
 };
 
 }  // namespace irata2::sim::memory

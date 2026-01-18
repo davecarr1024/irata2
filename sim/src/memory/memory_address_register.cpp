@@ -52,7 +52,9 @@ MemoryAddressRegister::MemoryAddressRegister(std::string name,
     : RegisterWithBus<MemoryAddressRegister, base::Word>(std::move(name), parent, address_bus),
       data_bus_(data_bus),
       low_("low", *this, data_bus, *this, false),
-      high_("high", *this, data_bus, *this, true) {}
+      high_("high", *this, data_bus, *this, true),
+      offset_("offset", *this, data_bus),
+      add_offset_control_("add_offset", *this) {}
 
 base::Byte MemoryAddressRegister::LowValue() const {
   return value().low();
@@ -70,6 +72,22 @@ void MemoryAddressRegister::SetLow(base::Byte byte) {
 void MemoryAddressRegister::SetHigh(base::Byte byte) {
   const auto current = value();
   set_value(base::Word(byte, current.low()));
+}
+
+void MemoryAddressRegister::TickProcess() {
+  if (add_offset_control_.asserted()) {
+    // Unsigned addition with carry from low to high byte
+    const uint16_t low = static_cast<uint16_t>(LowValue().value());
+    const uint16_t offset_val = static_cast<uint16_t>(offset_.value().value());
+    const uint16_t sum = low + offset_val;
+
+    // Low byte is the result, carry goes to high byte
+    const base::Byte new_low{static_cast<uint8_t>(sum & 0xFF)};
+    const uint8_t carry = (sum > 0xFF) ? 1 : 0;
+    const base::Byte new_high{static_cast<uint8_t>(HighValue().value() + carry)};
+
+    set_value(base::Word(new_high, new_low));
+  }
 }
 
 }  // namespace irata2::sim::memory

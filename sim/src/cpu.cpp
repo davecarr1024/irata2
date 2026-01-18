@@ -242,6 +242,11 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().high().write());
   RegisterChild(memory_.mar().high().read());
   RegisterChild(memory_.mar().high().reset());
+  RegisterChild(memory_.mar().offset());
+  RegisterChild(memory_.mar().offset().write());
+  RegisterChild(memory_.mar().offset().read());
+  RegisterChild(memory_.mar().offset().reset());
+  RegisterChild(memory_.mar().add_offset());
 
   BuildControlIndex();
   ValidateAgainstHdl();

@@ -153,3 +153,78 @@ TEST(SimMemoryAddressRegisterTest, ReadsLowHighFromDataBus) {
 
   EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0xABCD});
 }
+
+TEST(SimMemoryAddressRegisterTest, AddOffsetWithoutCarry) {
+  Cpu sim = test::MakeTestCpu();
+
+  // Set MAR to 0x1234, offset to 0x05
+  sim.memory().mar().set_value(irata2::base::Word{0x1234});
+  sim.memory().mar().offset().set_value(irata2::base::Byte{0x05});
+
+  // Assert add_offset control
+  test::AssertControl(sim.memory().mar().add_offset());
+  sim.Tick();
+
+  // Result should be 0x1234 + 0x05 = 0x1239
+  EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x1239});
+}
+
+TEST(SimMemoryAddressRegisterTest, AddOffsetWithCarry) {
+  Cpu sim = test::MakeTestCpu();
+
+  // Set MAR to 0x12FE, offset to 0x05 - will overflow low byte
+  sim.memory().mar().set_value(irata2::base::Word{0x12FE});
+  sim.memory().mar().offset().set_value(irata2::base::Byte{0x05});
+
+  // Assert add_offset control
+  test::AssertControl(sim.memory().mar().add_offset());
+  sim.Tick();
+
+  // Result should be 0x12FE + 0x05 = 0x1303 (carry to high byte)
+  EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x1303});
+}
+
+TEST(SimMemoryAddressRegisterTest, AddOffsetZeroPageWrap) {
+  Cpu sim = test::MakeTestCpu();
+
+  // Set MAR to 0x00FE (zero page), offset to 0x05
+  sim.memory().mar().set_value(irata2::base::Word{0x00FE});
+  sim.memory().mar().offset().set_value(irata2::base::Byte{0x05});
+
+  // Assert add_offset control
+  test::AssertControl(sim.memory().mar().add_offset());
+  sim.Tick();
+
+  // Without reset, result would be 0x0103 (with carry)
+  EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x0103});
+
+  // Reset high byte to simulate zero page wrap
+  test::AssertControl(sim.memory().mar().high().reset());
+  sim.Tick();
+
+  // Now should be 0x0003 (wrapped in zero page)
+  EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x0003});
+}
+
+TEST(SimMemoryAddressRegisterTest, AddOffsetLoadsFromDataBus) {
+  Cpu sim = test::MakeTestCpu();
+
+  // Set MAR to some value
+  sim.memory().mar().set_value(irata2::base::Word{0x1020});
+
+  // Load offset from X register via data bus
+  sim.x().set_value(irata2::base::Byte{0x0A});
+  test::AssertControl(sim.x().write());
+  test::AssertControl(sim.memory().mar().offset().read());
+  sim.Tick();
+
+  // Verify offset was loaded
+  EXPECT_EQ(sim.memory().mar().offset().value(), irata2::base::Byte{0x0A});
+
+  // Now add it
+  test::AssertControl(sim.memory().mar().add_offset());
+  sim.Tick();
+
+  // Result should be 0x1020 + 0x0A = 0x102A
+  EXPECT_EQ(sim.memory().mar().value(), irata2::base::Word{0x102A});
+}
