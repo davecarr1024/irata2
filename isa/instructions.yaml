@@ -1051,6 +1051,31 @@ instructions:
     category: Jump
     flags_affected: []
 
+  # Status Flag Operations
+  - mnemonic: CLC
+    opcode: 0xC8
+    addressing_mode: IMP
+    cycles: 1
+    description: "Clear carry flag"
+    category: Status
+    flags_affected: [C]
+
+  - mnemonic: SEC
+    opcode: 0xC9
+    addressing_mode: IMP
+    cycles: 1
+    description: "Set carry flag"
+    category: Status
+    flags_affected: [C]
+
+  - mnemonic: CLV
+    opcode: 0xCA
+    addressing_mode: IMP
+    cycles: 1
+    description: "Clear overflow flag"
+    category: Status
+    flags_affected: [V]
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

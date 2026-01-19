@@ -1330,3 +1330,18 @@ instructions:
           - [sp.increment]
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
           - [memory.write, pc.high.read]
+
+  CLC_IMP:
+    stages:
+      - steps:
+          - [status.carry.clear]
+
+  SEC_IMP:
+    stages:
+      - steps:
+          - [status.carry.set]
+
+  CLV_IMP:
+    stages:
+      - steps:
+          - [status.overflow.clear]

@@ -170,6 +170,10 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::TXS_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::JSR_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::RTS_IMP, {MakeStep({})}));
+  // Status instructions
+  set.instructions.push_back(MakeInstruction(Opcode::CLC_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SEC_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CLV_IMP, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
