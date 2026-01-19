@@ -902,3 +902,371 @@ instructions:
           - [memory.mar.add_offset]
           - [memory.mar.high.reset]
           - [x.write, memory.read]
+
+  # Absolute X-Indexed Load/Store Instructions
+  LDA_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, a.read, status.analyzer.read]
+
+  STA_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [a.write, memory.read]
+
+  LDY_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, y.read, status.analyzer.read]
+
+  STY_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [y.write, memory.read]
+
+  # Absolute X-Indexed ALU Instructions
+  ADC_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  SBC_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  AND_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ORA_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  EOR_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  CMP_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  # Absolute X-Indexed Shift Instructions (read-modify-write)
+  ASL_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  LSR_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROL_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROR_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  # Absolute X-Indexed Inc/Dec Instructions (read-modify-write)
+  INC_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  DEC_ABX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  # Absolute Y-Indexed Load/Store Instructions
+  LDA_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, a.read, status.analyzer.read]
+
+  STA_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [a.write, memory.read]
+
+  LDX_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, x.read, status.analyzer.read]
+
+  STX_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [x.write, memory.read]
+
+  # Absolute Y-Indexed ALU Instructions
+  ADC_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  SBC_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  AND_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ORA_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  EOR_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  CMP_ABY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]

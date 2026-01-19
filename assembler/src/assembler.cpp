@@ -132,20 +132,18 @@ const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
     } else if (operand.immediate) {
       candidates = {isa::AddressingMode::IMM};
     } else if (operand.index_register == Operand::IndexRegister::X) {
-      // Indexed by X: ZPX for zero page
-      // Note: ABX mode will be added in phase 8.5
+      // Indexed by X: ZPX for zero page, ABX for absolute
       if (operand.kind == Operand::Kind::Number && operand.number <= 0xFFu) {
-        candidates = {isa::AddressingMode::ZPX};
+        candidates = {isa::AddressingMode::ZPX, isa::AddressingMode::ABX};
       } else {
-        throw AssemblerError(stmt.span, "absolute X-indexed addressing not yet supported");
+        candidates = {isa::AddressingMode::ABX};
       }
     } else if (operand.index_register == Operand::IndexRegister::Y) {
-      // Indexed by Y: ZPY for zero page
-      // Note: ABY mode will be added in phase 8.5
+      // Indexed by Y: ZPY for zero page, ABY for absolute
       if (operand.kind == Operand::Kind::Number && operand.number <= 0xFFu) {
-        candidates = {isa::AddressingMode::ZPY};
+        candidates = {isa::AddressingMode::ZPY, isa::AddressingMode::ABY};
       } else {
-        throw AssemblerError(stmt.span, "absolute Y-indexed addressing not yet supported");
+        candidates = {isa::AddressingMode::ABY};
       }
     } else if (operand.kind == Operand::Kind::Number) {
       if (operand.number <= 0xFFu) {

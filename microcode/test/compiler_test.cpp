@@ -133,6 +133,34 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   // ZPY instructions
   set.instructions.push_back(MakeInstruction(Opcode::LDX_ZPY, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::STX_ZPY, {MakeStep({})}));
+  // ABX instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STY_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::INC_ABX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::DEC_ABX, {MakeStep({})}));
+  // ABY instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABY, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

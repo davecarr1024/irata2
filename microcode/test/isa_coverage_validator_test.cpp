@@ -109,6 +109,34 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   // ZPY instructions
   set.instructions.push_back(MakeInstruction(Opcode::LDX_ZPY));
   set.instructions.push_back(MakeInstruction(Opcode::STX_ZPY));
+  // ABX instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::STY_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::INC_ABX));
+  set.instructions.push_back(MakeInstruction(Opcode::DEC_ABX));
+  // ABY instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABY));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABY));
 
   IsaCoverageValidator validator;
   EXPECT_NO_THROW(validator.Run(set));

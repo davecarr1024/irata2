@@ -33,6 +33,16 @@ addressing_modes:
     operands: 1
     description: "Zero page address indexed by Y (wraps within page)"
 
+  - name: AbsoluteX
+    code: ABX
+    operands: 2
+    description: "Absolute 16-bit address indexed by X"
+
+  - name: AbsoluteY
+    code: ABY
+    operands: 2
+    description: "Absolute 16-bit address indexed by Y"
+
   - name: Relative
     code: REL
     operands: 1
@@ -765,6 +775,216 @@ instructions:
     description: "Store X register (zero page, Y-indexed)"
     category: Store
     flags_affected: []
+
+  # Absolute X-Indexed Instructions
+  - mnemonic: LDA
+    opcode: 0xA0
+    addressing_mode: ABX
+    cycles: 5
+    description: "Load accumulator (absolute, X-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0xA1
+    addressing_mode: ABX
+    cycles: 5
+    description: "Store accumulator (absolute, X-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDY
+    opcode: 0xA2
+    addressing_mode: ABX
+    cycles: 5
+    description: "Load Y register (absolute, X-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STY
+    opcode: 0xA3
+    addressing_mode: ABX
+    cycles: 5
+    description: "Store Y register (absolute, X-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: ADC
+    opcode: 0xA4
+    addressing_mode: ABX
+    cycles: 6
+    description: "Add with carry (absolute, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0xA5
+    addressing_mode: ABX
+    cycles: 6
+    description: "Subtract with carry (absolute, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0xA6
+    addressing_mode: ABX
+    cycles: 6
+    description: "Logical AND (absolute, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0xA7
+    addressing_mode: ABX
+    cycles: 6
+    description: "Logical OR (absolute, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0xA8
+    addressing_mode: ABX
+    cycles: 6
+    description: "Logical XOR (absolute, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0xA9
+    addressing_mode: ABX
+    cycles: 6
+    description: "Compare accumulator (absolute, X-indexed)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ASL
+    opcode: 0xAA
+    addressing_mode: ABX
+    cycles: 7
+    description: "Arithmetic shift left (absolute, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: LSR
+    opcode: 0xAB
+    addressing_mode: ABX
+    cycles: 7
+    description: "Logical shift right (absolute, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROL
+    opcode: 0xAC
+    addressing_mode: ABX
+    cycles: 7
+    description: "Rotate left (absolute, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROR
+    opcode: 0xAD
+    addressing_mode: ABX
+    cycles: 7
+    description: "Rotate right (absolute, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: INC
+    opcode: 0xAE
+    addressing_mode: ABX
+    cycles: 7
+    description: "Increment memory (absolute, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEC
+    opcode: 0xAF
+    addressing_mode: ABX
+    cycles: 7
+    description: "Decrement memory (absolute, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  # Absolute Y-Indexed Instructions
+  - mnemonic: LDA
+    opcode: 0xB0
+    addressing_mode: ABY
+    cycles: 5
+    description: "Load accumulator (absolute, Y-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0xB1
+    addressing_mode: ABY
+    cycles: 5
+    description: "Store accumulator (absolute, Y-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDX
+    opcode: 0xB2
+    addressing_mode: ABY
+    cycles: 5
+    description: "Load X register (absolute, Y-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STX
+    opcode: 0xB3
+    addressing_mode: ABY
+    cycles: 5
+    description: "Store X register (absolute, Y-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: ADC
+    opcode: 0xB4
+    addressing_mode: ABY
+    cycles: 6
+    description: "Add with carry (absolute, Y-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0xB5
+    addressing_mode: ABY
+    cycles: 6
+    description: "Subtract with carry (absolute, Y-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0xB6
+    addressing_mode: ABY
+    cycles: 6
+    description: "Logical AND (absolute, Y-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0xB7
+    addressing_mode: ABY
+    cycles: 6
+    description: "Logical OR (absolute, Y-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0xB8
+    addressing_mode: ABY
+    cycles: 6
+    description: "Logical XOR (absolute, Y-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0xB9
+    addressing_mode: ABY
+    cycles: 6
+    description: "Compare accumulator (absolute, Y-indexed)"
+    category: Compare
+    flags_affected: [Z, N, C]
 
   - mnemonic: CRS
     opcode: 0xFF
