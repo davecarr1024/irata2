@@ -18,6 +18,7 @@ struct Operand {
   uint32_t number = 0;
   std::string label;
   bool immediate = false;
+  bool indirect = false;
   IndexRegister index_register = IndexRegister::None;
   Span span;
 };

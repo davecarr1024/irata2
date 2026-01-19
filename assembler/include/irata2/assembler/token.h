@@ -14,6 +14,8 @@ enum class TokenKind {
   Number,
   Directive,
   Comma,
+  LeftParen,
+  RightParen,
   Colon,
   Newline,
   EndOfFile,

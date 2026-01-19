@@ -103,6 +103,16 @@ bool Parser::Check(TokenKind kind) const {
 }
 
 Operand Parser::ParseOperand() {
+  if (Match(TokenKind::LeftParen)) {
+    Operand operand = ParseOperand();
+    if (operand.immediate) {
+      throw AssemblerError(operand.span, "indirect operands cannot be immediate");
+    }
+    operand.indirect = true;
+    Consume(TokenKind::RightParen, "expected ')' after indirect operand");
+    return operand;
+  }
+
   if (Check(TokenKind::Number)) {
     Token token = Advance();
     Operand operand;

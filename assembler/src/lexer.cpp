@@ -111,6 +111,16 @@ Token Lexer::NextToken() {
     return MakeToken(TokenKind::Comma, 1);
   }
 
+  if (ch == '(') {
+    Advance();
+    return MakeToken(TokenKind::LeftParen, 1);
+  }
+
+  if (ch == ')') {
+    Advance();
+    return MakeToken(TokenKind::RightParen, 1);
+  }
+
   if (ch == ':') {
     Advance();
     return MakeToken(TokenKind::Colon, 1);

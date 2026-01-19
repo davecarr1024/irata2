@@ -52,6 +52,8 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::CPX_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CPY_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::JMP_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::JMP_IND, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::BEQ_REL, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::BNE_REL, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::BCS_REL, {MakeStep({})}));

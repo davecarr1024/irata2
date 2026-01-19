@@ -181,6 +181,28 @@ instructions:
               - [pc.write, memory.mar.read]
               - [memory.write, memory.mar.high.read, pc.increment]
 
+  JMP_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.mar.write, pc.read]
+
+  JMP_IND:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.write, pc.low.read]
+          - [memory.mar.increment]
+          - [memory.write, pc.high.read]
+
   BEQ_REL:
     variants:
       - when: { zero: true }

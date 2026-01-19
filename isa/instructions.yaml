@@ -18,6 +18,11 @@ addressing_modes:
     operands: 2
     description: "Absolute 16-bit address"
 
+  - name: Indirect
+    code: IND
+    operands: 2
+    description: "Indirect 16-bit address"
+
   - name: ZeroPage
     code: ZP
     operands: 1
@@ -1142,6 +1147,22 @@ instructions:
     description: "Test bits in memory (absolute)"
     category: Logic
     flags_affected: [Z, N]
+
+  - mnemonic: JMP
+    opcode: 0xD3
+    addressing_mode: ABS
+    cycles: 3
+    description: "Jump to absolute address"
+    category: Jump
+    flags_affected: []
+
+  - mnemonic: JMP
+    opcode: 0xD4
+    addressing_mode: IND
+    cycles: 5
+    description: "Jump to indirect address"
+    category: Jump
+    flags_affected: []
 
   - mnemonic: CRS
     opcode: 0xFF

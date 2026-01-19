@@ -129,6 +129,8 @@ const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
         throw AssemblerError(stmt.span, "relative branches do not use immediate operands");
       }
       candidates = {isa::AddressingMode::REL};
+    } else if (operand.indirect) {
+      candidates = {isa::AddressingMode::IND};
     } else if (operand.immediate) {
       candidates = {isa::AddressingMode::IMM};
     } else if (operand.index_register == Operand::IndexRegister::X) {
