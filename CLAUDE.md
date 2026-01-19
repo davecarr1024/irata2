@@ -61,6 +61,9 @@ Notes:
 - Prefer parallel builds/tests by default.
 - Run build + tests before committing when practical.
 - After pushing commits, watch CI and report failures.
+- Focus on test coverage for new work and keep commits small and frequent.
+- Push after every commit.
+- Add or update `tests/*.asm` so every instruction has a dedicated test with full addressing-mode coverage.
 
 ## Project Overview
 
