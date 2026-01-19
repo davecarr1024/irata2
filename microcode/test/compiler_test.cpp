@@ -171,6 +171,24 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::ORA_ABY, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::EOR_ABY, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CMP_ABY, {MakeStep({})}));
+  // IZX instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_IZX, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_IZX, {MakeStep({})}));
+  // IZY instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_IZY, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_IZY, {MakeStep({})}));
   // Stack instructions
   set.instructions.push_back(MakeInstruction(Opcode::PHA_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::PLA_IMP, {MakeStep({})}));

@@ -59,4 +59,32 @@ CMP #$CC
 JEQ eor_aby_ok
 CRS
 eor_aby_ok:
+; Indexed indirect EOR
+LDX #$04
+LDA #$0C
+STA $24
+LDA #$02
+STA $25
+LDA #$0F
+STA $020C
+LDA #$FF
+EOR ($20, X)
+CMP #$F0
+JEQ eor_izx_ok
+CRS
+eor_izx_ok:
+; Indirect indexed EOR
+LDY #$02
+LDA #$00
+STA $30
+LDA #$02
+STA $31
+LDA #$3C
+STA $0202
+LDA #$F0
+EOR ($30), Y
+CMP #$CC
+JEQ eor_izy_ok
+CRS
+eor_izy_ok:
 HLT

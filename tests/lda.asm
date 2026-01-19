@@ -96,6 +96,38 @@ CMP #$33
 JEQ lda_aby_ok
 CRS
 lda_aby_ok:
+; Indexed indirect (IZX) load
+LDX #$04
+LDA #$00
+STA $24
+LDA #$02
+STA $25
+LDA #$55
+STA $0200
+LDA #$00
+LDA ($20, X)
+CMP #$54
+JEQ lda_izx_fail
+CMP #$55
+JEQ lda_izx_ok
+CRS
+lda_izx_ok:
+; Indirect indexed (IZY) load
+LDY #$03
+LDA #$00
+STA $30
+LDA #$02
+STA $31
+LDA #$66
+STA $0203
+LDA #$00
+LDA ($30), Y
+CMP #$65
+JEQ lda_izy_fail
+CMP #$66
+JEQ lda_izy_ok
+CRS
+lda_izy_ok:
 HLT
 lda_imm_zero_fail:
 CRS
@@ -114,4 +146,8 @@ CRS
 lda_abx_fail:
 CRS
 lda_aby_fail:
+CRS
+lda_izx_fail:
+CRS
+lda_izy_fail:
 CRS

@@ -23,6 +23,16 @@ addressing_modes:
     operands: 2
     description: "Indirect 16-bit address"
 
+  - name: IndexedIndirect
+    code: IZX
+    operands: 1
+    description: "Indexed indirect (zero page + X, wrap)"
+
+  - name: IndirectIndexed
+    code: IZY
+    operands: 1
+    description: "Indirect indexed ((zero page), + Y)"
+
   - name: ZeroPage
     code: ZP
     operands: 1
@@ -1163,6 +1173,136 @@ instructions:
     description: "Jump to indirect address"
     category: Jump
     flags_affected: []
+
+  # Indexed Indirect (IZX) Instructions
+  - mnemonic: LDA
+    opcode: 0xD5
+    addressing_mode: IZX
+    cycles: 6
+    description: "Load accumulator (indexed indirect)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0xD6
+    addressing_mode: IZX
+    cycles: 6
+    description: "Store accumulator (indexed indirect)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: ADC
+    opcode: 0xD7
+    addressing_mode: IZX
+    cycles: 6
+    description: "Add with carry (indexed indirect)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0xD8
+    addressing_mode: IZX
+    cycles: 6
+    description: "Subtract with carry (indexed indirect)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0xD9
+    addressing_mode: IZX
+    cycles: 6
+    description: "Logical AND (indexed indirect)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0xDA
+    addressing_mode: IZX
+    cycles: 6
+    description: "Logical OR (indexed indirect)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0xDB
+    addressing_mode: IZX
+    cycles: 6
+    description: "Logical XOR (indexed indirect)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0xDC
+    addressing_mode: IZX
+    cycles: 6
+    description: "Compare accumulator (indexed indirect)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  # Indirect Indexed (IZY) Instructions
+  - mnemonic: LDA
+    opcode: 0xDD
+    addressing_mode: IZY
+    cycles: 6
+    description: "Load accumulator (indirect indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0xDE
+    addressing_mode: IZY
+    cycles: 6
+    description: "Store accumulator (indirect indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: ADC
+    opcode: 0xDF
+    addressing_mode: IZY
+    cycles: 6
+    description: "Add with carry (indirect indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0xE0
+    addressing_mode: IZY
+    cycles: 6
+    description: "Subtract with carry (indirect indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0xE1
+    addressing_mode: IZY
+    cycles: 6
+    description: "Logical AND (indirect indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0xE2
+    addressing_mode: IZY
+    cycles: 6
+    description: "Logical OR (indirect indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0xE3
+    addressing_mode: IZY
+    cycles: 6
+    description: "Logical XOR (indirect indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0xE4
+    addressing_mode: IZY
+    cycles: 6
+    description: "Compare accumulator (indirect indexed)"
+    category: Compare
+    flags_affected: [Z, N, C]
 
   - mnemonic: CRS
     opcode: 0xFF

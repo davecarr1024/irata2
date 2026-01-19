@@ -130,7 +130,13 @@ const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
       }
       candidates = {isa::AddressingMode::REL};
     } else if (operand.indirect) {
-      candidates = {isa::AddressingMode::IND};
+      if (operand.index_register == Operand::IndexRegister::X) {
+        candidates = {isa::AddressingMode::IZX};
+      } else if (operand.index_register == Operand::IndexRegister::Y) {
+        candidates = {isa::AddressingMode::IZY};
+      } else {
+        candidates = {isa::AddressingMode::IND};
+      }
     } else if (operand.immediate) {
       candidates = {isa::AddressingMode::IMM};
     } else if (operand.index_register == Operand::IndexRegister::X) {

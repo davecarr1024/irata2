@@ -109,6 +109,14 @@ Operand Parser::ParseOperand() {
       throw AssemblerError(operand.span, "indirect operands cannot be immediate");
     }
     operand.indirect = true;
+    if (Match(TokenKind::Comma)) {
+      Token reg = Consume(TokenKind::Identifier, "expected index register after comma");
+      if (reg.text == "X" || reg.text == "x") {
+        operand.index_register = Operand::IndexRegister::X;
+      } else {
+        throw AssemblerError(reg.span, "expected X index register inside parentheses");
+      }
+    }
     Consume(TokenKind::RightParen, "expected ')' after indirect operand");
     return operand;
   }

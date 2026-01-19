@@ -65,4 +65,36 @@ CMP #$28
 JEQ sbc_aby_ok
 CRS
 sbc_aby_ok:
+; Indexed indirect subtract with carry clear
+LDA #$00
+CMP #$01
+LDX #$04
+LDA #$08
+STA $24
+LDA #$02
+STA $25
+LDA #$05
+STA $0208
+LDA #$10
+SBC ($20, X)
+CMP #$0A
+JEQ sbc_izx_ok
+CRS
+sbc_izx_ok:
+; Indirect indexed subtract with carry clear
+LDA #$00
+CMP #$01
+LDY #$03
+LDA #$10
+STA $30
+LDA #$02
+STA $31
+LDA #$05
+STA $0213
+LDA #$10
+SBC ($30), Y
+CMP #$0A
+JEQ sbc_izy_ok
+CRS
+sbc_izy_ok:
 HLT

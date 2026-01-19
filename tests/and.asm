@@ -59,4 +59,32 @@ CMP #$55
 JEQ and_aby_ok
 CRS
 and_aby_ok:
+; Indexed indirect AND
+LDX #$04
+LDA #$0A
+STA $24
+LDA #$02
+STA $25
+LDA #$0F
+STA $020A
+LDA #$F0
+AND ($20, X)
+CMP #$00
+JEQ and_izx_ok
+CRS
+and_izx_ok:
+; Indirect indexed AND
+LDY #$03
+LDA #$0B
+STA $30
+LDA #$02
+STA $31
+LDA #$0F
+STA $020E
+LDA #$FF
+AND ($30), Y
+CMP #$0F
+JEQ and_izy_ok
+CRS
+and_izy_ok:
 HLT

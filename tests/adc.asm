@@ -94,4 +94,36 @@ CMP #$0F
 JEQ adc_aby_ok
 CRS
 adc_aby_ok:
+; Indexed indirect add without carry
+LDA #$00
+CMP #$01
+LDX #$04
+LDA #$06
+STA $24
+LDA #$02
+STA $25
+LDA #$05
+STA $0206
+LDA #$10
+ADC ($20, X)
+CMP #$15
+JEQ adc_izx_ok
+CRS
+adc_izx_ok:
+; Indirect indexed add without carry
+LDA #$00
+CMP #$01
+LDY #$03
+LDA #$10
+STA $30
+LDA #$02
+STA $31
+LDA #$05
+STA $0213
+LDA #$10
+ADC ($30), Y
+CMP #$15
+JEQ adc_izy_ok
+CRS
+adc_izy_ok:
 HLT

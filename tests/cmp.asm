@@ -75,6 +75,32 @@ cmp_aby_equal_ok:
 LDA #$98
 CMP $0400, Y
 JEQ cmp_aby_not_equal_fail
+; Indexed indirect equality
+LDX #$04
+LDA #$0C
+STA $24
+LDA #$02
+STA $25
+LDA #$55
+STA $020C
+LDA #$55
+CMP ($20, X)
+JEQ cmp_izx_equal_ok
+CRS
+cmp_izx_equal_ok:
+; Indirect indexed equality
+LDY #$02
+LDA #$00
+STA $30
+LDA #$02
+STA $31
+LDA #$66
+STA $0202
+LDA #$66
+CMP ($30), Y
+JEQ cmp_izy_equal_ok
+CRS
+cmp_izy_equal_ok:
 HLT
 cmp_not_equal_fail:
 CRS

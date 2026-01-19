@@ -68,6 +68,38 @@ CMP #$77
 JEQ sta_aby_ok
 CRS
 sta_aby_ok:
+; Indexed indirect (IZX) store
+LDX #$04
+LDA #$04
+STA $24
+LDA #$02
+STA $25
+LDA #$88
+STA ($20, X)
+LDA #$00
+LDA $0204
+CMP #$87
+JEQ sta_izx_fail
+CMP #$88
+JEQ sta_izx_ok
+CRS
+sta_izx_ok:
+; Indirect indexed (IZY) store
+LDY #$05
+LDA #$00
+STA $30
+LDA #$02
+STA $31
+LDA #$99
+STA ($30), Y
+LDA #$00
+LDA $0205
+CMP #$98
+JEQ sta_izy_fail
+CMP #$99
+JEQ sta_izy_ok
+CRS
+sta_izy_ok:
 HLT
 sta_basic_fail:
 CRS
@@ -80,4 +112,8 @@ CRS
 sta_abx_fail:
 CRS
 sta_aby_fail:
+CRS
+sta_izx_fail:
+CRS
+sta_izy_fail:
 CRS
