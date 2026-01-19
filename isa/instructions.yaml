@@ -1304,6 +1304,23 @@ instructions:
     category: Compare
     flags_affected: [Z, N, C]
 
+  # Interrupts
+  - mnemonic: BRK
+    opcode: 0xE5
+    addressing_mode: IMP
+    cycles: 7
+    description: "Software interrupt"
+    category: System
+    flags_affected: []
+
+  - mnemonic: RTI
+    opcode: 0xE6
+    addressing_mode: IMP
+    cycles: 6
+    description: "Return from interrupt"
+    category: System
+    flags_affected: []
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

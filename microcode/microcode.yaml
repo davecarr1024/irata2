@@ -1729,6 +1729,34 @@ instructions:
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
           - [memory.write, pc.high.read]
 
+  BRK_IMP:
+    stages:
+      - steps:
+          - [status.interrupt_disable.set]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.high.write, memory.read, sp.decrement]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.low.write, memory.read, sp.decrement]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [status.write, memory.read, sp.decrement]
+          - [memory.mar.interrupt_vector]
+          - [memory.write, pc.low.read]
+          - [memory.mar.increment]
+          - [memory.write, pc.high.read]
+
+  RTI_IMP:
+    stages:
+      - steps:
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, status.read]
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, pc.low.read]
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, pc.high.read]
+
   CLC_IMP:
     stages:
       - steps:

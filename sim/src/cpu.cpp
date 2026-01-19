@@ -266,6 +266,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().add_offset());
   RegisterChild(memory_.mar().increment());
   RegisterChild(memory_.mar().stack_page());
+  RegisterChild(memory_.mar().interrupt_vector());
 
   BuildControlIndex();
   ValidateAgainstHdl();

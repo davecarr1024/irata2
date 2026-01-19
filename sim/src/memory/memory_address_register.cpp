@@ -56,7 +56,8 @@ MemoryAddressRegister::MemoryAddressRegister(std::string name,
       offset_("offset", *this, data_bus),
       add_offset_control_("add_offset", *this),
       increment_control_("increment", *this),
-      stack_page_control_("stack_page", *this) {}
+      stack_page_control_("stack_page", *this),
+      interrupt_vector_control_("interrupt_vector", *this) {}
 
 base::Byte MemoryAddressRegister::LowValue() const {
   return value().low();
@@ -77,6 +78,9 @@ void MemoryAddressRegister::SetHigh(base::Byte byte) {
 }
 
 void MemoryAddressRegister::TickProcess() {
+  if (interrupt_vector_control_.asserted()) {
+    set_value(base::Word{0xFFFE});
+  }
   if (stack_page_control_.asserted()) {
     SetHigh(base::Byte{0x01});
   }

@@ -198,6 +198,8 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::TXS_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::JSR_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::RTS_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::BRK_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::RTI_IMP, {MakeStep({})}));
   // Status instructions
   set.instructions.push_back(MakeInstruction(Opcode::CLC_IMP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::SEC_IMP, {MakeStep({})}));
