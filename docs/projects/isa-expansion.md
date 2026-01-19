@@ -1,15 +1,15 @@
-# ISA Expansion - Remaining Work
+# ISA Expansion - Completed Plan
 
 This document describes the remaining phases to complete a 6502-style instruction set.
 
 ## Current State
 
-**Implemented (Phases 1-7):**
-- ~60 instructions across 5 addressing modes
-- Registers: A, X, PC, IR, SC, IPC, MAR, TMP
-- Addressing modes: IMP, IMM, ZP, ABS, REL
+**Implemented (Phases 1-14):**
+- 152 instructions across 12 addressing modes
+- Registers: A, X, Y, SP, PC, IR, SC, IPC, MAR, TMP
+- Addressing modes: IMP, IMM, ZP, ABS, REL, ZPX, ZPY, ABX, ABY, IND, IZX, IZY
 - ALU: ADD, SUB, INC, DEC, AND, OR, XOR, ASL, LSR, ROL, ROR
-- Status flags: Z, N, C, V
+- Status flags: Z, N, C, V, I
 
 **Implemented Instructions by Category:**
 | Category | Instructions |
@@ -25,7 +25,7 @@ This document describes the remaining phases to complete a 6502-style instructio
 | Branches | BEQ, BNE, BCS, BCC, BMI, BPL, BVS, BVC (REL) |
 | Jump | JEQ (ABS) |
 
-## Missing from 6502
+## Previously Missing (Now Implemented)
 
 ### Registers
 - **Y register** - Second index register
@@ -505,8 +505,8 @@ JMP_IND:
 
 | Instruction | Opcode | Description |
 |-------------|--------|-------------|
-| BRK | 0xC0 | Software interrupt |
-| RTI | 0xC1 | Return from interrupt |
+| BRK | 0xE5 | Software interrupt |
+| RTI | 0xE6 | Return from interrupt |
 
 **HDL Changes:**
 - Interrupt request line
@@ -526,6 +526,8 @@ JMP_IND:
 ## Summary
 
 ### Instruction Count Projection
+
+Actual total in the current ISA: 152 instructions. The table below is the historical estimate.
 
 | Phase | New Instructions | Cumulative |
 |-------|-----------------|------------|

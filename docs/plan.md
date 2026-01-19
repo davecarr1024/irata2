@@ -10,13 +10,13 @@ The core infrastructure is complete. The project has:
 - Clean sim architecture with hardware-ish components
 - 128-bit control words for future growth
 
-**ISA Implementation:** ~60 instructions across 5 addressing modes (IMP, IMM, ZP, ABS, REL).
+**ISA Implementation:** 152 instructions across 12 addressing modes (IMP, IMM, ZP, ABS, REL, ZPX, ZPY, ABX, ABY, IND, IZX, IZY).
 
 ## Active Project
 
-**ISA Expansion** - see [docs/projects/isa-expansion.md](projects/isa-expansion.md)
+**ISA Expansion** - completed (see [docs/projects/isa-expansion.md](projects/isa-expansion.md) for the historical plan)
 
-The goal is a 6502-style instruction set. Remaining phases:
+The 6502-style instruction set phases are complete:
 
 | Phase | Description | New Instructions |
 |-------|-------------|-----------------|
@@ -28,7 +28,7 @@ The goal is a 6502-style instruction set. Remaining phases:
 | 13 | Indirect indexed addressing (IZX, IZY) - optional | 16 |
 | 14 | Interrupts (BRK, RTI) - optional | 2 |
 
-**Next up:** Phase 8 - Y register and indexed addressing modes.
+**Next up:** Optional future work.
 
 ## Optional Future Work
 
