@@ -193,6 +193,30 @@ instructions:
     category: Load
     flags_affected: [Z, N]
 
+  - mnemonic: TAY
+    opcode: 0x33
+    addressing_mode: IMP
+    cycles: 1
+    description: "Transfer A to Y"
+    category: Transfer
+    flags_affected: [Z, N]
+
+  - mnemonic: TYA
+    opcode: 0x34
+    addressing_mode: IMP
+    cycles: 1
+    description: "Transfer Y to A"
+    category: Transfer
+    flags_affected: [Z, N]
+
+  - mnemonic: LDY
+    opcode: 0x35
+    addressing_mode: IMM
+    cycles: 2
+    description: "Load Y register (immediate)"
+    category: Load
+    flags_affected: [Z, N]
+
   # Zero Page Load/Store Instructions
   - mnemonic: LDA
     opcode: 0x40
@@ -223,6 +247,22 @@ instructions:
     addressing_mode: ZP
     cycles: 3
     description: "Store X register (zero page)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDY
+    opcode: 0x4E
+    addressing_mode: ZP
+    cycles: 3
+    description: "Load Y register (zero page)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STY
+    opcode: 0x4F
+    addressing_mode: ZP
+    cycles: 3
+    description: "Store Y register (zero page)"
     category: Store
     flags_affected: []
 
@@ -341,6 +381,22 @@ instructions:
     category: Store
     flags_affected: []
 
+  - mnemonic: LDY
+    opcode: 0x5E
+    addressing_mode: ABS
+    cycles: 4
+    description: "Load Y register (absolute)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STY
+    opcode: 0x5F
+    addressing_mode: ABS
+    cycles: 4
+    description: "Store Y register (absolute)"
+    category: Store
+    flags_affected: []
+
   # Absolute ALU Instructions
   - mnemonic: ADC
     opcode: 0x54
@@ -437,6 +493,22 @@ instructions:
     addressing_mode: IMP
     cycles: 1
     description: "Decrement X register"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: INY
+    opcode: 0x66
+    addressing_mode: IMP
+    cycles: 1
+    description: "Increment Y register"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEY
+    opcode: 0x67
+    addressing_mode: IMP
+    cycles: 1
+    description: "Decrement Y register"
     category: Arithmetic
     flags_affected: [Z, N]
 

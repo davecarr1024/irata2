@@ -46,10 +46,15 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM));
+  set.instructions.push_back(MakeInstruction(Opcode::TAY_IMP));
+  set.instructions.push_back(MakeInstruction(Opcode::TYA_IMP));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_IMM));
   set.instructions.push_back(MakeInstruction(Opcode::LDA_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::STA_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::STX_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_ZP));
+  set.instructions.push_back(MakeInstruction(Opcode::STY_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::ADC_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::SBC_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::AND_ZP));
@@ -64,6 +69,8 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::STA_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::LDX_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::STX_ABS));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_ABS));
+  set.instructions.push_back(MakeInstruction(Opcode::STY_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::ADC_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::SBC_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::AND_ABS));
@@ -76,6 +83,8 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::ROR_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::INX_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::DEX_IMP));
+  set.instructions.push_back(MakeInstruction(Opcode::INY_IMP));
+  set.instructions.push_back(MakeInstruction(Opcode::DEY_IMP));
   set.instructions.push_back(MakeInstruction(Opcode::INC_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::DEC_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::INC_ABS));

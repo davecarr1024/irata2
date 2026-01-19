@@ -126,6 +126,22 @@ instructions:
           - [pc.write, memory.mar.read]
           - [memory.write, x.read, status.analyzer.read, pc.increment]
 
+  TAY_IMP:
+    stages:
+      - steps:
+          - [a.write, y.read, status.analyzer.read]
+
+  TYA_IMP:
+    stages:
+      - steps:
+          - [y.write, a.read, status.analyzer.read]
+
+  LDY_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, y.read, status.analyzer.read, pc.increment]
+
   JEQ_ABS:
     variants:
       - when: { zero: true }
@@ -282,6 +298,22 @@ instructions:
           - [memory.mar.high.reset]
           - [x.write, memory.read]
 
+  LDY_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, y.read, status.analyzer.read]
+
+  STY_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [y.write, memory.read]
+
   # Zero Page ALU Instructions
   ADC_ZP:
     stages:
@@ -432,6 +464,26 @@ instructions:
           - [alu.result.write, memory.mar.low.read]
           - [x.write, memory.read]
 
+  LDY_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.write, y.read, status.analyzer.read]
+
+  STY_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [y.write, memory.read]
+
   # Absolute ALU Instructions
   ADC_ABS:
     stages:
@@ -575,6 +627,20 @@ instructions:
           - [x.write, alu.lhs.read]
           - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_3]
           - [alu.result.write, x.read, status.analyzer.read]
+
+  INY_IMP:
+    stages:
+      - steps:
+          - [y.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1]
+          - [alu.result.write, y.read, status.analyzer.read]
+
+  DEY_IMP:
+    stages:
+      - steps:
+          - [y.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, y.read, status.analyzer.read]
 
   # Memory Increment/Decrement Instructions (read-modify-write)
   INC_ZP:
