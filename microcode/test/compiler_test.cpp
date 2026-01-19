@@ -49,6 +49,8 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
       Opcode::CRS_IMP, {MakeStep({&cpu.crash().control_info()})}));
   set.instructions.push_back(MakeInstruction(Opcode::LDA_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CMP_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPX_IMM, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPY_IMM, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::BEQ_REL, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::BNE_REL, {MakeStep({})}));
@@ -85,6 +87,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::ORA_ZP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::EOR_ZP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CMP_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPX_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPY_ZP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::BIT_ZP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ASL_ZP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::LSR_ZP, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROL_ZP, {MakeStep({})}));
@@ -101,6 +106,9 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::ORA_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::EOR_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CMP_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPX_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::CPY_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::BIT_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ASL_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::LSR_ABS, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::ROL_ABS, {MakeStep({})}));

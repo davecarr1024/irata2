@@ -1076,6 +1076,73 @@ instructions:
     category: Status
     flags_affected: [V]
 
+  # Compare X Register
+  - mnemonic: CPX
+    opcode: 0xCB
+    addressing_mode: IMM
+    cycles: 2
+    description: "Compare X register (immediate)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: CPX
+    opcode: 0xCC
+    addressing_mode: ZP
+    cycles: 3
+    description: "Compare X register (zero page)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: CPX
+    opcode: 0xCD
+    addressing_mode: ABS
+    cycles: 4
+    description: "Compare X register (absolute)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  # Compare Y Register
+  - mnemonic: CPY
+    opcode: 0xCE
+    addressing_mode: IMM
+    cycles: 2
+    description: "Compare Y register (immediate)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: CPY
+    opcode: 0xCF
+    addressing_mode: ZP
+    cycles: 3
+    description: "Compare Y register (zero page)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: CPY
+    opcode: 0xD0
+    addressing_mode: ABS
+    cycles: 4
+    description: "Compare Y register (absolute)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  # Bit Test
+  - mnemonic: BIT
+    opcode: 0xD1
+    addressing_mode: ZP
+    cycles: 3
+    description: "Test bits in memory (zero page)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: BIT
+    opcode: 0xD2
+    addressing_mode: ABS
+    cycles: 4
+    description: "Test bits in memory (absolute)"
+    category: Logic
+    flags_affected: [Z, N]
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

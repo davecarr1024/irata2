@@ -37,6 +37,26 @@ instructions:
           - [alu.opcode_bit_1]
           - [alu.result.write, status.analyzer.read]
 
+  CPX_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [x.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  CPY_IMM:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, alu.rhs.read, pc.increment]
+          - [y.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
   ADC_IMM:
     stages:
       - steps:
@@ -382,6 +402,41 @@ instructions:
           - [alu.opcode_bit_1]
           - [alu.result.write, status.analyzer.read]
 
+  CPX_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [x.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  CPY_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [y.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  BIT_ZP:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2, alu.opcode_bit_3]
+          - [alu.result.write, status.analyzer.read]
+
   # Zero Page Shift Instructions (read-modify-write)
   ASL_ZP:
     stages:
@@ -562,6 +617,47 @@ instructions:
           - [a.write, alu.lhs.read]
           - [status.carry.set]
           - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  CPX_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.write, alu.rhs.read]
+          - [x.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  CPY_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.write, alu.rhs.read]
+          - [y.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  BIT_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2, alu.opcode_bit_3]
           - [alu.result.write, status.analyzer.read]
 
   # Absolute Shift Instructions (read-modify-write)

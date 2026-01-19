@@ -145,6 +145,11 @@ void Alu::TickProcess() {
       // DEC doesn't affect carry or overflow flags
       break;
     }
+    case 0xC: {  // BIT (bit test, preserves carry/overflow)
+      const uint8_t result = static_cast<uint8_t>(lhs & rhs);
+      result_.set_value(base::Byte{result});
+      break;
+    }
     default:
       break;
   }
