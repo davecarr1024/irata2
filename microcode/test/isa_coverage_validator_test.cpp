@@ -1,5 +1,6 @@
 #include "irata2/microcode/compiler/isa_coverage_validator.h"
 
+#include "irata2/isa/isa.h"
 #include "irata2/microcode/error.h"
 
 #include <gtest/gtest.h>
@@ -8,6 +9,7 @@ using irata2::microcode::MicrocodeError;
 using irata2::microcode::compiler::IsaCoverageValidator;
 using irata2::microcode::ir::Instruction;
 using irata2::microcode::ir::InstructionSet;
+using irata2::isa::IsaInfo;
 using irata2::isa::Opcode;
 
 namespace {
@@ -20,123 +22,9 @@ Instruction MakeInstruction(Opcode opcode) {
 
 TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   InstructionSet set;
-  set.instructions.push_back(MakeInstruction(Opcode::HLT_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::NOP_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::CRS_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::JEQ_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::BEQ_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BNE_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BCS_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BCC_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BMI_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BPL_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BVS_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::BVC_REL));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::ASL_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::LSR_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::ROL_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::ROR_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::TAX_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::TXA_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDX_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::TAY_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::TYA_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDY_IMM));
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::STA_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::STX_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDY_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::STY_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::STA_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::LDX_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::STX_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::LDY_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::STY_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::ASL_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::LSR_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::ROL_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::ROR_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::INX_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::DEX_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::INY_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::DEY_IMP));
-  set.instructions.push_back(MakeInstruction(Opcode::INC_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::DEC_ZP));
-  set.instructions.push_back(MakeInstruction(Opcode::INC_ABS));
-  set.instructions.push_back(MakeInstruction(Opcode::DEC_ABS));
-  // ZPX instructions
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::STA_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::LDY_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::STY_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::INC_ZPX));
-  set.instructions.push_back(MakeInstruction(Opcode::DEC_ZPX));
-  // ZPY instructions
-  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZPY));
-  set.instructions.push_back(MakeInstruction(Opcode::STX_ZPY));
-  // ABX instructions
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::STA_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::LDY_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::STY_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::ASL_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::LSR_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::ROL_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::ROR_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::INC_ABX));
-  set.instructions.push_back(MakeInstruction(Opcode::DEC_ABX));
-  // ABY instructions
-  set.instructions.push_back(MakeInstruction(Opcode::LDA_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::STA_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::LDX_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::STX_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::ADC_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::SBC_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::AND_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::ORA_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::EOR_ABY));
-  set.instructions.push_back(MakeInstruction(Opcode::CMP_ABY));
+  for (const auto& instruction : IsaInfo::GetInstructions()) {
+    set.instructions.push_back(MakeInstruction(instruction.opcode));
+  }
 
   IsaCoverageValidator validator;
   EXPECT_NO_THROW(validator.Run(set));
