@@ -65,6 +65,7 @@ Notes:
 - Push after every commit.
 - Add or update `tests/*.asm` so every instruction has a dedicated test with full addressing-mode coverage.
 - Avoid no-op-friendly transfer tests: reset the destination register (or A) before verifying that a value came from a transfer, and add negative cases when feasible.
+- Always run tests before committing (at minimum `make test`).
 
 ## Project Overview
 

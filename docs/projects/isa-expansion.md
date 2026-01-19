@@ -218,6 +218,13 @@ LDA_ABX:
 
 **Goal:** Add stack pointer and push/pull/subroutine instructions.
 
+Notes for stack implementation:
+
+* Pick a fixed 256 byte region of memory for the stack similar to the canonical 6502 location.
+* Add a control line to MAR to reset mar.high to the stack page
+* implement a new specialized byte register for the stack pointer with increment and decrement
+* don't use the alu for stack ops - use (and expand if needed) the mar's addition register
+
 ### 9.1 Stack Pointer Register
 
 **HDL Changes:**
