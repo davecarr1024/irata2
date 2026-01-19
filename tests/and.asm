@@ -29,4 +29,34 @@ CMP #$00
 JEQ and_abs_ok
 CRS
 and_abs_ok:
+; Zero page X AND
+LDX #$02
+LDA #$33
+STA $12
+LDA #$3F
+AND $10, X
+CMP #$33
+JEQ and_zpx_ok
+CRS
+and_zpx_ok:
+; Absolute X AND
+LDX #$01
+LDA #$0C
+STA $0201
+LDA #$3C
+AND $0200, X
+CMP #$0C
+JEQ and_abx_ok
+CRS
+and_abx_ok:
+; Absolute Y AND
+LDY #$03
+LDA #$55
+STA $0303
+LDA #$F5
+AND $0300, Y
+CMP #$55
+JEQ and_aby_ok
+CRS
+and_aby_ok:
 HLT

@@ -37,4 +37,28 @@ CMP #$02
 JEQ rol_abs_ok
 CRS
 rol_abs_ok:
+; Zero page X rotate
+LDA #$00
+CMP #$01
+LDX #$02
+LDA #$01
+STA $12
+ROL $10, X
+LDA $12
+CMP #$02
+JEQ rol_zpx_ok
+CRS
+rol_zpx_ok:
+; Absolute X rotate
+LDA #$00
+CMP #$01
+LDX #$01
+LDA #$01
+STA $0301
+ROL $0300, X
+LDA $0301
+CMP #$02
+JEQ rol_abx_ok
+CRS
+rol_abx_ok:
 HLT

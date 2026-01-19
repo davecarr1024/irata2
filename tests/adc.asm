@@ -58,4 +58,40 @@ CMP #$01
 JEQ adc_abs_carry_ok
 CRS
 adc_abs_carry_ok:
+; Zero page X add without carry
+LDA #$00
+CMP #$01
+LDX #$02
+LDA #$05
+STA $12
+LDA #$10
+ADC $10, X
+CMP #$15
+JEQ adc_zpx_ok
+CRS
+adc_zpx_ok:
+; Absolute X add without carry
+LDA #$00
+CMP #$01
+LDX #$01
+LDA #$07
+STA $0201
+LDA #$08
+ADC $0200, X
+CMP #$0F
+JEQ adc_abx_ok
+CRS
+adc_abx_ok:
+; Absolute Y add without carry
+LDA #$00
+CMP #$01
+LDY #$03
+LDA #$09
+STA $0303
+LDA #$06
+ADC $0300, Y
+CMP #$0F
+JEQ adc_aby_ok
+CRS
+adc_aby_ok:
 HLT

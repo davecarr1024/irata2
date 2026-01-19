@@ -30,4 +30,24 @@ CMP #$04
 JEQ asl_abs_ok
 CRS
 asl_abs_ok:
+; Zero page X shift
+LDX #$02
+LDA #$01
+STA $12
+ASL $10, X
+LDA $12
+CMP #$02
+JEQ asl_zpx_ok
+CRS
+asl_zpx_ok:
+; Absolute X shift
+LDX #$01
+LDA #$02
+STA $0301
+ASL $0300, X
+LDA $0301
+CMP #$04
+JEQ asl_abx_ok
+CRS
+asl_abx_ok:
 HLT
