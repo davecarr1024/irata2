@@ -111,6 +111,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
       y_("y", *this, data_bus_),
+      sp_("sp", *this, data_bus_),
       tmp_("tmp", *this, address_bus_),
       pc_("pc", *this, address_bus_, data_bus_),
       status_("status", *this, data_bus_),
@@ -149,6 +150,13 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(y_.read());
   RegisterChild(y_.reset());
 
+  RegisterChild(sp_);
+  RegisterChild(sp_.write());
+  RegisterChild(sp_.read());
+  RegisterChild(sp_.reset());
+  RegisterChild(sp_.increment());
+  RegisterChild(sp_.decrement());
+
   RegisterChild(tmp_);
   RegisterChild(tmp_.write());
   RegisterChild(tmp_.read());
@@ -176,6 +184,14 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(pc_.write());
   RegisterChild(pc_.read());
   RegisterChild(pc_.reset());
+  RegisterChild(pc_.low());
+  RegisterChild(pc_.low().write());
+  RegisterChild(pc_.low().read());
+  RegisterChild(pc_.low().reset());
+  RegisterChild(pc_.high());
+  RegisterChild(pc_.high().write());
+  RegisterChild(pc_.high().read());
+  RegisterChild(pc_.high().reset());
   RegisterChild(pc_.signed_offset());
   RegisterChild(pc_.signed_offset().write());
   RegisterChild(pc_.signed_offset().read());
@@ -224,6 +240,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.sc());
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
+  RegisterChild(controller_.sc().decrement());
   RegisterChild(controller_.ipc());
   RegisterChild(controller_.ipc().latch());
 
@@ -247,6 +264,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(memory_.mar().offset().read());
   RegisterChild(memory_.mar().offset().reset());
   RegisterChild(memory_.mar().add_offset());
+  RegisterChild(memory_.mar().increment());
+  RegisterChild(memory_.mar().stack_page());
 
   BuildControlIndex();
   ValidateAgainstHdl();
@@ -376,6 +395,7 @@ Cpu::CpuState Cpu::CaptureState() const {
   state.a = a_.value();
   state.x = x_.value();
   state.y = y_.value();
+  state.sp = sp_.value();
   state.tmp = tmp_.value();
   state.pc = pc_.value();
   state.ir = controller_.ir().value();

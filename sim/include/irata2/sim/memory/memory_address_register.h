@@ -75,6 +75,10 @@ class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister
   const ByteRegister& offset() const { return offset_; }
   ProcessControl<true>& add_offset() { return add_offset_control_; }
   const ProcessControl<true>& add_offset() const { return add_offset_control_; }
+  ProcessControl<true>& increment() { return increment_control_; }
+  const ProcessControl<true>& increment() const { return increment_control_; }
+  ProcessControl<true>& stack_page() { return stack_page_control_; }
+  const ProcessControl<true>& stack_page() const { return stack_page_control_; }
 
   void TickProcess() override;
 
@@ -89,6 +93,8 @@ class MemoryAddressRegister final : public RegisterWithBus<MemoryAddressRegister
   BytePort high_;
   ByteRegister offset_;
   ProcessControl<true> add_offset_control_;
+  ProcessControl<true> increment_control_;
+  ProcessControl<true> stack_page_control_;
 };
 
 }  // namespace irata2::sim::memory

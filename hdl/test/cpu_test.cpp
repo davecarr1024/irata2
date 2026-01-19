@@ -20,6 +20,7 @@ TEST(HdlCpuTest, AccessorsReturnComponents) {
   EXPECT_EQ(cpu.a().path(), "a");
   EXPECT_EQ(cpu.x().path(), "x");
   EXPECT_EQ(cpu.y().path(), "y");
+  EXPECT_EQ(cpu.sp().path(), "sp");
   EXPECT_EQ(cpu.pc().path(), "pc");
   EXPECT_EQ(cpu.memory().path(), "memory");
   EXPECT_EQ(cpu.memory().mar().path(), "memory.mar");
@@ -60,10 +61,10 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 110);  // +5 for mar.offset register and add_offset control
+  EXPECT_EQ(visitor.components, 127);  // +8 for pc low/high byte ports
   EXPECT_EQ(visitor.buses, 2);
-  EXPECT_EQ(visitor.registers, 17);    // +1 for mar.offset register
-  EXPECT_EQ(visitor.controls, 78);     // +4 for mar.offset controls + add_offset
+  EXPECT_EQ(visitor.registers, 20);    // +2 for pc low/high
+  EXPECT_EQ(visitor.controls, 92);     // +6 for pc low/high controls
 }
 
 TEST(HdlCpuTest, GetCpuReturnsSingleton) {

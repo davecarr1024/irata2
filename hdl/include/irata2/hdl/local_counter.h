@@ -13,18 +13,22 @@ class LocalCounter : public LocalRegister<LocalCounter<ValueType>, ValueType> {
  public:
   LocalCounter(std::string name, ComponentBase& parent)
       : LocalRegister<LocalCounter<ValueType>, ValueType>(std::move(name), parent),
-        increment_control_("increment", *this) {}
+        increment_control_("increment", *this),
+        decrement_control_("decrement", *this) {}
 
   const ProcessControl<true>& increment() const { return increment_control_; }
+  const ProcessControl<true>& decrement() const { return decrement_control_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
     LocalRegister<LocalCounter<ValueType>, ValueType>::visit_impl(visitor);
     increment_control_.visit(visitor);
+    decrement_control_.visit(visitor);
   }
 
  private:
   const ProcessControl<true> increment_control_;
+  const ProcessControl<true> decrement_control_;
 };
 
 }  // namespace irata2::hdl

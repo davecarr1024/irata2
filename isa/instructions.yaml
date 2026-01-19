@@ -986,6 +986,71 @@ instructions:
     category: Compare
     flags_affected: [Z, N, C]
 
+  # Stack Operations
+  - mnemonic: PHA
+    opcode: 0xC0
+    addressing_mode: IMP
+    cycles: 2
+    description: "Push accumulator to stack"
+    category: Stack
+    flags_affected: []
+
+  - mnemonic: PLA
+    opcode: 0xC1
+    addressing_mode: IMP
+    cycles: 3
+    description: "Pull accumulator from stack"
+    category: Stack
+    flags_affected: [Z, N]
+
+  - mnemonic: PHP
+    opcode: 0xC2
+    addressing_mode: IMP
+    cycles: 2
+    description: "Push status register to stack"
+    category: Stack
+    flags_affected: []
+
+  - mnemonic: PLP
+    opcode: 0xC3
+    addressing_mode: IMP
+    cycles: 3
+    description: "Pull status register from stack"
+    category: Stack
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: TSX
+    opcode: 0xC4
+    addressing_mode: IMP
+    cycles: 1
+    description: "Transfer stack pointer to X"
+    category: Transfer
+    flags_affected: [Z, N]
+
+  - mnemonic: TXS
+    opcode: 0xC5
+    addressing_mode: IMP
+    cycles: 1
+    description: "Transfer X to stack pointer"
+    category: Transfer
+    flags_affected: []
+
+  - mnemonic: JSR
+    opcode: 0xC6
+    addressing_mode: ABS
+    cycles: 9
+    description: "Jump to subroutine (absolute)"
+    category: Jump
+    flags_affected: []
+
+  - mnemonic: RTS
+    opcode: 0xC7
+    addressing_mode: IMP
+    cycles: 6
+    description: "Return from subroutine"
+    category: Jump
+    flags_affected: []
+
   - mnemonic: CRS
     opcode: 0xFF
     addressing_mode: IMP

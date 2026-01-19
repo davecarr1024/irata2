@@ -14,10 +14,13 @@ class LocalCounter : public RegisterBase<LocalCounter<ValueType>, ValueType> {
   LocalCounter(std::string name, Component& parent)
       : RegisterBase<LocalCounter<ValueType>, ValueType>(std::move(name),
                                                           parent),
-        increment_control_("increment", *this) {}
+        increment_control_("increment", *this),
+        decrement_control_("decrement", *this) {}
 
   ProcessControl<true>& increment() { return increment_control_; }
   const ProcessControl<true>& increment() const { return increment_control_; }
+  ProcessControl<true>& decrement() { return decrement_control_; }
+  const ProcessControl<true>& decrement() const { return decrement_control_; }
 
   void TickProcess() override {
     if (this->reset().asserted()) {
@@ -26,11 +29,14 @@ class LocalCounter : public RegisterBase<LocalCounter<ValueType>, ValueType> {
     }
     if (increment_control_.asserted()) {
       this->value_mutable() = this->value() + ValueType{1};
+    } else if (decrement_control_.asserted()) {
+      this->value_mutable() = this->value() - ValueType{1};
     }
   }
 
  private:
   ProcessControl<true> increment_control_;
+  ProcessControl<true> decrement_control_;
 };
 
 }  // namespace irata2::sim

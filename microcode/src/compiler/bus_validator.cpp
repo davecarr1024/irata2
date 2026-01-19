@@ -45,7 +45,9 @@ BusInfo AnalyzeControl(std::string_view control_path) {
 
   // Handle nested components first (before checking top-level component)
   // pc.signed_offset is a ByteRegister on the data bus
-  if (control_path.find("pc.signed_offset") != std::string_view::npos) {
+  if (control_path.find("pc.signed_offset") != std::string_view::npos ||
+      control_path.find("pc.low") != std::string_view::npos ||
+      control_path.find("pc.high") != std::string_view::npos) {
     bus_type = BusType::kData;
   }
   // Address bus components
@@ -54,7 +56,8 @@ BusInfo AnalyzeControl(std::string_view control_path) {
   }
   // Data bus components
   else if (component == "a" || component == "x" || component == "y" ||
-           component == "alu" || component == "status" || component == "controller") {
+           component == "sp" || component == "alu" || component == "status" ||
+           component == "controller") {
     bus_type = BusType::kData;
   }
   // Memory uses both buses (address for MAR word operations, data for everything else)

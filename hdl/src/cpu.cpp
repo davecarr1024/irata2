@@ -11,6 +11,7 @@ Cpu::Cpu()
       a_("a", *this, data_bus_),
       x_("x", *this, data_bus_),
       y_("y", *this, data_bus_),
+      sp_("sp", *this, data_bus_),
       tmp_("tmp", *this, address_bus_),
       alu_("alu", *this, data_bus_),
       pc_("pc", *this, address_bus_, data_bus_),

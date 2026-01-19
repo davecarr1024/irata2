@@ -25,5 +25,5 @@ TEST(ByteCounterTest, VisitIncludesControls) {
     ++visits;
   });
 
-  EXPECT_EQ(visits, 3);
+  EXPECT_EQ(visits, 4);
 }

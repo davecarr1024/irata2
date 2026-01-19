@@ -161,6 +161,15 @@ TEST(CompilerTest, ProducesMicrocodeTable) {
   set.instructions.push_back(MakeInstruction(Opcode::ORA_ABY, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::EOR_ABY, {MakeStep({})}));
   set.instructions.push_back(MakeInstruction(Opcode::CMP_ABY, {MakeStep({})}));
+  // Stack instructions
+  set.instructions.push_back(MakeInstruction(Opcode::PHA_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::PLA_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::PHP_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::PLP_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TSX_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::TXS_IMP, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::JSR_ABS, {MakeStep({})}));
+  set.instructions.push_back(MakeInstruction(Opcode::RTS_IMP, {MakeStep({})}));
 
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});

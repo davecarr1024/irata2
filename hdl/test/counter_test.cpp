@@ -17,6 +17,8 @@ TEST(CounterTest, ExposesControls) {
   EXPECT_EQ(counter.read().phase(), irata2::base::TickPhase::Read);
   EXPECT_EQ(counter.increment().phase(), irata2::base::TickPhase::Process);
   EXPECT_TRUE(counter.increment().auto_reset());
+  EXPECT_EQ(counter.decrement().phase(), irata2::base::TickPhase::Process);
+  EXPECT_TRUE(counter.decrement().auto_reset());
   EXPECT_EQ(counter.reset().phase(), irata2::base::TickPhase::Process);
   EXPECT_TRUE(counter.reset().auto_reset());
 }
@@ -32,5 +34,5 @@ TEST(CounterTest, VisitIncludesControls) {
     ++visits;
   });
 
-  EXPECT_EQ(visits, 5);
+  EXPECT_EQ(visits, 6);
 }

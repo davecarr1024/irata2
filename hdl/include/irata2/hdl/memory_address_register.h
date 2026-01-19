@@ -38,12 +38,16 @@ class MemoryAddressRegister final
         low_("low", *this, data_bus),
         high_("high", *this, data_bus),
         offset_("offset", *this, data_bus),
-        add_offset_control_("add_offset", *this) {}
+        add_offset_control_("add_offset", *this),
+        increment_control_("increment", *this),
+        stack_page_control_("stack_page", *this) {}
 
   const ByteRegister& low() const { return low_; }
   const ByteRegister& high() const { return high_; }
   const ByteRegister& offset() const { return offset_; }
   const ProcessControl<true>& add_offset() const { return add_offset_control_; }
+  const ProcessControl<true>& increment() const { return increment_control_; }
+  const ProcessControl<true>& stack_page() const { return stack_page_control_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
@@ -52,6 +56,8 @@ class MemoryAddressRegister final
     high_.visit(visitor);
     offset_.visit(visitor);
     add_offset_control_.visit(visitor);
+    increment_control_.visit(visitor);
+    stack_page_control_.visit(visitor);
   }
 
  private:
@@ -59,6 +65,8 @@ class MemoryAddressRegister final
   const ByteRegister high_;
   const ByteRegister offset_;
   const ProcessControl<true> add_offset_control_;
+  const ProcessControl<true> increment_control_;
+  const ProcessControl<true> stack_page_control_;
 };
 
 }  // namespace irata2::hdl

@@ -23,10 +23,14 @@ class ProgramCounter final : public Register<ProgramCounter, base::Word> {
                  const Bus<base::Word>& bus,
                  const Bus<base::Byte>& data_bus)
       : Register<ProgramCounter, base::Word>(std::move(name), parent, bus),
+        low_("low", *this, data_bus),
+        high_("high", *this, data_bus),
         signed_offset_("signed_offset", *this, data_bus),
         increment_control_("increment", *this),
         add_signed_offset_control_("add_signed_offset", *this) {}
 
+  const ByteRegister& low() const { return low_; }
+  const ByteRegister& high() const { return high_; }
   const ByteRegister& signed_offset() const { return signed_offset_; }
   const ProcessControl<true>& increment() const { return increment_control_; }
   const ProcessControl<true>& add_signed_offset() const { return add_signed_offset_control_; }
@@ -34,12 +38,16 @@ class ProgramCounter final : public Register<ProgramCounter, base::Word> {
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
     Register<ProgramCounter, base::Word>::visit_impl(visitor);
+    low_.visit(visitor);
+    high_.visit(visitor);
     signed_offset_.visit(visitor);
     increment_control_.visit(visitor);
     add_signed_offset_control_.visit(visitor);
   }
 
  private:
+  const ByteRegister low_;
+  const ByteRegister high_;
   const ByteRegister signed_offset_;
   const ProcessControl<true> increment_control_;
   const ProcessControl<true> add_signed_offset_control_;

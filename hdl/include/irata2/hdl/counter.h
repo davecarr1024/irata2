@@ -15,18 +15,22 @@ class Counter final : public Register<Counter<ValueType>, ValueType> {
  public:
   Counter(std::string name, ComponentBase& parent, const Bus<ValueType>& bus)
       : Register<Counter<ValueType>, ValueType>(std::move(name), parent, bus),
-        increment_control_("increment", *this) {}
+        increment_control_("increment", *this),
+        decrement_control_("decrement", *this) {}
 
   const ProcessControl<true>& increment() const { return increment_control_; }
+  const ProcessControl<true>& decrement() const { return decrement_control_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
     Register<Counter<ValueType>, ValueType>::visit_impl(visitor);
     increment_control_.visit(visitor);
+    decrement_control_.visit(visitor);
   }
 
  private:
   const ProcessControl<true> increment_control_;
+  const ProcessControl<true> decrement_control_;
 };
 
 }  // namespace irata2::hdl

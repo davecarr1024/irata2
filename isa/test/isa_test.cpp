@@ -58,7 +58,7 @@ TEST(IsaTest, GetAddressingModes) {
 
 TEST(IsaTest, GetInstructions) {
   const auto& instructions = IsaInfo::GetInstructions();
-  EXPECT_EQ(instructions.size(), 113u);  // +26 for ABX/ABY instructions
+  EXPECT_EQ(instructions.size(), 121u);  // +8 for stack instructions
 }
 
 TEST(IsaTest, GetInstructionByOpcodeValue) {

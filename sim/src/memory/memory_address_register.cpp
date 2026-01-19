@@ -54,7 +54,9 @@ MemoryAddressRegister::MemoryAddressRegister(std::string name,
       low_("low", *this, data_bus, *this, false),
       high_("high", *this, data_bus, *this, true),
       offset_("offset", *this, data_bus),
-      add_offset_control_("add_offset", *this) {}
+      add_offset_control_("add_offset", *this),
+      increment_control_("increment", *this),
+      stack_page_control_("stack_page", *this) {}
 
 base::Byte MemoryAddressRegister::LowValue() const {
   return value().low();
@@ -75,6 +77,12 @@ void MemoryAddressRegister::SetHigh(base::Byte byte) {
 }
 
 void MemoryAddressRegister::TickProcess() {
+  if (stack_page_control_.asserted()) {
+    SetHigh(base::Byte{0x01});
+  }
+  if (increment_control_.asserted()) {
+    set_value(value() + base::Word{1});
+  }
   if (add_offset_control_.asserted()) {
     // Unsigned addition with carry from low to high byte
     const uint16_t low = static_cast<uint16_t>(LowValue().value());

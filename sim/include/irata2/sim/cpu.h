@@ -79,6 +79,7 @@ class Cpu : public Component {
     base::Byte a;           ///< A register value
     base::Byte x;           ///< X register value
     base::Byte y;           ///< Y register value
+    base::Byte sp;          ///< Stack pointer value
     base::Word tmp;         ///< TMP register value
     base::Word pc;          ///< Program counter value
     base::Byte ir;          ///< Instruction register value
@@ -185,6 +186,8 @@ class Cpu : public Component {
   const ByteRegister& x() const { return x_; }
   ByteRegister& y() { return y_; }
   const ByteRegister& y() const { return y_; }
+  Counter<base::Byte>& sp() { return sp_; }
+  const Counter<base::Byte>& sp() const { return sp_; }
   WordRegister& tmp() { return tmp_; }
   const WordRegister& tmp() const { return tmp_; }
   Alu& alu() { return alu_; }
@@ -242,6 +245,7 @@ class Cpu : public Component {
   ByteRegister a_;
   ByteRegister x_;
   ByteRegister y_;
+  Counter<base::Byte> sp_;
   WordRegister tmp_;
   ProgramCounter pc_;
   StatusRegister status_;

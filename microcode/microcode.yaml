@@ -1270,3 +1270,63 @@ instructions:
           - [status.carry.set]
           - [alu.opcode_bit_1]
           - [alu.result.write, status.analyzer.read]
+
+  # Stack Operations
+  PHA_IMP:
+    stages:
+      - steps:
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [a.write, memory.read, sp.decrement]
+
+  PLA_IMP:
+    stages:
+      - steps:
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, a.read, status.analyzer.read]
+
+  PHP_IMP:
+    stages:
+      - steps:
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [status.write, memory.read, sp.decrement]
+
+  PLP_IMP:
+    stages:
+      - steps:
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, status.read]
+
+  TSX_IMP:
+    stages:
+      - steps:
+          - [sp.write, x.read, status.analyzer.read]
+
+  TXS_IMP:
+    stages:
+      - steps:
+          - [x.write, sp.read]
+
+  JSR_ABS:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.high.read, pc.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.high.write, memory.read, sp.decrement]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.low.write, memory.read, sp.decrement]
+          - [memory.mar.write, pc.read]
+
+  RTS_IMP:
+    stages:
+      - steps:
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, pc.low.read]
+          - [sp.increment]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [memory.write, pc.high.read]
