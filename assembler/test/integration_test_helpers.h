@@ -68,14 +68,14 @@ inline sim::Cpu::RunResult RunAsm(
  * @param asm_code Assembly source code
  * @param expected_a Expected value of A register (nullopt to skip check)
  * @param expected_x Expected value of X register (nullopt to skip check)
- * @param expected_status Expected value of status register (nullopt to skip check)
+ * @param expected_y Expected value of Y register (nullopt to skip check)
  * @param max_cycles Maximum cycles before timeout
  */
 inline void RunAsmAndCheckRegisters(
     const std::string& asm_code,
     std::optional<base::Byte> expected_a = std::nullopt,
     std::optional<base::Byte> expected_x = std::nullopt,
-    std::optional<base::Byte> expected_status = std::nullopt,
+    std::optional<base::Byte> expected_y = std::nullopt,
     uint64_t max_cycles = 1000) {
 
   auto result = RunAsm(asm_code, max_cycles);
@@ -94,10 +94,10 @@ inline void RunAsmAndCheckRegisters(
         << ", got " << result.state->x.to_string();
   }
 
-  if (expected_status.has_value()) {
-    EXPECT_EQ(result.state->status, *expected_status)
-        << "Status register mismatch: expected " << expected_status->to_string()
-        << ", got " << result.state->status.to_string();
+  if (expected_y.has_value()) {
+    EXPECT_EQ(result.state->y, *expected_y)
+        << "Y register mismatch: expected " << expected_y->to_string()
+        << ", got " << result.state->y.to_string();
   }
 }
 

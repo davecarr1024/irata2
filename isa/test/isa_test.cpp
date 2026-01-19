@@ -58,7 +58,7 @@ TEST(IsaTest, GetAddressingModes) {
 
 TEST(IsaTest, GetInstructions) {
   const auto& instructions = IsaInfo::GetInstructions();
-  EXPECT_EQ(instructions.size(), 69u);  // +9 for Y register instructions
+  EXPECT_EQ(instructions.size(), 87u);  // +18 for ZPX/ZPY instructions
 }
 
 TEST(IsaTest, GetInstructionByOpcodeValue) {

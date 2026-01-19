@@ -42,6 +42,7 @@ add_executable(integration_tests
   integration/branch_test.cpp
   integration/inc_dec_test.cpp
   integration/zero_page_test.cpp
+  integration/zero_page_indexed_test.cpp
 )
 
 target_link_libraries(integration_tests PRIVATE

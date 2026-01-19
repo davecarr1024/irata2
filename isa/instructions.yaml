@@ -23,6 +23,16 @@ addressing_modes:
     operands: 1
     description: "Zero page address (0x00XX)"
 
+  - name: ZeroPageX
+    code: ZPX
+    operands: 1
+    description: "Zero page address indexed by X (wraps within page)"
+
+  - name: ZeroPageY
+    code: ZPY
+    operands: 1
+    description: "Zero page address indexed by Y (wraps within page)"
+
   - name: Relative
     code: REL
     operands: 1
@@ -608,6 +618,152 @@ instructions:
     cycles: 2
     description: "Branch if overflow clear"
     category: Branch
+    flags_affected: []
+
+  # Zero Page X-Indexed Instructions
+  - mnemonic: LDA
+    opcode: 0x80
+    addressing_mode: ZPX
+    cycles: 4
+    description: "Load accumulator (zero page, X-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STA
+    opcode: 0x81
+    addressing_mode: ZPX
+    cycles: 4
+    description: "Store accumulator (zero page, X-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: LDY
+    opcode: 0x82
+    addressing_mode: ZPX
+    cycles: 4
+    description: "Load Y register (zero page, X-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STY
+    opcode: 0x83
+    addressing_mode: ZPX
+    cycles: 4
+    description: "Store Y register (zero page, X-indexed)"
+    category: Store
+    flags_affected: []
+
+  - mnemonic: ADC
+    opcode: 0x84
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Add with carry (zero page, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: SBC
+    opcode: 0x85
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Subtract with carry (zero page, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N, C, V]
+
+  - mnemonic: AND
+    opcode: 0x86
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Logical AND (zero page, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: ORA
+    opcode: 0x87
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Logical OR (zero page, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: EOR
+    opcode: 0x88
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Logical XOR (zero page, X-indexed)"
+    category: Logic
+    flags_affected: [Z, N]
+
+  - mnemonic: CMP
+    opcode: 0x89
+    addressing_mode: ZPX
+    cycles: 5
+    description: "Compare accumulator (zero page, X-indexed)"
+    category: Compare
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ASL
+    opcode: 0x8A
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Arithmetic shift left (zero page, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: LSR
+    opcode: 0x8B
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Logical shift right (zero page, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROL
+    opcode: 0x8C
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Rotate left (zero page, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: ROR
+    opcode: 0x8D
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Rotate right (zero page, X-indexed)"
+    category: Shift
+    flags_affected: [Z, N, C]
+
+  - mnemonic: INC
+    opcode: 0x8E
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Increment memory (zero page, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  - mnemonic: DEC
+    opcode: 0x8F
+    addressing_mode: ZPX
+    cycles: 6
+    description: "Decrement memory (zero page, X-indexed)"
+    category: Arithmetic
+    flags_affected: [Z, N]
+
+  # Zero Page Y-Indexed Instructions
+  - mnemonic: LDX
+    opcode: 0x90
+    addressing_mode: ZPY
+    cycles: 4
+    description: "Load X register (zero page, Y-indexed)"
+    category: Load
+    flags_affected: [Z, N]
+
+  - mnemonic: STX
+    opcode: 0x91
+    addressing_mode: ZPY
+    cycles: 4
+    description: "Store X register (zero page, Y-indexed)"
+    category: Store
     flags_affected: []
 
   - mnemonic: CRS

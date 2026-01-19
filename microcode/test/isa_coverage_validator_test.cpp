@@ -89,6 +89,26 @@ TEST(IsaCoverageValidatorTest, AcceptsExactCoverage) {
   set.instructions.push_back(MakeInstruction(Opcode::DEC_ZP));
   set.instructions.push_back(MakeInstruction(Opcode::INC_ABS));
   set.instructions.push_back(MakeInstruction(Opcode::DEC_ABS));
+  // ZPX instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDA_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::STA_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::LDY_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::STY_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::ADC_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::SBC_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::AND_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::ORA_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::EOR_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::CMP_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::ASL_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::LSR_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::ROL_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::ROR_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::INC_ZPX));
+  set.instructions.push_back(MakeInstruction(Opcode::DEC_ZPX));
+  // ZPY instructions
+  set.instructions.push_back(MakeInstruction(Opcode::LDX_ZPY));
+  set.instructions.push_back(MakeInstruction(Opcode::STX_ZPY));
 
   IsaCoverageValidator validator;
   EXPECT_NO_THROW(validator.Run(set));

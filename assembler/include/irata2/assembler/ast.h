@@ -12,11 +12,13 @@ namespace irata2::assembler {
 
 struct Operand {
   enum class Kind { Number, Label };
+  enum class IndexRegister { None, X, Y };
 
   Kind kind = Kind::Number;
   uint32_t number = 0;
   std::string label;
   bool immediate = false;
+  IndexRegister index_register = IndexRegister::None;
   Span span;
 };
 

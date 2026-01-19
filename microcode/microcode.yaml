@@ -686,3 +686,219 @@ instructions:
           - [memory.write, alu.lhs.read]
           - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_3]
           - [alu.result.write, memory.read, status.analyzer.read]
+
+  # Zero Page X-Indexed Load/Store Instructions
+  LDA_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, a.read, status.analyzer.read]
+
+  STA_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [a.write, memory.read]
+
+  LDY_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, y.read, status.analyzer.read]
+
+  STY_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [y.write, memory.read]
+
+  # Zero Page X-Indexed ALU Instructions
+  ADC_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  SBC_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  AND_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  ORA_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  EOR_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, a.read, status.analyzer.read]
+
+  CMP_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.rhs.read]
+          - [a.write, alu.lhs.read]
+          - [status.carry.set]
+          - [alu.opcode_bit_1]
+          - [alu.result.write, status.analyzer.read]
+
+  # Zero Page X-Indexed Shift Instructions (read-modify-write)
+  ASL_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_2]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  LSR_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROL_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  ROR_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  # Zero Page X-Indexed Inc/Dec Instructions (read-modify-write)
+  INC_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  DEC_ZPX:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [x.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, alu.lhs.read]
+          - [alu.opcode_bit_0, alu.opcode_bit_1, alu.opcode_bit_3]
+          - [alu.result.write, memory.read, status.analyzer.read]
+
+  # Zero Page Y-Indexed Load/Store Instructions
+  LDX_ZPY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [memory.write, x.read, status.analyzer.read]
+
+  STX_ZPY:
+    stages:
+      - steps:
+          - [pc.write, memory.mar.read]
+          - [memory.write, memory.mar.low.read, pc.increment]
+          - [y.write, memory.mar.offset.read]
+          - [memory.mar.add_offset]
+          - [memory.mar.high.reset]
+          - [x.write, memory.read]

@@ -138,6 +138,19 @@ InstructionStmt Parser::ParseInstruction() {
   while (true) {
     stmt.operands.push_back(ParseOperand());
     if (Match(TokenKind::Comma)) {
+      // Check if next token is an index register (X or Y)
+      if (Check(TokenKind::Identifier)) {
+        Token next = Peek();
+        if (next.text == "X" || next.text == "x") {
+          Advance();  // Consume the X
+          stmt.operands.back().index_register = Operand::IndexRegister::X;
+          break;
+        } else if (next.text == "Y" || next.text == "y") {
+          Advance();  // Consume the Y
+          stmt.operands.back().index_register = Operand::IndexRegister::Y;
+          break;
+        }
+      }
       continue;
     }
     break;
