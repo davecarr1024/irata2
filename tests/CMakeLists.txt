@@ -25,13 +25,16 @@ if(ASM_FILES)
     add_custom_target(asm_${ASM_NAME} DEPENDS ${ASM_BIN} ${ASM_JSON})
     add_dependencies(asm_outputs asm_${ASM_NAME})
 
-    set(TEST_ARGS --debug ${ASM_JSON} ${ASM_BIN})
+    # Default max cycles to prevent infinite loops
+    set(MAX_CYCLES 100000)
+    set(TEST_ARGS --max-cycles ${MAX_CYCLES} --debug ${ASM_JSON} ${ASM_BIN})
     if(ASM_NAME STREQUAL "crs")
-      set(TEST_ARGS --expect-crash --debug ${ASM_JSON} ${ASM_BIN})
+      set(TEST_ARGS --expect-crash --max-cycles ${MAX_CYCLES} --debug ${ASM_JSON} ${ASM_BIN})
     endif()
 
     add_test(NAME asm_${ASM_NAME}
              COMMAND $<TARGET_FILE:irata2_run> ${TEST_ARGS})
+    set_tests_properties(asm_${ASM_NAME} PROPERTIES TIMEOUT 30)
 
     if(ASM_NAME STREQUAL "crs")
       add_test(NAME asm_${ASM_NAME}_debug_dump

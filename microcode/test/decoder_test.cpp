@@ -282,3 +282,62 @@ TEST(MicrocodeDecoderTest, DumpsYamlWithMultipleStatusFlags) {
 
   EXPECT_NE(yaml.find("    status_zero,carry,negative:"), std::string::npos);
 }
+
+TEST(MicrocodeDecoderTest, DecodesHighBitControls) {
+  // Regression test: decoder must handle controls with bit index >= 64
+  MicrocodeProgram program;
+
+  // Create enough control paths to have some at bit indices >= 64
+  for (int i = 0; i < 80; ++i) {
+    program.control_paths.push_back("control" + std::to_string(i));
+  }
+  program.status_bits = {{"zero", 0}};
+
+  // Set bit 70 (which is in the upper 64 bits of a 128-bit word)
+  __uint128_t control_word = __uint128_t{1} << 70;
+  program.table[EncodeKey({0, 0, 0})] = control_word;
+
+  MicrocodeDecoder decoder(program);
+  const auto controls = decoder.DecodeControlWord(control_word);
+
+  ASSERT_EQ(controls.size(), 1);
+  EXPECT_EQ(controls[0], "control70");
+}
+
+TEST(MicrocodeDecoderTest, DecodesControlsInBothHalves) {
+  // Test controls in both low (< 64) and high (>= 64) bits
+  MicrocodeProgram program;
+
+  for (int i = 0; i < 80; ++i) {
+    program.control_paths.push_back("control" + std::to_string(i));
+  }
+  program.status_bits = {{"zero", 0}};
+
+  // Set bits 5 and 70
+  __uint128_t control_word = (__uint128_t{1} << 5) | (__uint128_t{1} << 70);
+  program.table[EncodeKey({0, 0, 0})] = control_word;
+
+  MicrocodeDecoder decoder(program);
+  const auto controls = decoder.DecodeControlWord(control_word);
+
+  ASSERT_EQ(controls.size(), 2);
+  EXPECT_EQ(controls[0], "control5");
+  EXPECT_EQ(controls[1], "control70");
+}
+
+TEST(MicrocodeDecoderTest, DumpsProgramWithHighBitControls) {
+  MicrocodeProgram program;
+
+  for (int i = 0; i < 80; ++i) {
+    program.control_paths.push_back("control" + std::to_string(i));
+  }
+  program.status_bits = {{"zero", 0}};
+
+  // Set bit 70
+  program.table[EncodeKey({0, 0, 0})] = __uint128_t{1} << 70;
+
+  MicrocodeDecoder decoder(program);
+  const std::string dump = decoder.DumpProgram();
+
+  EXPECT_NE(dump.find("control70"), std::string::npos);
+}

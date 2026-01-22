@@ -28,7 +28,7 @@ class MicrocodeDecoder {
    * @param control_word The encoded control word
    * @return Vector of control path strings for asserted bits
    */
-  std::vector<std::string> DecodeControlWord(uint64_t control_word) const;
+  std::vector<std::string> DecodeControlWord(__uint128_t control_word) const;
 
   /**
    * @brief Dump the entire program in readable format.

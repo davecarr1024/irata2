@@ -10,12 +10,11 @@ namespace irata2::sim::controller {
 Controller::Controller(std::string name,
                        Component& parent,
                        Bus<base::Byte>& data_bus,
-                       Bus<base::Word>& address_bus)
+                       const ProgramCounter& pc)
     : ComponentWithParent(parent, std::move(name)),
       ir_("ir", *this, data_bus),
       sc_("sc", *this),
-      ipc_("ipc", *this, address_bus),
-      address_bus_(address_bus),
+      ipc_("ipc", *this, pc),
       instruction_memory_(nullptr) {}
 
 void Controller::LoadProgram(

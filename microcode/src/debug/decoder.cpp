@@ -9,7 +9,7 @@ MicrocodeDecoder::MicrocodeDecoder(const output::MicrocodeProgram& program)
     : program_(program) {}
 
 std::vector<std::string> MicrocodeDecoder::DecodeControlWord(
-    uint64_t control_word) const {
+    __uint128_t control_word) const {
   std::vector<std::string> controls;
   for (size_t i = 0; i < program_.control_paths.size(); ++i) {
     if ((control_word >> i) & 1U) {
@@ -80,7 +80,7 @@ std::string MicrocodeDecoder::DumpProgram() const {
 
     // Print step
     const uint32_t encoded_key = output::EncodeKey(key);
-    const uint64_t control_word = program_.table.at(encoded_key);
+    const __uint128_t control_word = program_.table.at(encoded_key);
     const auto controls = DecodeControlWord(control_word);
 
     output << "    step " << static_cast<int>(key.step) << ": [";
@@ -132,7 +132,7 @@ std::string MicrocodeDecoder::DumpInstruction(uint8_t opcode) const {
 
     // Print step
     const uint32_t encoded_key = output::EncodeKey(key);
-    const uint64_t control_word = program_.table.at(encoded_key);
+    const __uint128_t control_word = program_.table.at(encoded_key);
     const auto controls = DecodeControlWord(control_word);
 
     output << "    step " << static_cast<int>(key.step) << ": [";
@@ -192,7 +192,7 @@ std::string MicrocodeDecoder::DumpProgramYaml() const {
 
     // Print step
     const uint32_t encoded_key = output::EncodeKey(key);
-    const uint64_t control_word = program_.table.at(encoded_key);
+    const __uint128_t control_word = program_.table.at(encoded_key);
     const auto controls = DecodeControlWord(control_word);
 
     output << "        - stage: " << static_cast<int>(key.step) << "\n";
@@ -245,7 +245,7 @@ std::string MicrocodeDecoder::DumpInstructionYaml(uint8_t opcode) const {
 
     // Print step
     const uint32_t encoded_key = output::EncodeKey(key);
-    const uint64_t control_word = program_.table.at(encoded_key);
+    const __uint128_t control_word = program_.table.at(encoded_key);
     const auto controls = DecodeControlWord(control_word);
 
     output << "      - stage: " << static_cast<int>(key.step) << "\n";

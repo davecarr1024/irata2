@@ -179,31 +179,44 @@ struct FirstPassResult {
   std::vector<Emittable> items;
   std::unordered_map<std::string, base::Word> symbols;
   base::Word origin;
-  uint32_t max_address;  // Changed to uint32_t to allow tracking cursor past 0xFFFF
+  base::Word max_address;
 };
 
-uint32_t AddOffset(uint32_t address, uint32_t offset, const Span& span) {
-  uint32_t value = address + offset;
-  if (value > 0x10000u) {
+base::Word AddOffset(base::Word address, uint32_t offset, const Span& span) {
+  uint32_t value = address.value();
+  value += offset;
+  if (value > 0xFFFFu) {
     throw AssemblerError(span, "address overflow");
   }
-  return value;
+  return base::Word{static_cast<uint16_t>(value)};
 }
 
 FirstPassResult FirstPass(const Program& program, const AssemblerOptions& options) {
   FirstPassResult result;
   result.origin = options.origin;
-  result.max_address = options.origin.value();
+  result.max_address = options.origin;
+  // Use 32-bit cursor to allow advancing past $FFFF at end of address space
   uint32_t cursor = options.origin.value();
+
+  auto ValidateCursor = [](uint32_t addr, const Span& span) {
+    if (addr > 0xFFFFu) {
+      throw AssemblerError(span, "address overflow");
+    }
+  };
+
+  auto UpdateMaxAddress = [&result](uint32_t last_addr) {
+    // Track the highest address actually written to
+    if (last_addr <= 0xFFFFu && last_addr > result.max_address.value()) {
+      result.max_address = base::Word{static_cast<uint16_t>(last_addr)};
+    }
+  };
 
   for (const auto& statement : program.statements) {
     if (const auto* label = std::get_if<LabelDecl>(&statement)) {
       if (result.symbols.count(label->name) != 0) {
         throw AssemblerError(label->span, "duplicate label");
       }
-      if (cursor > 0xFFFFu) {
-        throw AssemblerError(label->span, "label address out of range");
-      }
+      ValidateCursor(cursor, label->span);
       result.symbols.emplace(label->name, base::Word{static_cast<uint16_t>(cursor)});
       continue;
     }
@@ -222,9 +235,6 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
           throw AssemblerError(directive->operands[0].span, "origin below entry point");
         }
         cursor = value;
-        if (cursor > result.max_address) {
-          result.max_address = cursor;
-        }
         continue;
       }
 
@@ -232,9 +242,7 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
         if (directive->operands.empty()) {
           throw AssemblerError(directive->span, ".byte requires at least one operand");
         }
-        if (cursor > 0xFFFFu) {
-          throw AssemblerError(directive->span, "directive address out of range");
-        }
+        ValidateCursor(cursor, directive->span);
         Emittable item;
         item.kind = Emittable::Kind::Bytes;
         item.address = base::Word{static_cast<uint16_t>(cursor)};
@@ -243,10 +251,11 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
         item.operands = directive->operands;
         result.items.push_back(item);
 
-        cursor = AddOffset(cursor, static_cast<uint32_t>(directive->operands.size()), directive->span);
-        if (cursor > result.max_address) {
-          result.max_address = cursor;
-        }
+        uint32_t size = static_cast<uint32_t>(directive->operands.size());
+        // Validate last byte address is in range
+        ValidateCursor(cursor + size - 1, directive->span);
+        UpdateMaxAddress(cursor + size - 1);
+        cursor += size;
       }
 
       continue;
@@ -263,10 +272,7 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
         throw AssemblerError(instruction->span, "unknown addressing mode");
       }
 
-      if (cursor > 0xFFFFu) {
-        throw AssemblerError(instruction->span, "instruction address out of range");
-      }
-
+      ValidateCursor(cursor, instruction->span);
       Emittable item;
       item.kind = Emittable::Kind::Instruction;
       item.address = base::Word{static_cast<uint16_t>(cursor)};
@@ -278,11 +284,11 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
       item.operands = instruction->operands;
       result.items.push_back(item);
 
-      cursor = AddOffset(cursor, static_cast<uint32_t>(1 + mode_info->operand_bytes),
-                         instruction->span);
-      if (cursor > result.max_address) {
-        result.max_address = cursor;
-      }
+      uint32_t size = 1 + mode_info->operand_bytes;
+      // Validate last byte address is in range
+      ValidateCursor(cursor + size - 1, instruction->span);
+      UpdateMaxAddress(cursor + size - 1);
+      cursor += size;
       continue;
     }
   }
@@ -355,7 +361,7 @@ AssemblerResult Encode(const FirstPassResult& pass,
                        const AssemblerOptions& options,
                        const std::string& source_file) {
   uint32_t origin = options.origin.value();
-  uint32_t max_address = pass.max_address;
+  uint32_t max_address = pass.max_address.value();
   if (max_address < origin) {
     max_address = origin;
   }

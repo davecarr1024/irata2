@@ -12,7 +12,6 @@
 #include "irata2/sim/controller/instruction_memory.h"
 #include "irata2/sim/local_counter.h"
 #include "irata2/sim/latched_word_register.h"
-#include "irata2/sim/word_bus.h"
 
 namespace irata2::sim::controller {
 
@@ -21,7 +20,7 @@ class Controller final : public ComponentWithParent {
   Controller(std::string name,
              Component& parent,
              Bus<base::Byte>& data_bus,
-             Bus<base::Word>& address_bus);
+             const ProgramCounter& pc);
 
   ByteRegister& ir() { return ir_; }
   const ByteRegister& ir() const { return ir_; }
@@ -45,7 +44,6 @@ class Controller final : public ComponentWithParent {
   ByteRegister ir_;
   LocalCounter<base::Byte> sc_;
   LatchedWordRegister ipc_;
-  Bus<base::Word>& address_bus_;
   std::unique_ptr<InstructionMemory> instruction_memory_;
 };
 

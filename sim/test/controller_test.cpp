@@ -23,7 +23,7 @@ std::shared_ptr<MicrocodeProgram> MakeProgramWithControls(
   auto program = std::make_shared<MicrocodeProgram>();
   program->control_paths = encoder.control_paths();
 
-  uint64_t word = 0;
+  __uint128_t word = 0;
   for (const auto& path : asserted_paths) {
     const auto it = std::find(program->control_paths.begin(),
                               program->control_paths.end(),
@@ -32,7 +32,7 @@ std::shared_ptr<MicrocodeProgram> MakeProgramWithControls(
       throw SimError("control path not found in test HDL: " + std::string(path));
     }
     const size_t index = static_cast<size_t>(it - program->control_paths.begin());
-    word |= (uint64_t{1} << index);
+    word |= (__uint128_t{1} << index);
   }
 
   MicrocodeKey key{opcode, 0, 0};
@@ -97,11 +97,14 @@ TEST(SimControllerTest, RejectsControlWordOverflow) {
   EXPECT_THROW(sim.Tick(), SimError);
 }
 
-TEST(SimControllerTest, IpcLatchCapturesPreIncrementPc) {
+TEST(SimControllerTest, IpcLatchCapturesPcValue) {
+  // Test that IPC captures PC's value when ipc.latch is asserted.
+  // This matches fetch preamble step 0: [pc.write, controller.ipc.latch, ...]
+  // Note: pc.increment is in a separate step (step 2), not here.
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
   auto program = MakeProgramWithControls(
       *hdl,
-      {"pc.write", "pc.increment", "controller.ipc.latch"},
+      {"pc.write", "controller.ipc.latch"},
       0x02);
 
   Cpu sim(hdl, program);
@@ -111,6 +114,8 @@ TEST(SimControllerTest, IpcLatchCapturesPreIncrementPc) {
 
   sim.Tick();
 
-  EXPECT_EQ(sim.pc().value().value(), 0x8001);
+  // PC unchanged (no increment in this step)
+  EXPECT_EQ(sim.pc().value().value(), 0x8000);
+  // IPC captured PC's value
   EXPECT_EQ(sim.controller().ipc().value().value(), 0x8000);
 }

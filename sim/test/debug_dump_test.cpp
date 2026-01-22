@@ -19,14 +19,14 @@ std::shared_ptr<irata2::microcode::output::MicrocodeProgram> MakeTraceProgram(
       std::make_shared<irata2::microcode::output::MicrocodeProgram>();
   program->control_paths = control_paths;
 
-  uint64_t word = 0;
+  __uint128_t word = 0;
   for (const auto& control : controls) {
     auto it = std::find(control_paths.begin(), control_paths.end(), control);
     if (it == control_paths.end()) {
       throw std::runtime_error("missing control path");
     }
     const size_t index = static_cast<size_t>(std::distance(control_paths.begin(), it));
-    word |= (1ULL << index);
+    word |= (__uint128_t{1} << index);
   }
 
   irata2::microcode::output::MicrocodeKey key{0x02, 0, 0};
