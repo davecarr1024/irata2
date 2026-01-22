@@ -19,6 +19,10 @@
 #include "irata2/microcode/encoder/status_encoder.h"
 #include "irata2/microcode/output/program.h"
 
+namespace irata2::hdl {
+class Cpu;
+}  // namespace irata2::hdl
+
 namespace irata2::microcode::compiler {
 
 /**
@@ -47,6 +51,7 @@ class Compiler {
  public:
   Compiler(encoder::ControlEncoder control_encoder,
            encoder::StatusEncoder status_encoder,
+           const hdl::Cpu& cpu,
            const hdl::ControlInfo& increment_control,
            const hdl::ControlInfo& reset_control);
 

@@ -4,6 +4,7 @@
 #include "irata2/microcode/error.h"
 
 #include <gtest/gtest.h>
+#include <type_traits>
 
 using irata2::hdl::ControlInfo;
 using irata2::hdl::Cpu;
@@ -32,7 +33,25 @@ Instruction MakeInstruction(Opcode opcode, std::vector<Step> steps) {
   instruction.variants.push_back(std::move(variant));
   return instruction;
 }
+
+size_t CountBusControls(const Cpu& cpu) {
+  size_t count = 0;
+  cpu.visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (irata2::hdl::is_control_v<T> && requires { component.bus(); }) {
+      ++count;
+    }
+  });
+  return count;
+}
 }  // namespace
+
+TEST(BusValidatorTest, DiscoversAllBusControls) {
+  Cpu cpu;
+  BusValidator validator(cpu);
+
+  EXPECT_EQ(validator.bus_control_count(), CountBusControls(cpu));
+}
 
 TEST(BusValidatorTest, AcceptsValidSingleWriterSingleReader) {
   Cpu cpu;
@@ -42,7 +61,7 @@ TEST(BusValidatorTest, AcceptsValidSingleWriterSingleReader) {
       {MakeStep(0, {&cpu.a().write().control_info(),
                     &cpu.x().read().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_NO_THROW(validator.Run(set));
 }
 
@@ -55,7 +74,7 @@ TEST(BusValidatorTest, AcceptsValidSingleWriterMultipleReaders) {
                     &cpu.x().read().control_info(),
                     &cpu.status().analyzer().read().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_NO_THROW(validator.Run(set));
 }
 
@@ -71,7 +90,7 @@ TEST(BusValidatorTest, AcceptsMultipleBuses) {
                     &cpu.pc().write().control_info(),
                     &cpu.memory().mar().read().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_NO_THROW(validator.Run(set));
 }
 
@@ -83,7 +102,7 @@ TEST(BusValidatorTest, RejectsMultipleWritersDataBus) {
       {MakeStep(0, {&cpu.a().write().control_info(),
                     &cpu.x().write().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -95,7 +114,19 @@ TEST(BusValidatorTest, RejectsMultipleWritersAddressBus) {
       {MakeStep(0, {&cpu.pc().write().control_info(),
                     &cpu.memory().mar().write().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
+  EXPECT_THROW(validator.Run(set), MicrocodeError);
+}
+
+TEST(BusValidatorTest, RejectsMultipleWritersAddressBusRegisterPair) {
+  Cpu cpu;
+  InstructionSet set;
+  set.instructions.push_back(MakeInstruction(
+      Opcode::HLT_IMP,
+      {MakeStep(0, {&cpu.pc().write().control_info(),
+                    &cpu.tmp().write().control_info()})}));
+
+  BusValidator validator(cpu);
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -106,7 +137,7 @@ TEST(BusValidatorTest, RejectsReaderWithoutWriter) {
       Opcode::HLT_IMP,
       {MakeStep(0, {&cpu.a().read().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -117,7 +148,7 @@ TEST(BusValidatorTest, AcceptsControlsNotUsingBuses) {
       Opcode::HLT_IMP,
       {MakeStep(0, {&cpu.halt().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_NO_THROW(validator.Run(set));
 }
 
@@ -127,7 +158,7 @@ TEST(BusValidatorTest, ValidatesFetchPreamble) {
   // Invalid: reader without writer in fetch preamble
   set.fetch_preamble.push_back(MakeStep(0, {&cpu.a().read().control_info()}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_THROW(validator.Run(set), MicrocodeError);
 }
 
@@ -139,6 +170,18 @@ TEST(BusValidatorTest, AcceptsMemoryDataReadWrite) {
       {MakeStep(0, {&cpu.memory().write().control_info(),
                     &cpu.a().read().control_info()})}));
 
-  BusValidator validator;
+  BusValidator validator(cpu);
   EXPECT_NO_THROW(validator.Run(set));
+}
+
+TEST(BusValidatorTest, RejectsMemoryWriteStatusWriteConflict) {
+  Cpu cpu;
+  InstructionSet set;
+  set.instructions.push_back(MakeInstruction(
+      Opcode::HLT_IMP,
+      {MakeStep(0, {&cpu.memory().write().control_info(),
+                    &cpu.status().write().control_info()})}));
+
+  BusValidator validator(cpu);
+  EXPECT_THROW(validator.Run(set), MicrocodeError);
 }

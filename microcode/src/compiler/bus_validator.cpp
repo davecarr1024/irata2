@@ -1,109 +1,71 @@
 #include "irata2/microcode/compiler/bus_validator.h"
 
+#include "irata2/base/types.h"
+#include "irata2/hdl/cpu.h"
+#include "irata2/hdl/traits.h"
 #include "irata2/microcode/error.h"
 
 #include <map>
-#include <set>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace irata2::microcode::compiler {
 
-namespace {
-
-enum class BusType {
-  kData,
-  kAddress,
-  kNone  // For controls that don't use buses (halt, crash, etc.)
-};
-
-enum class BusOperation {
-  kRead,
-  kWrite,
-  kNone  // For controls that don't perform bus operations
-};
-
-struct BusInfo {
-  BusType bus_type;
-  BusOperation operation;
-};
-
-// Determine which bus a control uses and whether it's reading or writing
-BusInfo AnalyzeControl(std::string_view control_path) {
-  // Extract component name (everything before the first dot or the whole path)
-  size_t first_dot = control_path.find('.');
-  std::string component;
-  if (first_dot != std::string_view::npos) {
-    component = std::string(control_path.substr(0, first_dot));
-  } else {
-    component = std::string(control_path);
-  }
-
-  // Determine bus type based on component
-  BusType bus_type = BusType::kNone;
-
-  // Handle nested components first (before checking top-level component)
-  // pc.signed_offset is a ByteRegister on the data bus
-  if (control_path.find("pc.signed_offset") != std::string_view::npos ||
-      control_path.find("pc.low") != std::string_view::npos ||
-      control_path.find("pc.high") != std::string_view::npos) {
-    bus_type = BusType::kData;
-  }
-  // Address bus components
-  else if (component == "pc" || component == "tmp") {
-    bus_type = BusType::kAddress;
-  }
-  // Data bus components
-  else if (component == "a" || component == "x" || component == "y" ||
-           component == "sp" || component == "alu" || component == "status" ||
-           component == "controller") {
-    bus_type = BusType::kData;
-  }
-  // Memory uses both buses (address for MAR word operations, data for everything else)
-  else if (component == "memory") {
-    // memory.mar.low, memory.mar.high, memory.mar.offset use data bus (byte operations)
-    // memory.mar (without .low/.high/.offset) uses address bus (word operations)
-    // memory.read/write use data bus
-    if (control_path.find("mar") != std::string_view::npos) {
-      // Check if it's a byte operation (.low, .high, or .offset) or word operation
-      if (control_path.find("mar.low") != std::string_view::npos ||
-          control_path.find("mar.high") != std::string_view::npos ||
-          control_path.find("mar.offset") != std::string_view::npos) {
-        bus_type = BusType::kData;  // Byte operations use data bus
-      } else {
-        bus_type = BusType::kAddress;  // Word operations use address bus
-      }
-    } else {
-      bus_type = BusType::kData;  // memory.read/write use data bus
-    }
-  }
-
-  // Determine operation type
-  BusOperation operation = BusOperation::kNone;
-  if (control_path.find(".read") != std::string_view::npos) {
-    operation = BusOperation::kRead;
-  } else if (control_path.find(".write") != std::string_view::npos) {
-    operation = BusOperation::kWrite;
-  }
-
-  return {bus_type, operation};
+BusValidator::BusValidator(const hdl::Cpu& cpu) {
+  BuildBusMap(cpu);
 }
 
-void ValidateStep(const ir::Step& step, int opcode, int step_index) {
+void BusValidator::BuildBusMap(const hdl::Cpu& cpu) {
+  cpu.visit([&](const auto& component) {
+    using T = std::decay_t<decltype(component)>;
+    if constexpr (hdl::is_control_v<T>) {
+      if constexpr (requires { component.bus(); } &&
+                    requires { typename T::value_type; }) {
+        using ValueType = typename T::value_type;
+        BusType bus_type = BusType::kNone;
+        if constexpr (std::is_same_v<ValueType, base::Byte>) {
+          bus_type = BusType::kData;
+        } else if constexpr (std::is_same_v<ValueType, base::Word>) {
+          bus_type = BusType::kAddress;
+        }
+        if (bus_type == BusType::kNone) {
+          return;
+        }
+
+        BusOperation operation = BusOperation::kNone;
+        switch (component.control_info().phase) {
+          case base::TickPhase::Read:
+            operation = BusOperation::kRead;
+            break;
+          case base::TickPhase::Write:
+            operation = BusOperation::kWrite;
+            break;
+          default:
+            return;
+        }
+        control_bus_map_.emplace(&component.control_info(),
+                                 BusInfo{bus_type, operation});
+      }
+    }
+  });
+}
+
+void BusValidator::ValidateStep(const ir::Step& step,
+                                int opcode,
+                                int step_index) const {
   // Track writers and readers for each bus
   std::map<BusType, std::vector<std::string>> writers;
   std::map<BusType, std::vector<std::string>> readers;
 
   for (const auto* control : step.controls) {
-    const auto bus_info = AnalyzeControl(control->path);
-
-    if (bus_info.bus_type == BusType::kNone ||
-        bus_info.operation == BusOperation::kNone) {
-      // Control doesn't participate in bus operations (e.g., halt, crash)
+    auto it = control_bus_map_.find(control);
+    if (it == control_bus_map_.end()) {
       continue;
     }
 
+    const auto bus_info = it->second;
     const std::string path(control->path);
     if (bus_info.operation == BusOperation::kWrite) {
       writers[bus_info.bus_type].push_back(path);
@@ -144,8 +106,6 @@ void ValidateStep(const ir::Step& step, int opcode, int step_index) {
     }
   }
 }
-
-}  // namespace
 
 void BusValidator::Run(ir::InstructionSet& instruction_set) const {
   // Validate fetch preamble

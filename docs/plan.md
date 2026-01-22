@@ -56,6 +56,32 @@ The bus validator (`microcode/src/compiler/bus_validator.cpp`) uses fragile name
 - `microcode/include/irata2/microcode/compiler/bus_validator.h` - Add HDL reference to constructor
 - `microcode/test/bus_validator_test.cpp` - Add regression tests
 
+## Broken Tests (Blocked on Bus Validator)
+
+Four asm integration tests are failing due to microcode bugs that the bus validator should have caught:
+
+| Test | Issue | Root Cause |
+|------|-------|------------|
+| `asm_php` | PLP doesn't restore status register | `status.read` is a WriteControl (writes TO bus), but PLP needs to write FROM bus TO status. Need to investigate what control exists for this. |
+| `asm_plp` | Same as asm_php | Same issue - PLP microcode uses wrong control direction. |
+| `asm_jsr` | JSR jumps to stack address (0x01FE) instead of subroutine | MAR is loaded with target address, then overwritten by stack push operations. Final step copies MAR (now stack addr) to PC instead of target. |
+| `asm_rts` | RTS likely has similar issues | Depends on JSR pushing correct return address, which it doesn't. |
+
+**JSR Analysis:**
+The JSR_ABS microcode reads the 2-byte target into MAR, then uses MAR for stack pushes (which overwrites it), then copies MAR to PC. The final MAR value is the stack address, not the target.
+
+Options to fix:
+1. Use TMP register to save target address (but TMP is a WordRegister on address bus without low/high byte controls)
+2. Restructure microcode to push return address first, then read target (like real 6502)
+3. Add low/high byte sub-registers to TMP
+
+**PLP/PHP Analysis:**
+The status register needs a control that reads FROM the data bus INTO the status register. Currently:
+- `status.write` - WriteControl, writes status value TO bus
+- `status.read` - Also appears to be a WriteControl based on bus validator error
+
+Need to check HDL for `status.read` control type and add appropriate control if missing.
+
 ## Optional Future Work
 
 - **Cartridge tools** - see [docs/projects/cartridge-tools.md](projects/cartridge-tools.md)

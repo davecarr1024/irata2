@@ -8,10 +8,12 @@ namespace irata2::microcode::compiler {
 
 Compiler::Compiler(encoder::ControlEncoder control_encoder,
                    encoder::StatusEncoder status_encoder,
+                   const hdl::Cpu& cpu,
                    const hdl::ControlInfo& increment_control,
                    const hdl::ControlInfo& reset_control)
     : control_encoder_(std::move(control_encoder)),
       status_encoder_(std::move(status_encoder)),
+      bus_validator_(cpu),
       status_validator_(status_encoder_),
       sequence_transformer_(increment_control, reset_control),
       sequence_validator_(increment_control, reset_control) {}

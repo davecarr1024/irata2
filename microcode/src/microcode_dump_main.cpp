@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
     irata2::microcode::encoder::StatusEncoder status_encoder(status_bits);
     irata2::microcode::compiler::Compiler compiler(
         control_encoder, status_encoder,
+        cpu,
         cpu.controller().sc().increment().control_info(),
         cpu.controller().sc().reset().control_info());
 

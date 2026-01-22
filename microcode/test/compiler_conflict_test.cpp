@@ -53,7 +53,7 @@ TEST(CompilerConflictTest, RejectsConflictingMicrocode) {
   ControlEncoder control_encoder(cpu);
   StatusEncoder status_encoder({});
 
-  Compiler compiler(control_encoder, status_encoder,
+  Compiler compiler(control_encoder, status_encoder, cpu,
                     cpu.controller().sc().increment().control_info(),
                     cpu.controller().sc().reset().control_info());
 
