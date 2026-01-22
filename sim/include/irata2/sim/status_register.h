@@ -19,8 +19,11 @@ class StatusAnalyzer final : public ByteRegister {
         zero_(zero),
         negative_(negative) {}
 
-  void TickProcess() override {
-    ByteRegister::TickProcess();
+  void TickRead() override {
+    ByteRegister::TickRead();
+    if (!read().asserted()) {
+      return;
+    }
     const uint8_t value = this->value().value();
     zero_.Set(value == 0);
     negative_.Set((value & 0x80u) != 0);

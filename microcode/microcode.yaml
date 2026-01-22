@@ -1710,14 +1710,16 @@ instructions:
     stages:
       - steps:
           - [pc.write, memory.mar.read]
-          - [memory.write, memory.mar.low.read, pc.increment]
+          - [memory.write, memory.mar.low.read, alu.result.read, pc.increment]
           - [pc.write, memory.mar.read]
           - [memory.write, memory.mar.high.read, pc.increment]
+          - [alu.result.write, memory.mar.low.read]
+          - [memory.mar.write, tmp.read]
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
           - [pc.high.write, memory.read, sp.decrement]
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
           - [pc.low.write, memory.read, sp.decrement]
-          - [memory.mar.write, pc.read]
+          - [tmp.write, pc.read]
 
   RTS_IMP:
     stages:
