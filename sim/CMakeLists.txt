@@ -46,6 +46,13 @@ add_executable(irata2_run
 target_link_libraries(irata2_run PRIVATE irata2::sim)
 target_compile_features(irata2_run PRIVATE cxx_std_20)
 
+# Simulator benchmark runner
+add_executable(irata2_bench
+  bench/bench_main.cpp
+)
+target_link_libraries(irata2_bench PRIVATE irata2::sim irata2::assembler)
+target_compile_features(irata2_bench PRIVATE cxx_std_20)
+
 # Export configuration (optional, disabled by default for development)
 option(ENABLE_INSTALL "Enable install targets" OFF)
 if(ENABLE_INSTALL)

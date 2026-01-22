@@ -57,5 +57,6 @@ See `docs/projects/cartridge-tools.md` for details.
    - Cycles/sec, instructions/sec, and total wall time
    - Output to JSON/CSV for easy plotting
 4. Document how to run
-   - `./build/bench --rom bench_loop.cartridge --cycles 5_000_000`
-5. Optional: nightly CI perf job (non-blocking)
+   - `./build/sim/irata2_bench --workload loop --cycles 5_000_000`
+5. Track results in `docs/benchmarks.md`
+6. Optional: nightly CI perf job (non-blocking)
