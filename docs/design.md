@@ -1,6 +1,6 @@
 # IRATA2 Design Document
 
-**Date**: 2026-01-07
+**Date**: 2026-01-21
 **Project**: IRATA2 - 8-bit CPU Simulator in C++
 **Philosophy**: Hardware-ish. Breadboard in software.
 
@@ -164,10 +164,10 @@ public:
 
 ### Immutability Guarantees
 
-The HDL is **truly immutable**:
+The HDL is **effectively immutable**:
 
 - No `mutable` members
-- No lazy initialization
+- `GetCpu()` uses lazy singleton initialization, but the instance itself is immutable
 - No state changes after construction
 - Safe to use from multiple threads without synchronization
 

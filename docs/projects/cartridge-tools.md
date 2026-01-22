@@ -5,6 +5,10 @@
 - Make cartridges easy to inspect, validate, and disassemble.
 - Provide tooling to diagnose cartridge/test failures quickly.
 
+## Current State
+
+- Cartridge header parsing exists in `cartridge.cpp`.
+
 ## Proposed Work
 
 1. **Cartridge inspection CLI**
@@ -29,5 +33,4 @@
 
 ## Open Questions
 
-- Should the cartridge format include a small header?
 - Where should this CLI live (assembler vs a new tool)?
