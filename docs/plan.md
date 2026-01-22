@@ -28,7 +28,33 @@ The 6502-style instruction set phases are complete:
 | 13 | Indirect indexed addressing (IZX, IZY) - optional | 16 |
 | 14 | Interrupts (BRK, RTI) - optional | 2 |
 
-**Next up:** Optional future work.
+**Next up:** Fix bus validator, then optional future work.
+
+## Urgent: Bus Validator Rewrite
+
+The bus validator (`microcode/src/compiler/bus_validator.cpp`) uses fragile name-based string matching to detect bus conflicts. This approach broke when new controls were added and is now failing to catch real conflicts (e.g., `memory.write` + `status.write` in PLP microcode).
+
+**Problem:** The current implementation has hardcoded component names and pattern matching that doesn't scale and misses conflicts.
+
+**Solution:** Rewrite to use HDL traversal instead of string matching:
+
+1. **Remove all name-based lookups** - Delete the `AnalyzeControl()` function and its hardcoded component lists
+2. **Traverse HDL tree** - Walk the HDL component tree to discover all controls automatically
+3. **Use control metadata** - Each control knows:
+   - Whether it's a ReadControl or WriteControl (from its type)
+   - Which bus it's connected to (from its template parameter/parent)
+4. **Build bus membership map** - Create a map from ControlInfo* to (bus, read/write) at construction time
+5. **Validate using map** - Look up each control in the step and check for conflicts
+
+**Tests to add:**
+- Regression test for `memory.write` + `status.write` conflict (the current bug)
+- Test that all controls are discovered (compare count against HDL traversal)
+- Test for address bus conflicts (e.g., `pc.write` + `tmp.write`)
+
+**Files to modify:**
+- `microcode/src/compiler/bus_validator.cpp` - Complete rewrite
+- `microcode/include/irata2/microcode/compiler/bus_validator.h` - Add HDL reference to constructor
+- `microcode/test/bus_validator_test.cpp` - Add regression tests
 
 ## Optional Future Work
 
