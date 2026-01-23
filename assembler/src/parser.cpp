@@ -177,8 +177,22 @@ InstructionStmt Parser::ParseInstruction() {
   return stmt;
 }
 
-DirectiveStmt Parser::ParseDirective() {
+Statement Parser::ParseDirective() {
   Token directive = Consume(TokenKind::Directive, "expected directive");
+
+  if (directive.text == "equ") {
+    // Parse .equ NAME, value
+    Token name = Consume(TokenKind::Identifier, "expected constant name after .equ");
+    Consume(TokenKind::Comma, "expected comma after constant name");
+    Token value_token = Consume(TokenKind::Number, "expected numeric value for .equ");
+
+    EquDecl equ;
+    equ.name = name.text;
+    equ.value = value_token.number.value_or(0);
+    equ.span = directive.span;
+    return equ;
+  }
+
   DirectiveStmt stmt;
   stmt.span = directive.span;
 
@@ -191,8 +205,6 @@ DirectiveStmt Parser::ParseDirective() {
     Token path = Consume(TokenKind::String, "expected string literal for include path");
     stmt.include_path = path.string_value.value_or("");
     return stmt;
-  } else if (directive.text == "equ") {
-    throw AssemblerError(directive.span, ".equ directive not yet implemented");
   } else {
     throw AssemblerError(directive.span, "unknown directive");
   }

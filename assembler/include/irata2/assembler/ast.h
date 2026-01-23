@@ -28,6 +28,12 @@ struct LabelDecl {
   Span span;
 };
 
+struct EquDecl {
+  std::string name;
+  uint32_t value;
+  Span span;
+};
+
 struct InstructionStmt {
   std::string mnemonic;
   std::vector<Operand> operands;
@@ -43,7 +49,7 @@ struct DirectiveStmt {
   Span span;
 };
 
-using Statement = std::variant<LabelDecl, InstructionStmt, DirectiveStmt>;
+using Statement = std::variant<LabelDecl, EquDecl, InstructionStmt, DirectiveStmt>;
 
 struct Program {
   std::vector<Statement> statements;

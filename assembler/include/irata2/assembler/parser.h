@@ -27,7 +27,7 @@ class Parser final {
 
   Operand ParseOperand();
   InstructionStmt ParseInstruction();
-  DirectiveStmt ParseDirective();
+  Statement ParseDirective();
 
   std::vector<Token> tokens_;
   size_t index_ = 0;
