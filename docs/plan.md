@@ -84,3 +84,40 @@ See `docs/projects/cartridge-tools.md` for details.
    - `./build/sim/irata2_bench --workload loop --cycles 5_000_000`
 5. ✓ Track results in `docs/benchmarks.md`
 6. Optional: nightly CI perf job (non-blocking)
+
+## Assembler and Demo Development Improvements
+
+**Goal:** Make demo programs easier to develop, test, and debug through modular assembly and graphics testing.
+
+**See `docs/projects/assembler-demo-improvements.md` for complete specification.**
+
+### Phase 1: File Inclusion and Named Constants (Foundation)
+- [ ] Add `.include "file.asm"` directive for modular code organization
+- [ ] Add `.equ NAME, value` directive for named constants
+- [ ] Add string literal tokens to lexer
+- [ ] Implement include path resolution and circular include detection
+- [ ] Update error spans to track multiple source files
+- [ ] Add comprehensive tests for inclusion and constants
+- **Deliverable:** Can split monolithic demos into modules with named symbols
+
+### Phase 2: Graphics Testing Framework (High Impact)
+- [ ] Create `graphics_test_helpers.h` with `ExecuteAndRender()` function
+- [ ] Add pixel/line/clear assertion helpers using existing ImageBackend
+- [ ] Write example graphics subroutine tests
+- [ ] Document graphics testing patterns
+- **Deliverable:** Can write assembly tests that verify rendered output
+
+### Phase 3: Assembly Testing Infrastructure (Enable TDD)
+- [ ] Design `.test` directive or macro-based testing approach
+- [ ] Implement test execution (simulator changes or pure macros)
+- [ ] Create `AssemblyTestRunner` class with GoogleTest integration
+- [ ] Write subroutine-level tests for demo modules
+- [ ] Document assembly testing patterns
+- **Deliverable:** Can test assembly subroutines in isolation with clear diagnostics
+
+### Phase 4: Refactor Asteroids Demo
+- [ ] Split asteroids.asm into modular files (constants, graphics, input, physics)
+- [ ] Replace all magic numbers with named constants
+- [ ] Add tests for each module (ship rendering, input handling, etc.)
+- [ ] Fix any issues discovered during refactoring
+- **Deliverable:** Asteroids demo is modular, testable, and easier to extend

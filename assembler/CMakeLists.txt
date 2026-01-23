@@ -7,6 +7,7 @@ add_library(irata2_assembler
   src/cartridge.cpp
   src/lexer.cpp
   src/parser.cpp
+  src/include_processor.cpp
 )
 add_library(irata2::assembler ALIAS irata2_assembler)
 
