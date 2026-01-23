@@ -18,7 +18,14 @@ Build the frontend with `-DIRATA2_ENABLE_SDL=ON`, then:
 ./build/frontend/irata2_demo --rom demos/blink.bin --fps 30 --scale 2
 ```
 
+Or use the Makefile target:
+
+```bash
+make asteroids
+```
+
 ## Controls
 
-- Arrow keys: movement
-- Space: action (unused in these demos)
+- Blink: no input
+- Move sprite: arrow keys move
+- Asteroids: left/right rotate, up thrust, space fires
