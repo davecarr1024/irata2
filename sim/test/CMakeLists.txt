@@ -29,6 +29,7 @@ add_executable(sim_tests
   debug_trace_test.cpp
   debug_symbols_test.cpp
   initialization_test.cpp
+  input_device_integration_test.cpp
   input_device_test.cpp
   memory_test.cpp
   register_test.cpp
@@ -38,6 +39,7 @@ add_executable(sim_tests
 target_link_libraries(sim_tests PRIVATE
   GTest::gtest_main
   GTest::gmock
+  irata2::assembler
   irata2::sim
 )
 
