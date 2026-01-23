@@ -2,36 +2,10 @@
 
 ## Snapshot
 
-- ISA has 152 instructions across 12 addressing modes
-- Assembler, microcode compiler, and simulator are in place
+- ISA has 152 instructions across 12 addressing modes (all tests passing)
+- Assembler, microcode compiler, and simulator are in place with full test coverage
 - Debug tooling is present: debug symbols, trace buffer, debug dump, IPC register, microcode decoder/dump
-- Microcode validation/optimization pipeline exists but has gaps (see Urgent below)
-
-**Known Issues:** 4 tests failing (asm_jsr, asm_php, asm_plp, asm_rts) - stack operations have microcode bugs.
-
-## Urgent: Bus Validator Rewrite
-
-The bus validator (`microcode/src/compiler/bus_validator.cpp`) uses fragile name-based string matching to detect bus conflicts. This approach broke when new controls were added and is now failing to catch real conflicts.
-
-**Problem:** Hardcoded component names and pattern matching that doesn't scale and misses conflicts.
-
-**Solution:** Rewrite to use HDL traversal instead of string matching:
-1. Remove all name-based lookups - Delete `AnalyzeControl()` and its hardcoded lists
-2. Traverse HDL tree to discover all controls automatically
-3. Use control metadata (ReadControl vs WriteControl, which bus)
-4. Build map from ControlInfo* to (bus, read/write) at construction
-5. Validate using map lookup
-
-**Files:** `microcode/src/compiler/bus_validator.cpp`, `bus_validator.h`, `bus_validator_test.cpp`
-
-## Broken Tests (Blocked on Bus Validator)
-
-| Test | Issue |
-|------|-------|
-| `asm_php` | PLP doesn't restore status - wrong control direction |
-| `asm_plp` | Same as php |
-| `asm_jsr` | Jumps to stack address - MAR overwritten before copy to PC |
-| `asm_rts` | Depends on JSR pushing correct return address |
+- Microcode validation/optimization pipeline is stable
 
 ## Goal: Interactive Demos
 
