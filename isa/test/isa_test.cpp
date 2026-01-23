@@ -36,7 +36,7 @@ TEST(IsaTest, OpcodeToString) {
     EXPECT_NE(ToString(inst.opcode), "Unknown");
   }
 
-  EXPECT_EQ(ToString(static_cast<Opcode>(0x00)), "Unknown");
+  EXPECT_EQ(ToString(static_cast<Opcode>(0x03)), "Unknown");
 }
 
 TEST(IsaTest, GetAddressingModes) {
@@ -80,7 +80,7 @@ TEST(IsaTest, GetInstructionByOpcodeEnum) {
 }
 
 TEST(IsaTest, GetInstructionInvalidOpcode) {
-  auto inst = IsaInfo::GetInstruction(0x00);
+  auto inst = IsaInfo::GetInstruction(0x03);
   EXPECT_FALSE(inst.has_value());
 }
 

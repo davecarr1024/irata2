@@ -61,10 +61,10 @@ TEST(HdlCpuTest, VisitCountsComponents) {
 
   cpu.visit(visitor);
 
-  EXPECT_EQ(visitor.components, 128);  // +8 for pc low/high byte ports
+  EXPECT_EQ(visitor.components, 130);  // +8 for pc low/high byte ports
   EXPECT_EQ(visitor.buses, 2);
   EXPECT_EQ(visitor.registers, 20);    // +2 for pc low/high
-  EXPECT_EQ(visitor.controls, 93);     // +6 for pc low/high controls, +1 for MAR vector
+  EXPECT_EQ(visitor.controls, 95);     // +6 for pc low/high controls, +1 for MAR vector
 }
 
 TEST(HdlCpuTest, GetCpuReturnsSingleton) {
