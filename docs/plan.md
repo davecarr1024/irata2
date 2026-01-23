@@ -13,25 +13,43 @@
 
 ### Next Steps
 
-1. **Define the demo surface**
-   - Decide a minimal video interface (framebuffer or tile map) and input model
-   - Choose addresses and register semantics for memory-mapped I/O
-   - Decide output size and refresh cadence for the demo runner
+**See `docs/projects/demo-surface.md` for complete specification.**
 
-2. **Add memory-mapped I/O hardware**
-   - HDL: add video buffer and input registers on the data bus
-   - Sim: implement backing storage and input injection
-   - Expose minimal controls for bus access and debug visibility
+1. **✓ Define the demo surface**
+   - ✓ Vector graphics coprocessor (VGC) with streaming MMIO interface at $FE00
+   - ✓ Input device with keyboard queue at $FF00
+   - ✓ 2-bit monochrome green intensity (arcade vector aesthetic)
+   - ✓ 256x256 logical resolution, 30 FPS default (3,333 cycles/frame @ 100 KHz)
+   - ✓ Swappable backends: ImageBackend (testing) + SdlBackend (display)
+   - ✓ Sound device deferred but documented ($FD00, square wave)
 
-3. **Build the demo runner**
-   - CLI: `irata2_run --rom demo.cartridge --fps 60 --input <device>`
-   - Frame loop: run N cycles per frame, present buffer, collect input
-   - On crash/timeout: emit debug dump + trace for quick diagnosis
+2. **Phase 1: Input Device (MVP)** - *READY TO START*
+   - Implement `sim/io/input_device.{h,cpp}` with 16-byte queue and MMIO registers
+   - Add MMIO routing in memory map ($FF00-$FF0F)
+   - Write unit tests for queue behavior, register reads/writes
+   - Write integration test: assembly program reads input, stores in RAM
+   - **Deliverable:** Keyboard input flows to CPU via polling
 
-4. **Author demo programs**
-   - Start with a blinking pixel, then a sprite, then input-driven movement
-   - Provide a tiny demo suite in `assembler/test/asm_tests/` or a new `demos/` folder
-   - Document the I/O map for demo authors
+3. **Phase 2: Vector Graphics Coprocessor (MVP)**
+   - Implement VgcBackend interface (clear, draw_point, draw_line, present)
+   - Implement ImageBackend for headless testing (256x256 framebuffer)
+   - Implement VectorGraphicsCoprocessor with streaming registers
+   - Add MMIO routing for VGC region ($FE00-$FE08)
+   - Unit tests + integration test (assembly draws shapes, verify framebuffer pixels)
+   - **Deliverable:** Graphics testing loop closed (Assembly → MMIO → VGC → ImageBackend → verification)
+
+4. **Phase 3: SDL Frontend (Basic Window)**
+   - Implement SdlBackend rendering to SDL_Renderer with green CRT aesthetic
+   - Add `frontend/` module with SDL2 dependency
+   - Implement DemoRunner class (window, frame loop, input handling)
+   - CLI: `irata2_demo --rom game.cartridge --fps 30 --scale 2 --cycles-per-frame 3333`
+   - **Deliverable:** Window opens, renders VGC commands, accepts keyboard input
+
+5. **Phase 4-7: Demo Programs**
+   - Phase 4: Blinking pixel demo (simple animation)
+   - Phase 5: Moving sprite with arrow key control
+   - Phase 6: IRQ support (interrupt-driven input, deferred)
+   - Phase 7: Asteroids prototype (ship, asteroids, shooting, collision)
 
 ## Debug Tooling Backlog
 
