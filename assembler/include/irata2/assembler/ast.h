@@ -28,6 +28,12 @@ struct LabelDecl {
   Span span;
 };
 
+struct EquDecl {
+  std::string name;
+  uint32_t value;
+  Span span;
+};
+
 struct InstructionStmt {
   std::string mnemonic;
   std::vector<Operand> operands;
@@ -35,14 +41,15 @@ struct InstructionStmt {
 };
 
 struct DirectiveStmt {
-  enum class Type { Org, Byte };
+  enum class Type { Org, Byte, Include };
 
   Type type = Type::Org;
   std::vector<Operand> operands;
+  std::string include_path;  // For Include directive
   Span span;
 };
 
-using Statement = std::variant<LabelDecl, InstructionStmt, DirectiveStmt>;
+using Statement = std::variant<LabelDecl, EquDecl, InstructionStmt, DirectiveStmt>;
 
 struct Program {
   std::vector<Statement> statements;

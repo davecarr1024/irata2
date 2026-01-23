@@ -13,6 +13,7 @@ enum class TokenKind {
   Identifier,
   Number,
   Directive,
+  String,
   Comma,
   LeftParen,
   RightParen,
@@ -26,6 +27,7 @@ struct Token {
   std::string text;
   Span span;
   std::optional<uint32_t> number;
+  std::optional<std::string> string_value;
 };
 
 }  // namespace irata2::assembler

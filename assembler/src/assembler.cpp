@@ -9,6 +9,7 @@
 
 #include "irata2/assembler/ast.h"
 #include "irata2/assembler/error.h"
+#include "irata2/assembler/include_processor.h"
 #include "irata2/assembler/lexer.h"
 #include "irata2/assembler/parser.h"
 #include "irata2/isa/isa.h"
@@ -178,6 +179,7 @@ const isa::InstructionInfo* SelectInstruction(const InstructionStmt& stmt) {
 struct FirstPassResult {
   std::vector<Emittable> items;
   std::unordered_map<std::string, base::Word> symbols;
+  std::unordered_map<std::string, uint32_t> constants;
   base::Word origin;
   base::Word max_address;
 };
@@ -218,6 +220,17 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
       }
       ValidateCursor(cursor, label->span);
       result.symbols.emplace(label->name, base::Word{static_cast<uint16_t>(cursor)});
+      continue;
+    }
+
+    if (const auto* equ = std::get_if<EquDecl>(&statement)) {
+      if (result.constants.count(equ->name) != 0) {
+        throw AssemblerError(equ->span, "duplicate constant");
+      }
+      if (result.symbols.count(equ->name) != 0) {
+        throw AssemblerError(equ->span, "constant name conflicts with label");
+      }
+      result.constants.emplace(equ->name, equ->value);
       continue;
     }
 
@@ -297,7 +310,8 @@ FirstPassResult FirstPass(const Program& program, const AssemblerOptions& option
 }
 
 uint8_t ResolveByteOperand(const Operand& operand,
-                           const std::unordered_map<std::string, base::Word>& symbols) {
+                           const std::unordered_map<std::string, base::Word>& symbols,
+                           const std::unordered_map<std::string, uint32_t>& constants) {
   if (operand.kind == Operand::Kind::Number) {
     if (operand.number > 0xFFu) {
       throw AssemblerError(operand.span, "byte literal out of range");
@@ -305,9 +319,19 @@ uint8_t ResolveByteOperand(const Operand& operand,
     return static_cast<uint8_t>(operand.number);
   }
 
+  // Check constants first
+  auto const_it = constants.find(operand.label);
+  if (const_it != constants.end()) {
+    if (const_it->second > 0xFFu) {
+      throw AssemblerError(operand.span, "constant value out of byte range");
+    }
+    return static_cast<uint8_t>(const_it->second);
+  }
+
+  // Then check labels
   auto it = symbols.find(operand.label);
   if (it == symbols.end()) {
-    throw AssemblerError(operand.span, "unknown label");
+    throw AssemblerError(operand.span, "unknown label or constant");
   }
   uint32_t value = it->second.value();
   if (value > 0xFFu) {
@@ -317,7 +341,8 @@ uint8_t ResolveByteOperand(const Operand& operand,
 }
 
 uint16_t ResolveWordOperand(const Operand& operand,
-                            const std::unordered_map<std::string, base::Word>& symbols) {
+                            const std::unordered_map<std::string, base::Word>& symbols,
+                            const std::unordered_map<std::string, uint32_t>& constants) {
   if (operand.kind == Operand::Kind::Number) {
     if (operand.number > 0xFFFFu) {
       throw AssemblerError(operand.span, "word literal out of range");
@@ -325,15 +350,26 @@ uint16_t ResolveWordOperand(const Operand& operand,
     return static_cast<uint16_t>(operand.number);
   }
 
+  // Check constants first
+  auto const_it = constants.find(operand.label);
+  if (const_it != constants.end()) {
+    if (const_it->second > 0xFFFFu) {
+      throw AssemblerError(operand.span, "constant value out of word range");
+    }
+    return static_cast<uint16_t>(const_it->second);
+  }
+
+  // Then check labels
   auto it = symbols.find(operand.label);
   if (it == symbols.end()) {
-    throw AssemblerError(operand.span, "unknown label");
+    throw AssemblerError(operand.span, "unknown label or constant");
   }
   return static_cast<uint16_t>(it->second.value());
 }
 
 uint8_t ResolveRelativeOperand(const Operand& operand,
                                const std::unordered_map<std::string, base::Word>& symbols,
+                               const std::unordered_map<std::string, uint32_t>& constants,
                                base::Word instruction_address) {
   uint32_t target = 0;
   if (operand.kind == Operand::Kind::Number) {
@@ -342,11 +378,21 @@ uint8_t ResolveRelativeOperand(const Operand& operand,
     }
     target = operand.number;
   } else {
-    auto it = symbols.find(operand.label);
-    if (it == symbols.end()) {
-      throw AssemblerError(operand.span, "unknown label");
+    // Check constants first
+    auto const_it = constants.find(operand.label);
+    if (const_it != constants.end()) {
+      if (const_it->second > 0xFFFFu) {
+        throw AssemblerError(operand.span, "constant value out of address range");
+      }
+      target = const_it->second;
+    } else {
+      // Then check labels
+      auto it = symbols.find(operand.label);
+      if (it == symbols.end()) {
+        throw AssemblerError(operand.span, "unknown label or constant");
+      }
+      target = it->second.value();
     }
-    target = it->second.value();
   }
 
   int32_t base = static_cast<int32_t>(instruction_address.value()) + 2;
@@ -434,8 +480,8 @@ AssemblerResult Encode(const FirstPassResult& pass,
         }
         uint8_t value = item.addressing_mode == isa::AddressingMode::REL
                             ? ResolveRelativeOperand(item.operands[0], pass.symbols,
-                                                     item.address)
-                            : ResolveByteOperand(item.operands[0], pass.symbols);
+                                                     pass.constants, item.address)
+                            : ResolveByteOperand(item.operands[0], pass.symbols, pass.constants);
         if (offset + 1 >= rom.size()) {
           throw AssemblerError(item.span, "address exceeds cartridge size");
         }
@@ -446,7 +492,7 @@ AssemblerResult Encode(const FirstPassResult& pass,
         if (item.operands.empty()) {
           throw AssemblerError(item.span, "missing operand");
         }
-        uint16_t value = ResolveWordOperand(item.operands[0], pass.symbols);
+        uint16_t value = ResolveWordOperand(item.operands[0], pass.symbols, pass.constants);
         if (offset + 2 >= rom.size()) {
           throw AssemblerError(item.span, "address exceeds cartridge size");
         }
@@ -467,7 +513,7 @@ AssemblerResult Encode(const FirstPassResult& pass,
       if (target >= rom.size()) {
         throw AssemblerError(item.span, "byte write exceeds cartridge size");
       }
-      rom[target] = ResolveByteOperand(item.operands[i], pass.symbols);
+      rom[target] = ResolveByteOperand(item.operands[i], pass.symbols, pass.constants);
       AddRecord(item.span, base::Word{static_cast<uint16_t>(address + i)},
                 target, item.text);
     }
@@ -524,6 +570,14 @@ AssemblerResult Assemble(std::string_view source,
   std::vector<Token> tokens = lexer.Lex();
   Parser parser(std::move(tokens));
   Program program = parser.Parse();
+
+  // Process include directives
+  std::filesystem::path file_path(filename);
+  std::filesystem::path base_dir = file_path.parent_path();
+  if (base_dir.empty()) {
+    base_dir = std::filesystem::current_path();
+  }
+  program = IncludeProcessor::Process(program, base_dir);
 
   FirstPassResult pass = FirstPass(program, options);
   return Encode(pass, options, filename);
