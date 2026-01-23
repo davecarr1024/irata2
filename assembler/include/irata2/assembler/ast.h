@@ -35,10 +35,11 @@ struct InstructionStmt {
 };
 
 struct DirectiveStmt {
-  enum class Type { Org, Byte };
+  enum class Type { Org, Byte, Include };
 
   Type type = Type::Org;
   std::vector<Operand> operands;
+  std::string include_path;  // For Include directive
   Span span;
 };
 

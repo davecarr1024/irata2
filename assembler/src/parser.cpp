@@ -186,6 +186,13 @@ DirectiveStmt Parser::ParseDirective() {
     stmt.type = DirectiveStmt::Type::Org;
   } else if (directive.text == "byte") {
     stmt.type = DirectiveStmt::Type::Byte;
+  } else if (directive.text == "include") {
+    stmt.type = DirectiveStmt::Type::Include;
+    Token path = Consume(TokenKind::String, "expected string literal for include path");
+    stmt.include_path = path.string_value.value_or("");
+    return stmt;
+  } else if (directive.text == "equ") {
+    throw AssemblerError(directive.span, ".equ directive not yet implemented");
   } else {
     throw AssemblerError(directive.span, "unknown directive");
   }

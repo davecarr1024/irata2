@@ -9,6 +9,7 @@
 
 #include "irata2/assembler/ast.h"
 #include "irata2/assembler/error.h"
+#include "irata2/assembler/include_processor.h"
 #include "irata2/assembler/lexer.h"
 #include "irata2/assembler/parser.h"
 #include "irata2/isa/isa.h"
@@ -524,6 +525,14 @@ AssemblerResult Assemble(std::string_view source,
   std::vector<Token> tokens = lexer.Lex();
   Parser parser(std::move(tokens));
   Program program = parser.Parse();
+
+  // Process include directives
+  std::filesystem::path file_path(filename);
+  std::filesystem::path base_dir = file_path.parent_path();
+  if (base_dir.empty()) {
+    base_dir = std::filesystem::current_path();
+  }
+  program = IncludeProcessor::Process(program, base_dir);
 
   FirstPassResult pass = FirstPass(program, options);
   return Encode(pass, options, filename);
