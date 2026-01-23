@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-- ISA has 152 instructions across 12 addressing modes (all tests passing)
+- ISA has 153 instructions across 12 addressing modes (all tests passing)
 - Assembler, microcode compiler, and simulator are in place with full test coverage
 - Debug tooling is present: debug symbols, trace buffer, debug dump, IPC register, microcode decoder/dump
 - Microcode validation/optimization pipeline is stable
@@ -49,8 +49,12 @@
 5. **Phase 4-7: Demo Programs**
    - ✓ Phase 4: Blinking pixel demo (simple animation)
    - ✓ Phase 5: Moving sprite with arrow key control
-   - Phase 6: IRQ support (interrupt-driven input, deferred)
-     - Document default device IRQ policy (level-sensitive, empty→non-empty assert)
+   - ✓ Phase 6: IRQ support (interrupt-driven input)
+     - ✓ Add IRQ entry opcode and microcode sequence (6502 B flag semantics)
+     - ✓ Add instruction_start control and IR mux for IRQ entry
+     - ✓ Add latched IRQ line for MMIO devices
+     - ✓ Document default device IRQ policy (level-sensitive, empty→non-empty assert)
+     - ✓ Add IRQ integration test
    - ✓ Phase 7: Asteroids prototype (ship, asteroids, shooting, collision)
 
 ## Debug Tooling Backlog

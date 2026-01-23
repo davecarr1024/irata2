@@ -19,7 +19,7 @@ All milestones achieved. Here's the final status:
 | | M1: Assembler emits JSON | DONE | Tests produce `.json` files |
 | **2) Simulator Debug Loader** | M0: Loader + schema validation | DONE | `debug_symbols.h/cpp`, `LoadDebugSymbols()` |
 | | M1: PC → file/line lookup | DONE | `DebugSymbols::Lookup()`, `pc_to_source` map |
-| **IPC Register** | Hardware-ish solution | DONE | `ipc_` in Controller (HDL + sim), `ipc_latch` control |
+| **IPC Register** | Hardware-ish solution | DONE | `ipc_` in Controller (HDL + sim), `instruction_start` control |
 | **3) Failure Diagnostics** | M0: Register dump | DONE | `debug_dump.cpp`, `FormatDebugDump()` |
 | | M1: Source location context | DONE | Uses `instruction_source_location()` |
 | **4) Trace Buffer** | M0: Last N PC/IR/state | DONE | `debug_trace.h`, `DebugTraceBuffer` |

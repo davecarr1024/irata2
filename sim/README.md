@@ -228,11 +228,12 @@ The sim component tree is only buildable as a complete IRATA CPU. Individual com
 std::pair<Cpu, MyDevice*> MakeCpuWithDevice() {
   MyDevice* device_ptr = nullptr;
   std::vector<memory::Memory::RegionFactory> factories;
-  factories.push_back([&device_ptr](memory::Memory& m) {
+  factories.push_back([&device_ptr](memory::Memory& m,
+                                    LatchedProcessControl& irq_line) {
     return std::make_unique<memory::Region>(
         "my_device", m, Word{0x4000},
-        [&device_ptr](memory::Region& r) {
-          auto device = std::make_unique<MyDevice>("device", r);
+        [&device_ptr, &irq_line](memory::Region& r) {
+          auto device = std::make_unique<MyDevice>("device", r, irq_line);
           device_ptr = device.get();
           return device;
         });
