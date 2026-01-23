@@ -126,6 +126,10 @@ Token Lexer::NextToken() {
     return MakeToken(TokenKind::Colon, 1);
   }
 
+  if (ch == '"') {
+    return LexString();
+  }
+
   if (ch == '.') {
     return LexIdentifierOrDirective();
   }
@@ -189,7 +193,7 @@ void Lexer::SkipComment() {
 }
 
 Token Lexer::MakeToken(TokenKind kind, int length) const {
-  return Token{kind, std::string(), Span{filename_, line_, column_, length}, std::nullopt};
+  return Token{kind, std::string(), Span{filename_, line_, column_, length}, std::nullopt, std::nullopt};
 }
 
 Token Lexer::LexIdentifierOrDirective() {
@@ -256,6 +260,57 @@ Token Lexer::LexNumber() {
   token.text = std::move(text);
   token.span = span;
   token.number = value;
+  return token;
+}
+
+Token Lexer::LexString() {
+  int start_column = column_;
+  size_t start = index_;
+
+  // Skip opening quote
+  Advance();
+
+  std::string value;
+  while (!AtEnd() && Peek() != '"') {
+    if (Peek() == '\n') {
+      Span span{filename_, line_, start_column, static_cast<int>(index_ - start)};
+      throw AssemblerError(span, "unterminated string literal");
+    }
+
+    if (Peek() == '\\') {
+      Advance();
+      if (AtEnd()) {
+        Span span{filename_, line_, start_column, static_cast<int>(index_ - start)};
+        throw AssemblerError(span, "unterminated string literal");
+      }
+      char escaped = Peek();
+      if (escaped == '"' || escaped == '\\') {
+        value.push_back(escaped);
+        Advance();
+      } else {
+        Span span{filename_, line_, column_, 1};
+        throw AssemblerError(span, "invalid escape sequence");
+      }
+    } else {
+      value.push_back(Peek());
+      Advance();
+    }
+  }
+
+  if (AtEnd()) {
+    Span span{filename_, line_, start_column, static_cast<int>(index_ - start)};
+    throw AssemblerError(span, "unterminated string literal");
+  }
+
+  // Skip closing quote
+  Advance();
+
+  size_t end = index_;
+  Token token;
+  token.kind = TokenKind::String;
+  token.text = std::string(source_.substr(start, end - start));
+  token.span = Span{filename_, line_, start_column, static_cast<int>(end - start)};
+  token.string_value = std::move(value);
   return token;
 }
 

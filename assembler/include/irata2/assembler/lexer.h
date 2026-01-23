@@ -28,6 +28,7 @@ class Lexer final {
   Token MakeToken(TokenKind kind, int length) const;
   Token LexIdentifierOrDirective();
   Token LexNumber();
+  Token LexString();
 
   std::string_view source_;
   std::string filename_;
