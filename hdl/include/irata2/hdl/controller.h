@@ -19,11 +19,13 @@ class Controller final : public ComponentWithParent<Controller> {
   const ByteRegister& ir() const { return ir_; }
   const ByteCounter& sc() const { return sc_; }
   const LatchedWordRegister& ipc() const { return ipc_; }
+  const ProcessControl<true>& instruction_start() const { return instruction_start_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
     visitor(*this);
     ir_.visit(visitor);
+    instruction_start_.visit(visitor);
     sc_.visit(visitor);
     ipc_.visit(visitor);
   }
@@ -32,6 +34,7 @@ class Controller final : public ComponentWithParent<Controller> {
   const ByteRegister ir_;
   const ByteCounter sc_;
   const LatchedWordRegister ipc_;
+  const ProcessControl<true> instruction_start_;
 };
 
 }  // namespace irata2::hdl

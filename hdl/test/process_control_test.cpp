@@ -21,3 +21,11 @@ TEST(ProcessControlTest, AutoResetFalseWhenDisabled) {
   EXPECT_EQ(control.phase(), irata2::base::TickPhase::Process);
   EXPECT_FALSE(control.auto_reset());
 }
+
+TEST(ProcessControlTest, LatchedProcessControlAlias) {
+  Cpu cpu;
+  LatchedProcessControl control("latched", cpu);
+
+  EXPECT_EQ(control.phase(), irata2::base::TickPhase::Process);
+  EXPECT_FALSE(control.auto_reset());
+}

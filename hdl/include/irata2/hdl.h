@@ -11,6 +11,7 @@
 #include "irata2/hdl/memory.h"
 #include "irata2/hdl/memory_address_register.h"
 #include "irata2/hdl/latched_word_register.h"
+#include "irata2/hdl/latched_control.h"
 #include "irata2/hdl/process_control.h"
 #include "irata2/hdl/read_control.h"
 #include "irata2/hdl/status.h"

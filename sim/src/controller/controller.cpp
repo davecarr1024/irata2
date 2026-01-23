@@ -12,8 +12,15 @@ Controller::Controller(std::string name,
                        Bus<base::Byte>& data_bus,
                        const ProgramCounter& pc)
     : ComponentWithParent(parent, std::move(name)),
-      ir_("ir", *this, data_bus),
+      instruction_start_("instruction_start", *this),
+      ir_("ir",
+          *this,
+          data_bus,
+          cpu().irq_line(),
+          instruction_start_,
+          cpu().status().interrupt_disable()),
       sc_("sc", *this),
+      pc_(pc),
       ipc_("ipc", *this, pc),
       instruction_memory_(nullptr) {}
 
@@ -44,9 +51,12 @@ void Controller::TickControl() {
 }
 
 void Controller::TickProcess() {
-  // IPC latching is now handled automatically by LatchedWordRegister
-  // when ipc_.latch() is asserted. It copies directly from PC.
+  // IPC latching occurs at instruction start to capture the pre-increment PC.
   Component::TickProcess();
+
+  if (instruction_start_.asserted()) {
+    ipc_.set_value(pc_.value());
+  }
 }
 
 }  // namespace irata2::sim::controller

@@ -1313,6 +1313,14 @@ instructions:
     category: System
     flags_affected: []
 
+  - mnemonic: IRQ
+    opcode: 0x00
+    addressing_mode: IMP
+    cycles: 7
+    description: "IRQ entry (internal)"
+    category: System
+    flags_affected: []
+
   - mnemonic: RTI
     opcode: 0xE6
     addressing_mode: IMP

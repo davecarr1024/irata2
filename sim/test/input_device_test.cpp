@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
+
 #include "irata2/sim.h"
 #include "irata2/sim/memory/memory.h"
 #include "irata2/sim/memory/region.h"
@@ -13,25 +15,34 @@ using namespace irata2::base;
 
 namespace {
 
-// Helper to create a CPU with an InputDevice at the standard MMIO address
-// Returns a pair of (Cpu, InputDevice*) where the InputDevice pointer
-// is valid for the lifetime of the Cpu.
-std::pair<Cpu, InputDevice*> MakeCpuWithInputDevice() {
-  InputDevice* device_ptr = nullptr;
+// Helper to create a CPU with an InputDevice at the standard MMIO address.
+struct CpuWithInputDevice {
+  std::unique_ptr<Cpu> cpu;
+  InputDevice* device = nullptr;
+};
+
+CpuWithInputDevice MakeCpuWithInputDevice() {
+  CpuWithInputDevice result;
 
   std::vector<memory::Memory::RegionFactory> factories;
-  factories.push_back([&device_ptr](memory::Memory& m) -> std::unique_ptr<memory::Region> {
+  factories.push_back([&result](memory::Memory& m,
+                                LatchedProcessControl& irq_line)
+                           -> std::unique_ptr<memory::Region> {
     return std::make_unique<memory::Region>(
         "input_device", m, Word{io::INPUT_DEVICE_BASE},
-        [&device_ptr](memory::Region& r) -> std::unique_ptr<memory::Module> {
-          auto device = std::make_unique<InputDevice>("input", r);
-          device_ptr = device.get();
+        [&result, &irq_line](memory::Region& r) -> std::unique_ptr<memory::Module> {
+          auto device = std::make_unique<InputDevice>("input", r, irq_line);
+          result.device = device.get();
           return device;
         });
   });
 
-  Cpu cpu(DefaultHdl(), test::MakeNoopProgram(), {}, std::move(factories));
-  return {std::move(cpu), device_ptr};
+  result.cpu = std::make_unique<Cpu>(
+      DefaultHdl(),
+      test::MakeNoopProgram(),
+      std::vector<Byte>{},
+      std::move(factories));
+  return result;
 }
 
 }  // namespace
@@ -39,9 +50,9 @@ std::pair<Cpu, InputDevice*> MakeCpuWithInputDevice() {
 class InputDeviceTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    auto [cpu, dev] = MakeCpuWithInputDevice();
-    cpu_ = std::make_unique<Cpu>(std::move(cpu));
-    device_ = dev;
+    auto rig = MakeCpuWithInputDevice();
+    cpu_ = std::move(rig.cpu);
+    device_ = rig.device;
   }
 
   std::unique_ptr<Cpu> cpu_;
@@ -272,6 +283,22 @@ TEST_F(InputDeviceTest, StatusClearsIrqPendingWhenDisabled) {
 
   uint8_t status = device_->Read(Word{input_reg::STATUS}).value();
   EXPECT_EQ(status & input_status::IRQ_PENDING, 0);
+}
+
+TEST_F(InputDeviceTest, IrqLineTracksQueueStateWhenEnabled) {
+  device_->Write(Word{input_reg::CONTROL}, Byte{input_control::IRQ_ENABLE});
+  device_->inject_key(0x41);
+
+  test::SetPhase(*cpu_, irata2::base::TickPhase::Control);
+  cpu_->irq_line().Set(device_->irq_pending());
+  test::SetPhase(*cpu_, irata2::base::TickPhase::Process);
+  EXPECT_TRUE(cpu_->irq_line().asserted());
+
+  device_->Read(Word{input_reg::DATA});
+  test::SetPhase(*cpu_, irata2::base::TickPhase::Control);
+  cpu_->irq_line().Set(device_->irq_pending());
+  test::SetPhase(*cpu_, irata2::base::TickPhase::Process);
+  EXPECT_FALSE(cpu_->irq_line().asserted());
 }
 
 // --- Module interface tests ---

@@ -60,19 +60,23 @@ DemoRunner::DemoRunner(DemoOptions options) : options_(std::move(options)) {
   auto cartridge = sim::LoadCartridge(options_.rom_path);
   DeviceBundle bundle;
   std::vector<sim::memory::Memory::RegionFactory> factories;
-  factories.push_back([&bundle](sim::memory::Memory& mem)
+  factories.push_back([&bundle](sim::memory::Memory& mem,
+                                sim::LatchedProcessControl& irq_line)
                           -> std::unique_ptr<sim::memory::Region> {
     return std::make_unique<sim::memory::Region>(
         "input_device", mem, base::Word{sim::io::INPUT_DEVICE_BASE},
-        [&bundle](sim::memory::Region& region)
+        [&bundle, &irq_line](sim::memory::Region& region)
             -> std::unique_ptr<sim::memory::Module> {
-          auto device = std::make_unique<sim::io::InputDevice>("input", region);
+          auto device = std::make_unique<sim::io::InputDevice>("input",
+                                                               region,
+                                                               irq_line);
           bundle.input = device.get();
           return device;
         });
   });
 
-  factories.push_back([&bundle, renderer = renderer_](sim::memory::Memory& mem)
+  factories.push_back([&bundle, renderer = renderer_](sim::memory::Memory& mem,
+                                                      sim::LatchedProcessControl&)
                           -> std::unique_ptr<sim::memory::Region> {
     return std::make_unique<sim::memory::Region>(
         "vgc", mem, base::Word{sim::io::VGC_BASE},

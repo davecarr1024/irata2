@@ -14,6 +14,7 @@ using irata2::base::Word;
 using irata2::sim::Cpu;
 using irata2::sim::DefaultHdl;
 using irata2::sim::DefaultMicrocodeProgram;
+using irata2::sim::LatchedProcessControl;
 using irata2::sim::io::ImageBackend;
 using irata2::sim::io::VectorGraphicsCoprocessor;
 using irata2::sim::io::VGC_BASE;
@@ -30,7 +31,9 @@ struct VgcRig {
 VgcRig MakeCpuWithVgc(const std::vector<Byte>& rom) {
   VgcRig rig;
   std::vector<Memory::RegionFactory> factories;
-  factories.push_back([&rig](Memory& mem) -> std::unique_ptr<Region> {
+  factories.push_back([&rig](Memory& mem,
+                             LatchedProcessControl&)
+                           -> std::unique_ptr<Region> {
     return std::make_unique<Region>(
         "vgc", mem, Word{VGC_BASE},
         [&rig](Region& region) -> std::unique_ptr<irata2::sim::memory::Module> {

@@ -50,7 +50,8 @@ std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
   factories.reserve(2 + extra_region_factories.size());
 
   // RAM region at 0x0000
-  factories.push_back([](memory::Memory& mem) -> std::unique_ptr<memory::Region> {
+  factories.push_back([](memory::Memory& mem,
+                          LatchedProcessControl&) -> std::unique_ptr<memory::Region> {
     return std::make_unique<memory::Region>(
         "ram", mem, base::Word{0x0000},
         [](memory::Region& reg) -> std::unique_ptr<memory::Module> {
@@ -61,7 +62,9 @@ std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
 
   // Cartridge ROM region at 0x8000-0xFFFF (32KB)
   factories.push_back([rom_data = std::move(cartridge_rom)](
-                          memory::Memory& mem) mutable -> std::unique_ptr<memory::Region> {
+                          memory::Memory& mem,
+                          LatchedProcessControl&) mutable
+                          -> std::unique_ptr<memory::Region> {
     return std::make_unique<memory::Region>(
         "cartridge", mem, base::Word{0x8000},
         [rom_data = std::move(rom_data)](
@@ -107,6 +110,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
       microcode_(std::move(program)),
       halt_control_("halt", *this),
       crash_control_("crash", *this),
+      irq_line_("irq_line", *this),
       data_bus_("data_bus", *this),
       address_bus_("address_bus", *this),
       a_("a", *this, data_bus_),
@@ -123,7 +127,8 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
               data_bus_,
               address_bus_,
               BuildRegionFactories(std::move(cartridge_rom),
-                                   std::move(extra_region_factories))) {
+                                   std::move(extra_region_factories)),
+              irq_line_) {
   if (!hdl_) {
     throw SimError("cpu constructed without HDL");
   }
@@ -133,6 +138,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
 
   RegisterChild(halt_control_);
   RegisterChild(crash_control_);
+  RegisterChild(irq_line_);
   RegisterChild(data_bus_);
   RegisterChild(address_bus_);
 
@@ -238,6 +244,7 @@ Cpu::Cpu(std::shared_ptr<const hdl::Cpu> hdl,
   RegisterChild(controller_.ir().write());
   RegisterChild(controller_.ir().read());
   RegisterChild(controller_.ir().reset());
+  RegisterChild(controller_.instruction_start());
   RegisterChild(controller_.sc());
   RegisterChild(controller_.sc().reset());
   RegisterChild(controller_.sc().increment());
@@ -484,7 +491,7 @@ void Cpu::TickProcess() {
     crashed_ = true;
     halted_ = true;
   }
-  if (controller_.ipc().latch().asserted()) {
+  if (controller_.instruction_start().asserted()) {
     ipc_valid_ = true;
     if (trace_.enabled()) {
       DebugTraceEntry entry;

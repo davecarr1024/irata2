@@ -66,7 +66,9 @@ TEST(SimMemoryRegionTest, RejectsMisalignedOffset) {
 TEST(SimMemoryTest, RejectsOverlappingRegions) {
   Cpu sim = test::MakeTestCpu();
   std::vector<Memory::RegionFactory> region_factories;
-  region_factories.push_back([](Memory& m) -> std::unique_ptr<Region> {
+  region_factories.push_back([](Memory& m,
+                                LatchedProcessControl&)
+                                  -> std::unique_ptr<Region> {
     return std::make_unique<Region>(
         "one", m, irata2::base::Word{0x0000},
         [](Region& r) -> std::unique_ptr<Module> {
@@ -74,7 +76,9 @@ TEST(SimMemoryTest, RejectsOverlappingRegions) {
                                         irata2::base::Byte{0});
         });
   });
-  region_factories.push_back([](Memory& m) -> std::unique_ptr<Region> {
+  region_factories.push_back([](Memory& m,
+                                LatchedProcessControl&)
+                                  -> std::unique_ptr<Region> {
     return std::make_unique<Region>(
         "two", m, irata2::base::Word{0x1000},
         [](Region& r) -> std::unique_ptr<Module> {
@@ -84,7 +88,7 @@ TEST(SimMemoryTest, RejectsOverlappingRegions) {
   });
 
   EXPECT_THROW(Memory("memory", sim, sim.data_bus(), sim.address_bus(),
-                      std::move(region_factories)),
+                      std::move(region_factories), sim.irq_line()),
                SimError);
 }
 

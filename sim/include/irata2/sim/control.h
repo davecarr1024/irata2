@@ -146,6 +146,8 @@ class Control
 template <bool AutoReset = true>
 using ProcessControl = Control<base::TickPhase::Process, AutoReset>;
 
+using LatchedProcessControl = ProcessControl<false>;
+
 }  // namespace irata2::sim
 
 #endif  // IRATA2_SIM_CONTROL_H

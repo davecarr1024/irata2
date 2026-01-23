@@ -29,9 +29,11 @@ add_executable(sim_tests
   disassembler_test.cpp
   debug_trace_test.cpp
   debug_symbols_test.cpp
+  instruction_register_test.cpp
   initialization_test.cpp
   input_device_integration_test.cpp
   input_device_test.cpp
+  irq_integration_test.cpp
   memory_test.cpp
   register_test.cpp
   status_test.cpp

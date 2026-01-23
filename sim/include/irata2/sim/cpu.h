@@ -174,6 +174,8 @@ class Cpu : public Component {
   const ProcessControl<true>& halt() const { return halt_control_; }
   ProcessControl<true>& crash() { return crash_control_; }
   const ProcessControl<true>& crash() const { return crash_control_; }
+  LatchedProcessControl& irq_line() { return irq_line_; }
+  const LatchedProcessControl& irq_line() const { return irq_line_; }
 
   ByteBus& data_bus() { return data_bus_; }
   const ByteBus& data_bus() const { return data_bus_; }
@@ -240,6 +242,7 @@ class Cpu : public Component {
 
   ProcessControl<true> halt_control_;
   ProcessControl<true> crash_control_;
+  LatchedProcessControl irq_line_;
   ByteBus data_bus_;
   WordBus address_bus_;
   ByteRegister a_;

@@ -20,6 +20,7 @@ Region::Region(std::string name,
   if (!module_) {
     throw SimError("memory region module is null");
   }
+  RegisterChild(*module_);
   const auto region_size = module_->size();
   if (!IsPowerOfTwo(region_size)) {
     std::ostringstream message;

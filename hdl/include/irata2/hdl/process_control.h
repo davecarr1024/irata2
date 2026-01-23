@@ -17,6 +17,8 @@ class ProcessControl final
                 AutoReset>(std::move(name), parent) {}
 };
 
+using LatchedProcessControl = ProcessControl<false>;
+
 }  // namespace irata2::hdl
 
 #endif  // IRATA2_HDL_PROCESS_CONTROL_H

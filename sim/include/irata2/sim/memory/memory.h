@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "irata2/base/types.h"
+#include "irata2/sim/control.h"
 #include "irata2/sim/component_with_bus.h"
 #include "irata2/sim/memory/memory_address_register.h"
 #include "irata2/sim/memory/region.h"
@@ -14,13 +15,15 @@ namespace irata2::sim::memory {
 
 class Memory final : public ComponentWithBus<Memory, base::Byte> {
  public:
-  using RegionFactory = std::function<std::unique_ptr<Region>(Memory&)>;
+  using RegionFactory =
+      std::function<std::unique_ptr<Region>(Memory&, LatchedProcessControl&)>;
 
   Memory(std::string name,
          Component& parent,
          Bus<base::Byte>& data_bus,
          Bus<base::Word>& address_bus,
-         std::vector<RegionFactory> region_factories);
+         std::vector<RegionFactory> region_factories,
+         LatchedProcessControl& irq_line);
 
   MemoryAddressRegister& mar() { return mar_; }
   const MemoryAddressRegister& mar() const { return mar_; }

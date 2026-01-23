@@ -2,8 +2,11 @@
 
 namespace irata2::sim::io {
 
-InputDevice::InputDevice(std::string name, Component& parent)
-    : Module(std::move(name), parent) {}
+InputDevice::InputDevice(std::string name,
+                         Component& parent,
+                         LatchedProcessControl& irq_line)
+    : Module(std::move(name), parent),
+      irq_line_(irq_line) {}
 
 base::Byte InputDevice::Read(base::Word address) const {
   const auto offset = address.value();
@@ -64,6 +67,11 @@ void InputDevice::inject_key(uint8_t key_code) {
   queue_[write_idx_] = key_code;
   write_idx_ = (write_idx_ + 1) % QUEUE_SIZE;
   ++count_;
+}
+
+void InputDevice::TickControl() {
+  const bool pending = irq_enabled_ && !empty();
+  irq_line_.Set(pending);
 }
 
 uint8_t InputDevice::pop() {

@@ -8,13 +8,15 @@ Memory::Memory(std::string name,
                Component& parent,
                Bus<base::Byte>& data_bus,
                Bus<base::Word>& address_bus,
-               std::vector<RegionFactory> region_factories)
+               std::vector<RegionFactory> region_factories,
+               LatchedProcessControl& irq_line)
     : ComponentWithBus<Memory, base::Byte>(std::move(name), parent, data_bus),
       mar_("mar", *this, address_bus, data_bus) {
   // Build regions using factory pattern
   regions_.reserve(region_factories.size());
   for (auto& factory : region_factories) {
-    regions_.push_back(factory(*this));
+    regions_.push_back(factory(*this, irq_line));
+    RegisterChild(*regions_.back());
   }
 
   // Validate no overlapping regions

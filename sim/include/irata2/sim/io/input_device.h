@@ -7,6 +7,7 @@
 
 #include "irata2/base/types.h"
 #include "irata2/sim/component.h"
+#include "irata2/sim/control.h"
 #include "irata2/sim/memory/module.h"
 
 namespace irata2::sim::io {
@@ -55,7 +56,7 @@ class InputDevice final : public memory::Module {
   static constexpr size_t QUEUE_SIZE = 16;
   static constexpr size_t MMIO_SIZE = 16;  // Power of 2, aligned
 
-  InputDevice(std::string name, Component& parent);
+  InputDevice(std::string name, Component& parent, LatchedProcessControl& irq_line);
 
   // Module interface
   size_t size() const override { return MMIO_SIZE; }
@@ -79,9 +80,12 @@ class InputDevice final : public memory::Module {
   size_t write_idx_ = 0;
   size_t count_ = 0;
   bool irq_enabled_ = false;
+  LatchedProcessControl& irq_line_;
 
   uint8_t pop();
   uint8_t peek() const;
+
+  void TickControl() override;
 };
 
 }  // namespace irata2::sim::io

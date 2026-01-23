@@ -6,6 +6,7 @@ Cpu::Cpu()
     : Component<Cpu>("cpu", this),
       halt_control_("halt", *this),
       crash_control_("crash", *this),
+      irq_line_("irq_line", *this),
       data_bus_("data_bus", *this),
       address_bus_("address_bus", *this),
       a_("a", *this, data_bus_),

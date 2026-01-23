@@ -13,6 +13,7 @@ using irata2::base::Word;
 using irata2::sim::Cpu;
 using irata2::sim::DefaultHdl;
 using irata2::sim::DefaultMicrocodeProgram;
+using irata2::sim::LatchedProcessControl;
 using irata2::sim::io::InputDevice;
 using irata2::sim::io::INPUT_DEVICE_BASE;
 using irata2::sim::memory::Memory;
@@ -28,11 +29,14 @@ CpuWithInput MakeCpuWithInputDevice(const std::vector<Byte>& rom) {
   CpuWithInput result;
 
   std::vector<Memory::RegionFactory> factories;
-  factories.push_back([&result](Memory& mem) -> std::unique_ptr<Region> {
+  factories.push_back([&result](Memory& mem,
+                                LatchedProcessControl& irq_line)
+                           -> std::unique_ptr<Region> {
     return std::make_unique<Region>(
         "input_device", mem, Word{INPUT_DEVICE_BASE},
-        [&result](Region& region) -> std::unique_ptr<irata2::sim::memory::Module> {
-          auto device = std::make_unique<InputDevice>("input", region);
+        [&result, &irq_line](Region& region)
+            -> std::unique_ptr<irata2::sim::memory::Module> {
+          auto device = std::make_unique<InputDevice>("input", region, irq_line);
           result.device = device.get();
           return device;
         });

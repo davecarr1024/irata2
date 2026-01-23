@@ -58,12 +58,14 @@ class Cpu final : public Component<Cpu> {
   const Memory& memory() const { return memory_; }
   const ProcessControl<true>& halt() const { return halt_control_; }
   const ProcessControl<true>& crash() const { return crash_control_; }
+  const LatchedProcessControl& irq_line() const { return irq_line_; }
 
   template <typename Visitor>
   void visit_impl(Visitor&& visitor) const {
     visitor(*this);
     halt_control_.visit(visitor);
     crash_control_.visit(visitor);
+    irq_line_.visit(visitor);
     data_bus_.visit(visitor);
     address_bus_.visit(visitor);
     a_.visit(visitor);
@@ -81,6 +83,7 @@ class Cpu final : public Component<Cpu> {
  private:
   const ProcessControl<true> halt_control_;
   const ProcessControl<true> crash_control_;
+  const LatchedProcessControl irq_line_;
   const ByteBus data_bus_;
   const WordBus address_bus_;
   const ByteRegister a_;

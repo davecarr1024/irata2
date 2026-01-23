@@ -1,7 +1,7 @@
 # Microcode definition for MVP instructions
 
 fetch_preamble:
-  - [pc.write, memory.mar.read, controller.ipc.latch]
+  - [pc.write, memory.mar.read, controller.instruction_start]
   - [memory.write, controller.ir.read]
   - [pc.increment]
 
@@ -1740,6 +1740,24 @@ instructions:
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
           - [pc.low.write, memory.read, sp.decrement]
           - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [status.break.set]
+          - [status.write, memory.read, sp.decrement]
+          - [status.break.clear]
+          - [memory.mar.interrupt_vector]
+          - [memory.write, pc.low.read]
+          - [memory.mar.increment]
+          - [memory.write, pc.high.read]
+
+  IRQ_IMP:
+    stages:
+      - steps:
+          - [status.interrupt_disable.set]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.high.write, memory.read, sp.decrement]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [pc.low.write, memory.read, sp.decrement]
+          - [sp.write, memory.mar.low.read, memory.mar.stack_page]
+          - [status.break.clear]
           - [status.write, memory.read, sp.decrement]
           - [memory.mar.interrupt_vector]
           - [memory.write, pc.low.read]

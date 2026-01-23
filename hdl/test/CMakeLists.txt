@@ -28,6 +28,7 @@ add_executable(hdl_tests
   control_test.cpp
   counter_test.cpp
   cpu_test.cpp
+  latched_control_test.cpp
   process_control_test.cpp
   read_control_test.cpp
   register_test.cpp

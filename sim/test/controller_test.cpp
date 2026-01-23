@@ -97,14 +97,14 @@ TEST(SimControllerTest, RejectsControlWordOverflow) {
   EXPECT_THROW(sim.Tick(), SimError);
 }
 
-TEST(SimControllerTest, IpcLatchCapturesPcValue) {
-  // Test that IPC captures PC's value when ipc.latch is asserted.
-  // This matches fetch preamble step 0: [pc.write, controller.ipc.latch, ...]
+TEST(SimControllerTest, InstructionStartCapturesPcValue) {
+  // Test that IPC captures PC's value when instruction_start is asserted.
+  // This matches fetch preamble step 0: [pc.write, controller.instruction_start, ...]
   // Note: pc.increment is in a separate step (step 2), not here.
   auto hdl = std::make_shared<irata2::hdl::Cpu>();
   auto program = MakeProgramWithControls(
       *hdl,
-      {"pc.write", "controller.ipc.latch"},
+      {"pc.write", "controller.instruction_start"},
       0x02);
 
   Cpu sim(hdl, program);

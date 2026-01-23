@@ -41,6 +41,20 @@ TEST(SimControlTest, LatchedControlDoesNotAutoClear) {
   EXPECT_FALSE(test::IsAsserted(control));
 }
 
+TEST(SimControlTest, LatchedProcessControlAliasPersists) {
+  Cpu sim;
+
+  LatchedProcessControl control("latched_process", sim);
+  sim.RegisterChild(control);
+
+  test::AssertControl(control);
+  EXPECT_TRUE(test::IsAsserted(control));
+
+  sim.Tick();
+  test::SetPhase(sim, irata2::base::TickPhase::Process);
+  EXPECT_TRUE(control.asserted());
+}
+
 TEST(SimControlTest, AssertOutsideControlPhaseThrows) {
   Cpu sim;
   ProcessControl<true> control("auto", sim);
