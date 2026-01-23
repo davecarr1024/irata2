@@ -147,13 +147,13 @@ Actually, let me revise to be cleaner:
 
 ### Revised Streaming Model
 
-**Registers:**
+**Registers (implemented, 16-byte MMIO window at $4100-$410F):**
 - $4100: CMD (write opcode here)
 - $4101: X0
 - $4102: Y0
 - $4103: X1
 - $4104: Y1
-- $4105: COLOR (4-bit palette index? or 8-bit RGB332?)
+- $4105: COLOR (2-bit intensity in low bits)
 - $4106: EXEC (write $01 to execute buffered command)
 - $4107: CONTROL (bit 0: clear screen, bit 1: present frame, bit 7: enable IRQ)
 - $4108: STATUS (bit 0: busy, bit 7: IRQ pending)
@@ -209,7 +209,7 @@ Evokes classic vector arcade games (Asteroids, Tempest) with glowing green CRT a
 - **Not hardware-ish**: Commands execute instantly (or micros, not cycles)
 - **No DMA**: CPU writes individual bytes, coprocessor reads immediately
 - **Busy flag**: Always clear (instant execution)
-- **IRQ**: Deferred - use polling for MVP
+- **IRQ**: Deferred - status currently always 0 for MVP; use polling
 - **Swappable backends**: VGC uses backend interface for rendering
   - **SDL backend**: Renders to window (interactive demos)
   - **Image backend**: Renders to in-memory buffer (headless testing)

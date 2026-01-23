@@ -34,6 +34,8 @@ add_executable(sim_tests
   memory_test.cpp
   register_test.cpp
   status_test.cpp
+  vgc_backend_test.cpp
+  vgc_integration_test.cpp
 )
 
 target_link_libraries(sim_tests PRIVATE

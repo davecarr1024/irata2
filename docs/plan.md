@@ -24,19 +24,19 @@
    - ✓ Sound device deferred but documented ($4200, square wave)
    - ✓ MMIO region: $4000-$7FFF (between RAM at $0000 and ROM at $8000)
 
-2. **Phase 1: Input Device (MVP)** - *IN PROGRESS*
+2. **Phase 1: Input Device (MVP)** - *DONE*
    - ✓ Implement `sim/io/input_device.{h,cpp}` with 16-byte queue and MMIO registers
    - ✓ Add MMIO routing in memory map ($4000-$400F)
    - ✓ Write unit tests for queue behavior, register reads/writes
-   - Write integration test: assembly program reads input, stores in RAM
+   - ✓ Write integration test: assembly program reads input, stores in RAM
    - **Deliverable:** Keyboard input flows to CPU via polling
 
-3. **Phase 2: Vector Graphics Coprocessor (MVP)**
-   - Implement VgcBackend interface (clear, draw_point, draw_line, present)
-   - Implement ImageBackend for headless testing (256x256 framebuffer)
-   - Implement VectorGraphicsCoprocessor with streaming registers
-   - Add MMIO routing for VGC region ($4100-$4108)
-   - Unit tests + integration test (assembly draws shapes, verify framebuffer pixels)
+3. **Phase 2: Vector Graphics Coprocessor (MVP)** - *DONE*
+   - ✓ Implement VgcBackend interface (clear, draw_point, draw_line, present)
+   - ✓ Implement ImageBackend for headless testing (256x256 framebuffer)
+   - ✓ Implement VectorGraphicsCoprocessor with streaming registers
+   - ✓ Add MMIO routing for VGC region ($4100-$4108) via extra region factories
+   - ✓ Unit tests + integration test (assembly draws shapes, verify framebuffer pixels)
    - **Deliverable:** Graphics testing loop closed (Assembly → MMIO → VGC → ImageBackend → verification)
 
 4. **Phase 3: SDL Frontend (Basic Window)**
