@@ -181,20 +181,15 @@ STA $FE07       ; Present
 
 ### Color Model
 
-**8-bit RGB332**: 3 bits red, 3 bits green, 2 bits blue
-- Simple bit manipulation for CPU
-- 256 colors is plenty for vector graphics
-- Direct mapping: `RRRGGGBB`
+**2-bit monochrome intensity**: Simple arcade vector display aesthetic
+- `00`: Off (black background)
+- `01`: Dim green
+- `10`: Medium green
+- `11`: Bright green (default)
 
-Common colors:
-- $00: Black
-- $E0: Red
-- $1C: Green
-- $03: Blue
-- $FF: White
-- $FC: Yellow
-- $E3: Magenta
-- $1F: Cyan
+Evokes classic vector arcade games (Asteroids, Tempest) with glowing green CRT aesthetic.
+
+**Future expansion**: Could support 4-color palette or RGB if needed, but monochrome keeps it simple.
 
 ### Display Model
 
@@ -203,13 +198,72 @@ Common colors:
 - **Coordinate origin**: Top-left (0,0), standard screen coordinates
 - **Line drawing**: Bresenham's algorithm (or SDL's built-in)
 - **Present timing**: Immediate, no vsync requirement
+- **Frame rate**: Default 30 FPS (CPU runs at 100 KHz = 3,333 cycles/frame, tunable via `--fps` and `--cycles-per-frame`)
+
+**Performance note**: At 100 KHz, 60 FPS = only 1,666 cycles/frame. Games will need to run at 15-30 FPS or use very tight loops.
 
 ### Implementation Notes
 
 - **Not hardware-ish**: Commands execute instantly (or micros, not cycles)
 - **No DMA**: CPU writes individual bytes, coprocessor reads immediately
-- **Busy flag**: Optional, can be always-clear for simplicity
-- **IRQ on frame complete**: Optional for future "trigger next frame" pattern
+- **Busy flag**: Always clear (instant execution)
+- **IRQ**: Deferred - use polling for MVP
+- **Swappable backends**: VGC uses backend interface for rendering
+  - **SDL backend**: Renders to window (interactive demos)
+  - **Image backend**: Renders to in-memory buffer (headless testing)
+
+### VGC Backend Interface
+
+```cpp
+// sim/io/vgc_backend.h
+namespace irata2::sim::io {
+  class VgcBackend {
+  public:
+    virtual ~VgcBackend() = default;
+    virtual void clear(uint8_t intensity) = 0;
+    virtual void draw_point(uint8_t x, uint8_t y, uint8_t intensity) = 0;
+    virtual void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t intensity) = 0;
+    virtual void present() = 0;
+  };
+
+  // For testing - renders to 256x256 byte array
+  class ImageBackend : public VgcBackend {
+  public:
+    const std::array<uint8_t, 256*256>& get_framebuffer() const;
+    // ... implements interface
+  };
+
+  // For SDL frontend - renders to SDL_Renderer
+  class SdlBackend : public VgcBackend {
+  public:
+    SdlBackend(SDL_Renderer* renderer, int scale);
+    // ... implements interface
+  };
+}
+```
+
+This allows **integration tests** to run headless:
+```cpp
+TEST(VgcIntegrationTest, DrawsLine) {
+  auto backend = std::make_unique<ImageBackend>();
+  VectorGraphicsCoprocessor vgc(std::move(backend));
+
+  // CPU writes line command via MMIO
+  vgc.write_register(0x00, 0x03);  // LINE opcode
+  vgc.write_register(0x01, 0);     // x0
+  vgc.write_register(0x02, 0);     // y0
+  vgc.write_register(0x03, 255);   // x1
+  vgc.write_register(0x04, 255);   // y1
+  vgc.write_register(0x05, 0x03);  // Bright green
+  vgc.write_register(0x06, 0x01);  // Execute
+  vgc.write_register(0x07, 0x02);  // Present
+
+  // Verify diagonal line in framebuffer
+  auto& fb = backend->get_framebuffer();
+  EXPECT_EQ(fb[0*256 + 0], 0x03);      // Top-left
+  EXPECT_EQ(fb[255*256 + 255], 0x03);  // Bottom-right
+}
+```
 
 ---
 
@@ -288,18 +342,18 @@ void DemoRunner::run() {
 
 ```bash
 irata2_demo --rom asteroids.cartridge \
-            --fps 60 \
+            --fps 30 \
             --scale 2 \
-            --cycles-per-frame 10000 \
+            --cycles-per-frame 3333 \
             --debug-on-crash \
             --trace-size 100
 ```
 
 Options:
 - `--rom`: Path to cartridge file (required)
-- `--fps`: Target frame rate (default 60)
+- `--fps`: Target frame rate (default 30, CPU @ 100 KHz limits practical max)
 - `--scale`: Window scale factor (default 2 = 512x512 window)
-- `--cycles-per-frame`: CPU cycles per frame (tunable for game speed)
+- `--cycles-per-frame`: CPU cycles per frame (default: 100000/fps)
 - `--debug-on-crash`: Emit debug dump and trace on halt/error
 - `--trace-size`: Trace buffer size for crash dumps
 
@@ -421,33 +475,41 @@ Depends on: `sim`, `assembler` (for cartridge loading), SDL2
 ---
 
 ### Phase 2: Vector Graphics Coprocessor (MVP)
-**Goal**: CPU can issue draw commands, retrieve as command list
+**Goal**: CPU can issue draw commands, render to image for testing
 
-1. Implement `sim/io/vector_graphics_coprocessor.{h,cpp}` with streaming registers
-2. Add MMIO routing for VGC region
-3. Write unit tests for command buffering (write registers, read back commands)
-4. Write integration test: assembly program that draws a line, point, clears screen
+1. Implement `sim/io/vgc_backend.h` interface (clear, draw_point, draw_line, present)
+2. Implement `sim/io/image_backend.{h,cpp}` - renders to 256x256 byte array
+3. Implement `sim/io/vector_graphics_coprocessor.{h,cpp}` with streaming registers + backend
+4. Add MMIO routing for VGC region
+5. Write unit tests for:
+   - Register writes (opcode, args, exec, present)
+   - ImageBackend rendering (verify pixels in framebuffer)
+   - Line drawing algorithm correctness
+6. Write integration test: assembly program that draws line/point/clear, verify framebuffer
 
 **Deliverables**:
-- VGC tests pass
-- Assembly test: `tests/vgc_test.asm` draws simple shapes
+- VGC unit tests pass with ImageBackend
+- Integration test: `tests/vgc_test.asm` draws shapes, C++ test verifies framebuffer pixels
+- **Graphics testing loop closed**: Assembly → MMIO → VGC → ImageBackend → Framebuffer verification
 
 ---
 
 ### Phase 3: SDL Frontend (Basic Window)
-**Goal**: Window opens, renders VGC commands, accepts keyboard input
+**Goal**: Window opens, renders VGC commands via SDL, accepts keyboard input
 
-1. Add `frontend/` module with SDL2 dependency
-2. Implement `DemoRunner` class with SDL init, window, renderer
-3. Implement `render_frame()`: read VGC commands, draw via SDL
-4. Implement `handle_input()`: SDL keyboard → input device queue
-5. Implement main loop with fixed FPS
-6. CLI arg parsing with `--rom`, `--fps`, `--scale`
+1. Implement `sim/io/sdl_backend.{h,cpp}` - renders to SDL_Renderer with green CRT aesthetic
+2. Add `frontend/` module with SDL2 dependency
+3. Implement `DemoRunner` class with SDL init, window, renderer
+4. Implement `render_frame()`: VGC with SdlBackend presents to window
+5. Implement `handle_input()`: SDL keyboard → input device queue
+6. Implement main loop with fixed FPS (default 30)
+7. CLI arg parsing with `--rom`, `--fps`, `--scale`, `--cycles-per-frame`
 
 **Deliverables**:
-- `irata2_demo --rom test.cartridge` opens window and runs
+- `irata2_demo --rom test.cartridge` opens window and runs at 30 FPS
 - Can close window with X or ESC
-- Renders lines/points from VGC commands
+- Renders lines/points from VGC with green vector aesthetic
+- Keyboard input flows to input device queue
 
 ---
 
@@ -460,7 +522,7 @@ Depends on: `sim`, `assembler` (for cartridge loading), SDL2
 4. Verify visible blinking on screen
 
 **Deliverables**:
-- Blinking pixel demo runs smoothly at 60 FPS
+- Blinking pixel demo runs smoothly at 30 FPS
 
 ---
 
@@ -502,32 +564,70 @@ Depends on: `sim`, `assembler` (for cartridge loading), SDL2
 
 ---
 
-## Open Questions
+## Design Decisions
 
-1. **Color model**: RGB332 (256 colors) or 4-bit palette (16 colors)? RGB332 is simpler.
+1. **Color model**: ✓ 2-bit monochrome green intensity (arcade vector aesthetic)
+2. **VGC busy flag**: ✓ Always clear (instant execution)
+3. **Command interface**: ✓ Streaming registers (simple, well-tested)
+4. **IRQ**: ✓ Defer - polling only for MVP
+5. **Screen coordinates**: ✓ Top-left (0,0) - matches SDL
+6. **Frame rate**: ✓ 30 FPS default (100 KHz CPU = 3,333 cycles/frame)
+7. **Sound**: ✓ Defer, document plan separately (see below)
+8. **Trace on crash**: ✓ Auto-dump debug info on halt
+9. **Window size**: ✓ Configurable via `--scale` flag
+10. **SDL version**: ✓ SDL2 (stable, well-documented)
+11. **VGC backends**: ✓ Swappable interface (SDL for display, Image for testing)
+12. **Integration testing**: ✓ Heavy focus on assembly integration tests for all I/O devices
 
-2. **VGC busy flag**: Should commands block (busy flag) or execute instantly? Instant is simpler, blocking is more "realistic."
+---
 
-3. **Command buffer vs streaming**: Streaming registers (write opcode, args, exec) or buffered display list? Streaming is simpler for CPU, buffer is more powerful.
+## Sound Device (Deferred)
 
-4. **IRQ priorities**: If both input and VGC can IRQ, what's the priority? Single IRQ line or separate vectors?
+**Future MMIO sound device plan** - document now, implement later:
 
-5. **Screen coordinates**: Top-left (0,0) or bottom-left like OpenGL? Top-left matches SDL and is more intuitive.
+### Concept: Simple Square Wave Generator
 
-6. **Cycles per frame**: How to balance? 10,000 cycles = 166 KHz at 60 FPS. Is that enough for game logic?
+**MMIO Map** ($FD00-$FD0F):
+- $FD00: FREQ_LO (frequency low byte)
+- $FD01: FREQ_HI (frequency high byte, 16-bit frequency in Hz)
+- $FD02: DURATION (duration in frames, 0 = infinite)
+- $FD03: VOLUME (0-15, 4-bit volume)
+- $FD04: CONTROL (bit 0: play/stop, bit 1: reset)
+- $FD05: STATUS (bit 0: playing, bit 7: IRQ on complete)
 
-7. **Sound**: Defer entirely, or plan MMIO sound device interface now? Probably defer.
+**Sound model**:
+- Single square wave channel (enough for simple beeps/explosions)
+- CPU writes frequency + duration, triggers play
+- SDL backend uses SDL_AudioSpec + callback to generate waveform
+- Image backend (testing) just records commands, no audio output
 
-8. **Trace on crash**: Should demo runner automatically dump trace buffer and debug info on halt? Yes, very useful.
+**Example usage**:
+```asm
+; Play 440 Hz (A4) for 15 frames (~0.5 sec at 30 FPS)
+LDA #$B8        ; 440 & 0xFF
+STA $FD00       ; FREQ_LO
+LDA #$01        ; 440 >> 8
+STA $FD01       ; FREQ_HI
+LDA #15
+STA $FD02       ; 15 frames
+LDA #10
+STA $FD03       ; Volume = 10/15
+LDA #$01
+STA $FD04       ; Play
+```
 
-9. **Window size**: Fixed 512x512 or configurable? Configurable via `--scale` flag.
-
-10. **SDL version**: SDL2 (stable) or SDL3 (newer API)? SDL2 for now.
+**Implementation phases**:
+1. Define MMIO interface and add to sim (no-op backend)
+2. Unit tests for register writes, command sequencing
+3. SDL audio callback implementation
+4. Integration test with assembly sound effect program
+5. Add explosion/thrust sounds to Asteroids demo
 
 ---
 
 ## Next Steps
 
-1. Review and refine this spec
-2. Answer open questions
-3. Start Phase 1 implementation
+1. ✓ Review and refine this spec
+2. ✓ Answer open questions → Design decisions finalized
+3. Update phase 2 to add ImageBackend for testing
+4. Start Phase 1 implementation
