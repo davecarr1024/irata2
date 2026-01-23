@@ -50,6 +50,9 @@ if(BUILD_TESTING)
   enable_testing()
 endif()
 
+# SDL demo frontend
+option(IRATA2_ENABLE_SDL "Build SDL demo frontend" OFF)
+
 # Documentation generation with Doxygen
 find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
@@ -87,6 +90,11 @@ add_subdirectory(sim)
 
 # 6. Microcode module - depends on base, hdl, asm
 add_subdirectory(microcode)
+
+# 6.5 Frontend module (optional SDL demo)
+if(IRATA2_ENABLE_SDL)
+  add_subdirectory(frontend)
+endif()
 
 # 7. End-to-end tests (assembler + sim)
 if(BUILD_TESTING)

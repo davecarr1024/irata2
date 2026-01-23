@@ -39,11 +39,11 @@
    - ✓ Unit tests + integration test (assembly draws shapes, verify framebuffer pixels)
    - **Deliverable:** Graphics testing loop closed (Assembly → MMIO → VGC → ImageBackend → verification)
 
-4. **Phase 3: SDL Frontend (Basic Window)**
-   - Implement SdlBackend rendering to SDL_Renderer with green CRT aesthetic
-   - Add `frontend/` module with SDL2 dependency
-   - Implement DemoRunner class (window, frame loop, input handling)
-   - CLI: `irata2_demo --rom game.cartridge --fps 30 --scale 2 --cycles-per-frame 3333`
+4. **Phase 3: SDL Frontend (Basic Window)** - *DONE*
+   - ✓ Implement SdlBackend rendering to SDL_Renderer with green CRT aesthetic
+   - ✓ Add `frontend/` module with SDL2 dependency (optional build flag)
+   - ✓ Implement DemoRunner class (window, frame loop, input handling)
+   - ✓ CLI: `irata2_demo --rom game.cartridge --fps 30 --scale 2 --cycles-per-frame 3333`
    - **Deliverable:** Window opens, renders VGC commands, accepts keyboard input
 
 5. **Phase 4-7: Demo Programs**

@@ -351,6 +351,8 @@ irata2_demo --rom asteroids.cartridge \
             --trace-size 100
 ```
 
+Note: `irata2_demo` is built only when `IRATA2_ENABLE_SDL=ON`.
+
 Options:
 - `--rom`: Path to cartridge file (required)
 - `--fps`: Target frame rate (default 30, CPU @ 100 KHz limits practical max)
@@ -361,12 +363,11 @@ Options:
 
 ### Dependencies
 
-Modern C++ SDL bindings (one of):
-- **SDL2** via raw API (most portable, C-style)
-- **SDL2pp** (C++ wrapper: https://github.com/libSDL2pp/libSDL2pp)
-- **SDL3** (upcoming, improved API)
+- **SDL2** via raw API (portable, straightforward, works with Emscripten)
+- Build flag: `IRATA2_ENABLE_SDL=ON` to enable the demo frontend
 
-Recommendation: **SDL2** for now, raw API is well-documented and stable.
+Recommendation: **SDL2** for now, because it keeps the build simple and remains
+compatible with future browser builds via Emscripten + SDL2.
 
 ---
 
