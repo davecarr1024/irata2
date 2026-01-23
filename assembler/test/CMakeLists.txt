@@ -16,11 +16,16 @@ include(GoogleTest)
 
 add_executable(assembler_tests
   assembler_test.cpp
+  demo_programs_test.cpp
 )
 
 target_link_libraries(assembler_tests PRIVATE
   GTest::gtest_main
   irata2::assembler
+)
+
+target_compile_definitions(assembler_tests PRIVATE
+  IRATA2_TEST_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
 target_compile_features(assembler_tests PRIVATE cxx_std_20)

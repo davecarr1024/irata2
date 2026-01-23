@@ -47,10 +47,10 @@
    - **Deliverable:** Window opens, renders VGC commands, accepts keyboard input
 
 5. **Phase 4-7: Demo Programs**
-   - Phase 4: Blinking pixel demo (simple animation)
-   - Phase 5: Moving sprite with arrow key control
+   - ✓ Phase 4: Blinking pixel demo (simple animation)
+   - ✓ Phase 5: Moving sprite with arrow key control
    - Phase 6: IRQ support (interrupt-driven input, deferred)
-   - Phase 7: Asteroids prototype (ship, asteroids, shooting, collision)
+   - ✓ Phase 7: Asteroids prototype (ship, asteroids, shooting, collision)
 
 ## Debug Tooling Backlog
 
