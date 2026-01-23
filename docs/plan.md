@@ -16,17 +16,18 @@
 **See `docs/projects/demo-surface.md` for complete specification.**
 
 1. **✓ Define the demo surface**
-   - ✓ Vector graphics coprocessor (VGC) with streaming MMIO interface at $FE00
-   - ✓ Input device with keyboard queue at $FF00
+   - ✓ Vector graphics coprocessor (VGC) with streaming MMIO interface at $4100
+   - ✓ Input device with keyboard queue at $4000
    - ✓ 2-bit monochrome green intensity (arcade vector aesthetic)
    - ✓ 256x256 logical resolution, 30 FPS default (3,333 cycles/frame @ 100 KHz)
    - ✓ Swappable backends: ImageBackend (testing) + SdlBackend (display)
-   - ✓ Sound device deferred but documented ($FD00, square wave)
+   - ✓ Sound device deferred but documented ($4200, square wave)
+   - ✓ MMIO region: $4000-$7FFF (between RAM at $0000 and ROM at $8000)
 
-2. **Phase 1: Input Device (MVP)** - *READY TO START*
-   - Implement `sim/io/input_device.{h,cpp}` with 16-byte queue and MMIO registers
-   - Add MMIO routing in memory map ($FF00-$FF0F)
-   - Write unit tests for queue behavior, register reads/writes
+2. **Phase 1: Input Device (MVP)** - *IN PROGRESS*
+   - ✓ Implement `sim/io/input_device.{h,cpp}` with 16-byte queue and MMIO registers
+   - ✓ Add MMIO routing in memory map ($4000-$400F)
+   - ✓ Write unit tests for queue behavior, register reads/writes
    - Write integration test: assembly program reads input, stores in RAM
    - **Deliverable:** Keyboard input flows to CPU via polling
 
@@ -34,7 +35,7 @@
    - Implement VgcBackend interface (clear, draw_point, draw_line, present)
    - Implement ImageBackend for headless testing (256x256 framebuffer)
    - Implement VectorGraphicsCoprocessor with streaming registers
-   - Add MMIO routing for VGC region ($FE00-$FE08)
+   - Add MMIO routing for VGC region ($4100-$4108)
    - Unit tests + integration test (assembly draws shapes, verify framebuffer pixels)
    - **Deliverable:** Graphics testing loop closed (Assembly → MMIO → VGC → ImageBackend → verification)
 

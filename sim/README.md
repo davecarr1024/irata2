@@ -211,7 +211,49 @@ trace (1 entries):
   [0] cycle=0 addr=0x8000 ir=0xff pc=0x8000 sc=0x01 a=0x00 x=0x00 sr=0x02 program.asm:1:1 crs
 ```
 
+## MMIO Devices
+
+MMIO (Memory-Mapped I/O) devices are added to the simulator via extra region factories passed to the CPU constructor. These devices implement the `memory::Module` interface and are routed through the memory subsystem.
+
+### Design Decision: CPU as Root
+
+The sim component tree is only buildable as a complete IRATA CPU. Individual components cannot be tested in isolation from the CPU root because:
+- Components require parent references that eventually reach the CPU
+- The tick orchestration and phase model is CPU-driven
+- Memory routing and bus access require the full CPU context
+
+**MMIO device tests must use the full CPU** and add the device via `extra_region_factories`:
+
+```cpp
+std::pair<Cpu, MyDevice*> MakeCpuWithDevice() {
+  MyDevice* device_ptr = nullptr;
+  std::vector<memory::Memory::RegionFactory> factories;
+  factories.push_back([&device_ptr](memory::Memory& m) {
+    return std::make_unique<memory::Region>(
+        "my_device", m, Word{0x4000},
+        [&device_ptr](memory::Region& r) {
+          auto device = std::make_unique<MyDevice>("device", r);
+          device_ptr = device.get();
+          return device;
+        });
+  });
+  Cpu cpu(DefaultHdl(), test::MakeNoopProgram(), {}, std::move(factories));
+  return {std::move(cpu), device_ptr};
+}
+```
+
+### Available MMIO Devices
+
+MMIO devices are mapped in the $4000-$7FFF region (between RAM and ROM):
+
+| Device | Address | Size | Purpose |
+|--------|---------|------|---------|
+| Input Device | $4000-$400F | 16 bytes | Keyboard input queue |
+
+See `docs/projects/demo-surface.md` for full MMIO specifications.
+
 ## Files
 
 - `component.h` - Base classes for sim components
 - `cpu.h` / `cpu.cpp` - Root simulator with tick orchestration
+- `io/input_device.h` - Input device with keyboard queue

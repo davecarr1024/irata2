@@ -35,8 +35,8 @@ These devices form the **abstraction boundary** where the hardware-ish CPU meets
 │  │  │ Device   │  │ Coprocessor              │   │  │
 │  │  │ (MMIO)   │  │ (MMIO)                   │   │  │
 │  │  │          │  │                          │   │  │
-│  │  │ $FF00-   │  │ $FE00-$FEFF              │   │  │
-│  │  │ $FF0F    │  │                          │   │  │
+│  │  │ $4000-   │  │ $4100-$41FF              │   │  │
+│  │  │ $400F    │  │                          │   │  │
 │  │  └──────────┘  └──────────────────────────┘   │  │
 │  └─────────────────────────────────────────────────┘  │
 │                                                         │
@@ -56,16 +56,18 @@ These devices form the **abstraction boundary** where the hardware-ish CPU meets
 ### Purpose
 Accept keyboard input from SDL frontend, buffer it in a queue, and interrupt the CPU when input is available.
 
-### MMIO Map (16 bytes: $FF00-$FF0F)
+### MMIO Map (16 bytes: $4000-$400F)
+
+MMIO devices are mapped in the $4000-$7FFF region (between RAM at $0000-$1FFF and ROM at $8000-$FFFF).
 
 | Address | Register | Access | Description |
 |---------|----------|--------|-------------|
-| $FF00   | STATUS   | R      | Status flags (bit 0: queue not empty, bit 1: queue full, bit 7: IRQ pending) |
-| $FF01   | CONTROL  | W      | Control register (bit 0: enable IRQ on input) |
-| $FF02   | DATA     | R      | Read next byte from queue (pops), returns $00 if empty |
-| $FF03   | PEEK     | R      | Read next byte without popping, $00 if empty |
-| $FF04   | COUNT    | R      | Number of bytes in queue (0-16) |
-| $FF05-$FF0F | -    | -      | Reserved for future use |
+| $4000   | STATUS   | R      | Status flags (bit 0: queue not empty, bit 1: queue full, bit 7: IRQ pending) |
+| $4001   | CONTROL  | W      | Control register (bit 0: enable IRQ on input) |
+| $4002   | DATA     | R      | Read next byte from queue (pops), returns $00 if empty |
+| $4003   | PEEK     | R      | Read next byte without popping, $00 if empty |
+| $4004   | COUNT    | R      | Number of bytes in queue (0-16) |
+| $4005-$400F | -    | -      | Reserved for future use |
 
 ### Keyboard Mapping
 
@@ -111,26 +113,26 @@ Execute simple drawing commands to render vector graphics. Programs write comman
 - **Simple command set**: Lines, points, clear—enough for Asteroids
 - **8-bit coordinates**: Screen is 256x256 logical units, scaled to window
 
-### MMIO Map (256 bytes: $FE00-$FEFF)
+### MMIO Map (256 bytes: $4100-$41FF)
 
 | Address Range | Register | Access | Description |
 |---------------|----------|--------|-------------|
-| $FE00         | CONTROL  | W      | Control register (bit 0: execute, bit 1: clear, bit 2: present) |
-| $FE01         | STATUS   | R      | Status flags (bit 0: busy, bit 7: IRQ on complete) |
-| $FE02         | CMD_PTR  | W      | Command buffer write pointer (auto-increments) |
-| $FE03-$FEFF   | CMD_BUF  | W      | Command buffer (253 bytes) |
+| $4100         | CONTROL  | W      | Control register (bit 0: execute, bit 1: clear, bit 2: present) |
+| $4101         | STATUS   | R      | Status flags (bit 0: busy, bit 7: IRQ on complete) |
+| $4102         | CMD_PTR  | W      | Command buffer write pointer (auto-increments) |
+| $4103-$41FF   | CMD_BUF  | W      | Command buffer (253 bytes) |
 
 Alternative simpler design: **streaming commands**
 
 | Address | Register | Access | Description |
 |---------|----------|--------|-------------|
-| $FE00   | CMD      | W      | Command opcode |
-| $FE01   | ARG0     | W      | Argument 0 (X0, color, etc.) |
-| $FE02   | ARG1     | W      | Argument 1 (Y0) |
-| $FE03   | ARG2     | W      | Argument 2 (X1) |
-| $FE04   | ARG3     | W      | Argument 3 (Y1) |
-| $FE05   | CONTROL  | W      | Control (bit 0: execute last command, bit 1: clear screen, bit 2: present frame) |
-| $FE06   | STATUS   | R      | Status (bit 0: busy, bit 7: complete IRQ) |
+| $4100   | CMD      | W      | Command opcode |
+| $4101   | ARG0     | W      | Argument 0 (X0, color, etc.) |
+| $4102   | ARG1     | W      | Argument 1 (Y0) |
+| $4103   | ARG2     | W      | Argument 2 (X1) |
+| $4104   | ARG3     | W      | Argument 3 (Y1) |
+| $4105   | CONTROL  | W      | Control (bit 0: execute last command, bit 1: clear screen, bit 2: present frame) |
+| $4106   | STATUS   | R      | Status (bit 0: busy, bit 7: complete IRQ) |
 
 ### Command Set (Streaming Model)
 
@@ -139,44 +141,44 @@ Alternative simpler design: **streaming commands**
 | $00    | NOP  | -    | No operation |
 | $01    | CLEAR| color| Clear screen to color (ARG0) |
 | $02    | POINT| x, y, color | Draw point at (ARG0, ARG1) with color (ARG2) |
-| $03    | LINE | x0, y0, x1, y1, color | Draw line from (ARG0, ARG1) to (ARG2, ARG3), color in previous write to $FE05? Or need $FE07? |
+| $03    | LINE | x0, y0, x1, y1, color | Draw line from (ARG0, ARG1) to (ARG2, ARG3), color in previous write to $4105? Or need $4107? |
 
 Actually, let me revise to be cleaner:
 
 ### Revised Streaming Model
 
 **Registers:**
-- $FE00: CMD (write opcode here)
-- $FE01: X0
-- $FE02: Y0
-- $FE03: X1
-- $FE04: Y1
-- $FE05: COLOR (4-bit palette index? or 8-bit RGB332?)
-- $FE06: EXEC (write $01 to execute buffered command)
-- $FE07: CONTROL (bit 0: clear screen, bit 1: present frame, bit 7: enable IRQ)
-- $FE08: STATUS (bit 0: busy, bit 7: IRQ pending)
+- $4100: CMD (write opcode here)
+- $4101: X0
+- $4102: Y0
+- $4103: X1
+- $4104: Y1
+- $4105: COLOR (4-bit palette index? or 8-bit RGB332?)
+- $4106: EXEC (write $01 to execute buffered command)
+- $4107: CONTROL (bit 0: clear screen, bit 1: present frame, bit 7: enable IRQ)
+- $4108: STATUS (bit 0: busy, bit 7: IRQ pending)
 
 **Workflow:**
 ```asm
 ; Draw a line
 LDA #$03        ; LINE command
-STA $FE00       ; Set command
+STA $4100       ; Set command
 LDA #50
-STA $FE01       ; X0 = 50
+STA $4101       ; X0 = 50
 LDA #50
-STA $FE02       ; Y0 = 50
+STA $4102       ; Y0 = 50
 LDA #200
-STA $FE03       ; X1 = 200
+STA $4103       ; X1 = 200
 LDA #200
-STA $FE04       ; Y1 = 200
+STA $4104       ; Y1 = 200
 LDA #$0F        ; White
-STA $FE05       ; Color
+STA $4105       ; Color
 LDA #$01
-STA $FE06       ; Execute
+STA $4106       ; Execute
 
 ; Present frame
 LDA #$02
-STA $FE07       ; Present
+STA $4107       ; Present
 ```
 
 ### Color Model
@@ -587,13 +589,13 @@ Depends on: `sim`, `assembler` (for cartridge loading), SDL2
 
 ### Concept: Simple Square Wave Generator
 
-**MMIO Map** ($FD00-$FD0F):
-- $FD00: FREQ_LO (frequency low byte)
-- $FD01: FREQ_HI (frequency high byte, 16-bit frequency in Hz)
-- $FD02: DURATION (duration in frames, 0 = infinite)
-- $FD03: VOLUME (0-15, 4-bit volume)
-- $FD04: CONTROL (bit 0: play/stop, bit 1: reset)
-- $FD05: STATUS (bit 0: playing, bit 7: IRQ on complete)
+**MMIO Map** ($4200-$420F):
+- $4200: FREQ_LO (frequency low byte)
+- $4201: FREQ_HI (frequency high byte, 16-bit frequency in Hz)
+- $4202: DURATION (duration in frames, 0 = infinite)
+- $4203: VOLUME (0-15, 4-bit volume)
+- $4204: CONTROL (bit 0: play/stop, bit 1: reset)
+- $4205: STATUS (bit 0: playing, bit 7: IRQ on complete)
 
 **Sound model**:
 - Single square wave channel (enough for simple beeps/explosions)
@@ -605,15 +607,15 @@ Depends on: `sim`, `assembler` (for cartridge loading), SDL2
 ```asm
 ; Play 440 Hz (A4) for 15 frames (~0.5 sec at 30 FPS)
 LDA #$B8        ; 440 & 0xFF
-STA $FD00       ; FREQ_LO
+STA $4200       ; FREQ_LO
 LDA #$01        ; 440 >> 8
-STA $FD01       ; FREQ_HI
+STA $4201       ; FREQ_HI
 LDA #15
-STA $FD02       ; 15 frames
+STA $4202       ; 15 frames
 LDA #10
-STA $FD03       ; Volume = 10/15
+STA $4203       ; Volume = 10/15
 LDA #$01
-STA $FD04       ; Play
+STA $4204       ; Play
 ```
 
 **Implementation phases**:

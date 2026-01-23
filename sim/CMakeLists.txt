@@ -15,6 +15,7 @@ add_library(irata2_sim
   src/controller/status_encoder.cpp
   src/debug_dump.cpp
   src/initialization.cpp
+  src/io/input_device.cpp
   src/memory/memory.cpp
   src/memory/memory_address_register.cpp
   src/memory/module.cpp

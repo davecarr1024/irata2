@@ -59,7 +59,7 @@ std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
         });
   });
 
-  // Cartridge ROM region at 0x8000
+  // Cartridge ROM region at 0x8000-0xFFFF (32KB)
   factories.push_back([rom_data = std::move(cartridge_rom)](
                           memory::Memory& mem) mutable -> std::unique_ptr<memory::Region> {
     return std::make_unique<memory::Region>(
@@ -67,7 +67,7 @@ std::vector<memory::Memory::RegionFactory> BuildRegionFactories(
         [rom_data = std::move(rom_data)](
             memory::Region& reg) mutable -> std::unique_ptr<memory::Module> {
           if (rom_data.empty()) {
-            // Default empty ROM
+            // Default empty ROM (32KB)
             return std::make_unique<memory::Rom>("rom", reg, 0x8000,
                                                   base::Byte{0xFF});
           }
