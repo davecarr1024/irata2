@@ -14,6 +14,7 @@ add_library(irata2_sim
   src/controller/instruction_memory.cpp
   src/controller/status_encoder.cpp
   src/debug_dump.cpp
+  src/disassembler.cpp
   src/initialization.cpp
   src/io/input_device.cpp
   src/io/vgc_backend.cpp
@@ -36,6 +37,7 @@ target_include_directories(irata2_sim PUBLIC
 target_link_libraries(irata2_sim PUBLIC
   irata2::base
   irata2::hdl
+  irata2::isa
   irata2::microcode
 )
 
@@ -48,6 +50,20 @@ add_executable(irata2_run
 )
 target_link_libraries(irata2_run PRIVATE irata2::sim)
 target_compile_features(irata2_run PRIVATE cxx_std_20)
+
+# Cartridge inspection CLI
+add_executable(irata2_cart
+  src/cart_inspect.cpp
+)
+target_link_libraries(irata2_cart PRIVATE irata2::sim)
+target_compile_features(irata2_cart PRIVATE cxx_std_20)
+
+# Disassembler CLI
+add_executable(irata2_disasm
+  src/disasm_main.cpp
+)
+target_link_libraries(irata2_disasm PRIVATE irata2::sim)
+target_compile_features(irata2_disasm PRIVATE cxx_std_20)
 
 # Simulator benchmark runner
 add_executable(irata2_bench

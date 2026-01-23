@@ -8,22 +8,24 @@
 ## Current State
 
 - Cartridge header parsing exists in `cartridge.cpp`.
+- `irata2_cart` dumps cartridge headers and optional debug metadata.
+- `irata2_disasm` disassembles ROMs with optional debug symbols.
 
 ## Proposed Work
 
 1. **Cartridge inspection CLI**
-   - Dump header/metadata (size, entry point, checksum if any).
-   - Validate layout and required sections.
+   - `irata2_cart --rom game.bin [--debug game.json]`
+   - Dumps header metadata (magic, version, entry, rom size) and debug summary.
 
 2. **Disassembler**
-   - Decode cartridge bytes into assembly.
-   - Integrate symbols if a debug sidecar is present.
+   - `irata2_disasm --rom game.bin [--debug game.json]`
+   - Optional flags: `--show-addresses`, `--show-bytes`, `--no-labels`, `--no-org`.
 
 3. **Program metadata**
-   - Optionally embed or reference build info in the cartridge.
+   - Debug sidecar supplies symbols/source metadata today (cartridge embed is still optional).
 
 4. **Test integration**
-   - Add tests that confirm round-trip assemble -> disassemble.
+   - Round-trip assemble/disassemble test lives in `sim/test/disassembler_test.cpp`.
 
 ## Milestones
 
