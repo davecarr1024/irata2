@@ -50,6 +50,7 @@
    - ✓ Phase 4: Blinking pixel demo (simple animation)
    - ✓ Phase 5: Moving sprite with arrow key control
    - Phase 6: IRQ support (interrupt-driven input, deferred)
+     - Document default device IRQ policy (level-sensitive, empty→non-empty assert)
    - ✓ Phase 7: Asteroids prototype (ship, asteroids, shooting, collision)
 
 ## Debug Tooling Backlog
