@@ -6,8 +6,10 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -17,11 +19,14 @@ struct Options {
   std::string workload = "loop";
   uint64_t cycles = 5'000'000;
   uint64_t warmup_cycles = 100'000;
+  std::string format = "text";
+  std::string output_path;
 };
 
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
-            << " [--workload {loop,mem}] [--cycles N] [--warmup N]\n";
+            << " [--workload {loop,mem}] [--cycles N] [--warmup N]"
+            << " [--format {text,json,csv}] [--output path]\n";
 }
 
 std::optional<uint64_t> ParseU64(const std::string& value) {
@@ -111,12 +116,41 @@ void RunBenchmark(const Options& options) {
   const double cycles = static_cast<double>(result.cycles);
   const double cycles_per_sec = seconds > 0.0 ? cycles / seconds : 0.0;
 
-  std::cout << "workload=" << options.workload
-            << " cycles=" << result.cycles
-            << " elapsed_s=" << seconds
-            << " cycles_per_sec=" << cycles_per_sec
-            << " halt_reason=" << HaltReasonToString(result.reason)
-            << "\n";
+  std::ostringstream output;
+  if (options.format == "json") {
+    output << "{"
+           << "\"workload\":\"" << options.workload << "\","
+           << "\"cycles\":" << result.cycles << ","
+           << "\"elapsed_s\":" << seconds << ","
+           << "\"cycles_per_sec\":" << cycles_per_sec << ","
+           << "\"halt_reason\":\"" << HaltReasonToString(result.reason) << "\""
+           << "}\n";
+  } else if (options.format == "csv") {
+    output << "workload,cycles,elapsed_s,cycles_per_sec,halt_reason\n";
+    output << options.workload << ","
+           << result.cycles << ","
+           << seconds << ","
+           << cycles_per_sec << ","
+           << HaltReasonToString(result.reason) << "\n";
+  } else {
+    output << "workload=" << options.workload
+           << " cycles=" << result.cycles
+           << " elapsed_s=" << seconds
+           << " cycles_per_sec=" << cycles_per_sec
+           << " halt_reason=" << HaltReasonToString(result.reason)
+           << "\n";
+  }
+
+  if (!options.output_path.empty()) {
+    std::ofstream out(options.output_path);
+    if (!out) {
+      std::cerr << "Failed to open output path: " << options.output_path << "\n";
+      return;
+    }
+    out << output.str();
+  } else {
+    std::cout << output.str();
+  }
 }
 }  // namespace
 
@@ -162,6 +196,29 @@ int main(int argc, char** argv) {
         return 1;
       }
       options.warmup_cycles = *parsed;
+      continue;
+    }
+    if (arg == "--format") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      options.format = argv[++i];
+      if (options.format != "text" &&
+          options.format != "json" &&
+          options.format != "csv") {
+        std::cerr << "Unknown format: " << options.format << "\n";
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      continue;
+    }
+    if (arg == "--output") {
+      if (i + 1 >= argc) {
+        PrintUsage(argv[0]);
+        return 1;
+      }
+      options.output_path = argv[++i];
       continue;
     }
     PrintUsage(argv[0]);

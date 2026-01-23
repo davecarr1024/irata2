@@ -12,3 +12,20 @@
 
 Notes:
 - Results captured in the local dev sandbox; expect different numbers on release builds.
+
+## Running Benchmarks
+
+Text output:
+```bash
+./build/sim/irata2_bench --workload loop --cycles 5000000 --warmup 100000
+```
+
+JSON output:
+```bash
+./build/sim/irata2_bench --workload loop --format json
+```
+
+CSV output:
+```bash
+./build/sim/irata2_bench --workload loop --format csv --output results.csv
+```

@@ -56,10 +56,10 @@
 
 These were documented previously and still remain useful for diagnosis and demo workflows:
 
-- Cartridge inspection CLI (header dump, validation, quick ROM summary)
-- Disassembler with symbol-aware output (uses debug sidecar when present)
-- Round-trip assemble/disassemble tests for regression coverage
-- Optional program metadata viewer (build info, entry point, symbols)
+- ✓ Cartridge inspection CLI (header dump, validation, quick ROM summary)
+- ✓ Disassembler with symbol-aware output (uses debug sidecar when present)
+- ✓ Round-trip assemble/disassemble tests for regression coverage
+- ✓ Optional program metadata viewer (build info, entry point, symbols)
 
 See `docs/projects/cartridge-tools.md` for details.
 
@@ -67,15 +67,15 @@ See `docs/projects/cartridge-tools.md` for details.
 
 **Goal:** Track simulator throughput without adding flaky perf assertions to unit tests.
 
-1. Add a standalone benchmark target (not part of `ctest`)
-   - Example: `sim/bench/bench_main.cpp` and `make bench`
-2. Use deterministic workloads
+1. ✓ Add a standalone benchmark target (not part of `ctest`)
+   - `sim/bench/bench_main.cpp` and `make bench`
+2. ✓ Use deterministic workloads
    - Tight loop ROM (ALU + branches)
    - Memory-heavy ROM (loads/stores)
-3. Measure and report
-   - Cycles/sec, instructions/sec, and total wall time
+3. ✓ Measure and report
+   - Cycles/sec and total wall time
    - Output to JSON/CSV for easy plotting
-4. Document how to run
+4. ✓ Document how to run
    - `./build/sim/irata2_bench --workload loop --cycles 5_000_000`
-5. Track results in `docs/benchmarks.md`
+5. ✓ Track results in `docs/benchmarks.md`
 6. Optional: nightly CI perf job (non-blocking)
