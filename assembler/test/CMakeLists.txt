@@ -37,6 +37,8 @@ gtest_discover_tests(assembler_tests
 # Integration tests - run assembled programs end-to-end
 # These tests run actual CPU simulations and could hang if microcode is buggy
 add_executable(integration_tests
+  graphics_test_helpers.cpp
+  integration/graphics_test.cpp
   integration/system_test.cpp
   integration/load_immediate_test.cpp
   integration/arithmetic_immediate_test.cpp
