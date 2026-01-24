@@ -65,7 +65,7 @@ dir_table_y:
     .byte $FE       ; 15: NNW (-1, -2)
 
 ; ----------------------------------------------------------------------------
-; Thrust vectors (match direction table for 16-way acceleration)
+; Thrust vectors (reduced for slower acceleration)
 ; ----------------------------------------------------------------------------
 thrust_table_x:
     .byte $00       ; 0: N

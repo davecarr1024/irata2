@@ -108,33 +108,6 @@ ship_update:
     ADC ship_vy
     STA ship_y
 
-    ; Apply drag to X velocity
-    LDA ship_vx
-    BEQ ship_drag_x_done
-    BMI ship_drag_x_neg
-    SEC
-    SBC #$01
-    STA ship_vx
-    JMP ship_drag_x_done
-ship_drag_x_neg:
-    CLC
-    ADC #$01
-    STA ship_vx
-ship_drag_x_done:
-
-    ; Apply drag to Y velocity
-    LDA ship_vy
-    BEQ ship_drag_y_done
-    BMI ship_drag_y_neg
-    SEC
-    SBC #$01
-    STA ship_vy
-    JMP ship_drag_y_done
-ship_drag_y_neg:
-    CLC
-    ADC #$01
-    STA ship_vy
-ship_drag_y_done:
     RTS
 
 ; ----------------------------------------------------------------------------
