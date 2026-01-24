@@ -220,7 +220,7 @@ test_update_neg_y_ok:
 ; Test 8: ship_apply_thrust adds to velocity
 ; ============================================================================
 test_ship_apply_thrust:
-    ; Set angle to 0 (north) - thrust should be (0, -1)
+    ; Set angle to 0 (north) - thrust should be (0, -2)
     LDA #$00
     STA ship_angle
 
@@ -246,9 +246,9 @@ test_thrust_flag_ok:
     CRS
 test_thrust_vx_ok:
 
-    ; Check vy = 0 + thrust_table_y[0] = 0 + (-1) = $FF
+    ; Check vy = 0 + thrust_table_y[0] = 0 + (-2) = $FE
     LDA ship_vy
-    CMP #$FF
+    CMP #$FE
     JEQ test_thrust_vy_ok
     CRS
 test_thrust_vy_ok:
@@ -257,7 +257,7 @@ test_thrust_vy_ok:
 ; Test 9: ship_apply_thrust adds to existing velocity
 ; ============================================================================
 test_ship_thrust_accumulates:
-    ; Set angle to 4 (east) - thrust should be (+1, 0)
+    ; Set angle to 4 (east) - thrust should be (+2, 0)
     LDA #$04
     STA ship_angle
 
@@ -269,9 +269,9 @@ test_ship_thrust_accumulates:
 
     JSR ship_apply_thrust
 
-    ; Check vx = 5 + 1 = 6
+    ; Check vx = 5 + 2 = 7
     LDA ship_vx
-    CMP #$06
+    CMP #$07
     JEQ test_thrust_accum_vx_ok
     CRS
 test_thrust_accum_vx_ok:

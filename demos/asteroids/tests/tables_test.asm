@@ -89,7 +89,7 @@ test_dir_west_y_ok:
 ; Test 5: thrust_table for North (angle 0)
 ; ============================================================================
 test_thrust_north:
-    ; North thrust should be (0, -1) = ($00, $FF)
+    ; North thrust should be (0, -2) = ($00, $FE)
     LDX #$00
     LDA thrust_table_x, X
     CMP #$00
@@ -98,7 +98,7 @@ test_thrust_north:
 test_thrust_north_x_ok:
 
     LDA thrust_table_y, X
-    CMP #$FF
+    CMP #$FE
     JEQ test_thrust_north_y_ok
     CRS
 test_thrust_north_y_ok:
@@ -107,10 +107,10 @@ test_thrust_north_y_ok:
 ; Test 6: thrust_table for East (angle 4)
 ; ============================================================================
 test_thrust_east:
-    ; East thrust should be (1, 0) = ($01, $00)
+    ; East thrust should be (2, 0) = ($02, $00)
     LDX #$04
     LDA thrust_table_x, X
-    CMP #$01
+    CMP #$02
     JEQ test_thrust_east_x_ok
     CRS
 test_thrust_east_x_ok:
@@ -125,7 +125,7 @@ test_thrust_east_y_ok:
 ; Test 7: thrust_table for South (angle 8)
 ; ============================================================================
 test_thrust_south:
-    ; South thrust should be (0, 1) = ($00, $01)
+    ; South thrust should be (0, 2) = ($00, $02)
     LDX #$08
     LDA thrust_table_x, X
     CMP #$00
@@ -134,7 +134,7 @@ test_thrust_south:
 test_thrust_south_x_ok:
 
     LDA thrust_table_y, X
-    CMP #$01
+    CMP #$02
     JEQ test_thrust_south_y_ok
     CRS
 test_thrust_south_y_ok:
@@ -143,10 +143,10 @@ test_thrust_south_y_ok:
 ; Test 8: thrust_table for West (angle 12)
 ; ============================================================================
 test_thrust_west:
-    ; West thrust should be (-1, 0) = ($FF, $00)
+    ; West thrust should be (-2, 0) = ($FE, $00)
     LDX #$0C
     LDA thrust_table_x, X
-    CMP #$FF
+    CMP #$FE
     JEQ test_thrust_west_x_ok
     CRS
 test_thrust_west_x_ok:

@@ -66,7 +66,7 @@ main_loop:
 ; Rate Limiting Constants
 ; ============================================================================
 .equ ROTATE_DELAY,  $04     ; Frames between rotations (4 = ~15 rotations/sec)
-.equ THRUST_DELAY,  $02     ; Frames between thrust applications
+.equ THRUST_DELAY,  $04     ; Frames between thrust applications
 
 ; ============================================================================
 ; Input Handler

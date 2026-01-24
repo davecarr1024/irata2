@@ -65,43 +65,43 @@ dir_table_y:
     .byte $FE       ; 15: NNW (-1, -2)
 
 ; ----------------------------------------------------------------------------
-; Thrust vectors (smaller for smoother acceleration)
+; Thrust vectors (match direction table for 16-way acceleration)
 ; ----------------------------------------------------------------------------
 thrust_table_x:
     .byte $00       ; 0: N
     .byte $01       ; 1: NNE
-    .byte $01       ; 2: NE
-    .byte $01       ; 3: ENE
-    .byte $01       ; 4: E
-    .byte $01       ; 5: ESE
-    .byte $01       ; 6: SE
+    .byte $02       ; 2: NE
+    .byte $02       ; 3: ENE
+    .byte $02       ; 4: E
+    .byte $02       ; 5: ESE
+    .byte $02       ; 6: SE
     .byte $01       ; 7: SSE
     .byte $00       ; 8: S
     .byte $FF       ; 9: SSW
-    .byte $FF       ; 10: SW
-    .byte $FF       ; 11: WSW
-    .byte $FF       ; 12: W
-    .byte $FF       ; 13: WNW
-    .byte $FF       ; 14: NW
+    .byte $FE       ; 10: SW
+    .byte $FE       ; 11: WSW
+    .byte $FE       ; 12: W
+    .byte $FE       ; 13: WNW
+    .byte $FE       ; 14: NW
     .byte $FF       ; 15: NNW
 
 thrust_table_y:
-    .byte $FF       ; 0: N
-    .byte $FF       ; 1: NNE
-    .byte $FF       ; 2: NE
+    .byte $FE       ; 0: N
+    .byte $FE       ; 1: NNE
+    .byte $FE       ; 2: NE
     .byte $FF       ; 3: ENE
     .byte $00       ; 4: E
     .byte $01       ; 5: ESE
-    .byte $01       ; 6: SE
-    .byte $01       ; 7: SSE
-    .byte $01       ; 8: S
-    .byte $01       ; 9: SSW
-    .byte $01       ; 10: SW
+    .byte $02       ; 6: SE
+    .byte $02       ; 7: SSE
+    .byte $02       ; 8: S
+    .byte $02       ; 9: SSW
+    .byte $02       ; 10: SW
     .byte $01       ; 11: WSW
     .byte $00       ; 12: W
     .byte $FF       ; 13: WNW
-    .byte $FF       ; 14: NW
-    .byte $FF       ; 15: NNW
+    .byte $FE       ; 14: NW
+    .byte $FE       ; 15: NNW
 
 ; ----------------------------------------------------------------------------
 ; Bullet velocities (faster than ship)
