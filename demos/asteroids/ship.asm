@@ -31,6 +31,8 @@ ship_init:
     STA ship_vy
     STA ship_angle          ; Facing up (north)
     STA ship_thrust
+    STA rotate_timer        ; Ready to rotate immediately
+    STA thrust_timer        ; Ready to thrust immediately
     RTS
 
 ; ----------------------------------------------------------------------------

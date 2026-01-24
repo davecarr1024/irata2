@@ -61,36 +61,75 @@ main_loop:
     JMP main_loop
 
 ; ============================================================================
+; Rate Limiting Constants
+; ============================================================================
+.equ ROTATE_DELAY,  $04     ; Frames between rotations (4 = ~15 rotations/sec)
+.equ THRUST_DELAY,  $02     ; Frames between thrust applications
+
+; ============================================================================
 ; Input Handler
 ; ============================================================================
-; Polls input and dispatches to appropriate handlers.
+; Polls input and handles continuous key holding with rate limiting.
+; Processes all held keys each frame (rotation, thrust, fire).
 ; ============================================================================
 handle_input:
+    ; --- Update timers ---
+    ; Decrement rotate_timer if > 0
+    LDA rotate_timer
+    BEQ rotate_timer_done
+    SEC
+    SBC #$01
+    STA rotate_timer
+rotate_timer_done:
+
+    ; Decrement thrust_timer if > 0
+    LDA thrust_timer
+    BEQ thrust_timer_done
+    SEC
+    SBC #$01
+    STA thrust_timer
+thrust_timer_done:
+
+    ; --- Poll input ---
     JSR input_poll
-    BEQ handle_input_done   ; No input
+    BEQ handle_input_done   ; No input available
+
+    ; --- Check rotation (left/right) ---
+    ; Only rotate if timer is 0
+    LDA rotate_timer
+    BNE check_thrust        ; Timer not ready, skip rotation
 
     ; Check for left arrow (rotate CCW)
     JSR input_is_left
-    BNE check_right
+    BNE check_right_rot
     JSR ship_rotate_ccw
-    JMP handle_input_done
+    LDA #ROTATE_DELAY
+    STA rotate_timer        ; Reset timer
+    JMP check_thrust
 
-check_right:
+check_right_rot:
     ; Check for right arrow (rotate CW)
     JSR input_is_right
     BNE check_thrust
     JSR ship_rotate_cw
-    JMP handle_input_done
+    LDA #ROTATE_DELAY
+    STA rotate_timer        ; Reset timer
 
 check_thrust:
-    ; Check for up arrow (thrust)
+    ; --- Check thrust (up arrow) ---
+    ; Only thrust if timer is 0
+    LDA thrust_timer
+    BNE check_fire          ; Timer not ready, skip thrust
+
     JSR input_is_thrust
     BNE check_fire
     JSR ship_apply_thrust
-    JMP handle_input_done
+    LDA #THRUST_DELAY
+    STA thrust_timer        ; Reset timer
 
 check_fire:
-    ; Check for space (fire)
+    ; --- Check fire (space) ---
+    ; Fire has its own cooldown (bullet_active), no extra timer needed
     JSR input_is_fire
     BNE handle_input_done
     JSR bullet_fire

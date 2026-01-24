@@ -22,6 +22,8 @@
 .equ ship_vy,       $03     ; Ship Y velocity
 .equ ship_angle,    $04     ; Ship angle (0-15, 16 directions)
 .equ ship_thrust,   $05     ; Thrusting flag (0 or 1)
+.equ rotate_timer,  $06     ; Rotation rate limiter (0 = can rotate)
+.equ thrust_timer,  $07     ; Thrust rate limiter (0 = can thrust)
 
 ; ----------------------------------------------------------------------------
 ; Bullet State ($10-$1F)
