@@ -39,14 +39,22 @@
 ; Input Registers
 ; ----------------------------------------------------------------------------
 .equ INPUT_STATUS,  $4000   ; Bit 0: input available
-.equ INPUT_KEY,     $4002   ; Key code
+.equ INPUT_KEY,     $4002   ; Key code (read and pop from queue)
+.equ KEY_STATE,     $4005   ; Bitmask of currently held keys
 
-; Key Codes
+; Key Codes (for event queue)
 .equ KEY_UP,        $01     ; Up arrow / thrust
 .equ KEY_DOWN,      $02     ; Down arrow
 .equ KEY_LEFT,      $03     ; Left arrow / rotate CCW
 .equ KEY_RIGHT,     $04     ; Right arrow / rotate CW
 .equ KEY_SPACE,     $20     ; Space bar / fire
+
+; Key State Bits (for KEY_STATE register)
+.equ STATE_UP,      $01     ; Bit 0: up arrow held
+.equ STATE_DOWN,    $02     ; Bit 1: down arrow held
+.equ STATE_LEFT,    $04     ; Bit 2: left arrow held
+.equ STATE_RIGHT,   $08     ; Bit 3: right arrow held
+.equ STATE_SPACE,   $10     ; Bit 4: space held
 
 ; ----------------------------------------------------------------------------
 ; Screen Dimensions

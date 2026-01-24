@@ -38,6 +38,9 @@ base::Byte InputDevice::Read(base::Word address) const {
     case input_reg::COUNT:
       return base::Byte{static_cast<uint8_t>(count_)};
 
+    case input_reg::KEY_STATE:
+      return base::Byte{key_state_};
+
     default:
       // Reserved registers return 0
       return base::Byte{0};
@@ -67,6 +70,14 @@ void InputDevice::inject_key(uint8_t key_code) {
   queue_[write_idx_] = key_code;
   write_idx_ = (write_idx_ + 1) % QUEUE_SIZE;
   ++count_;
+}
+
+void InputDevice::set_key_down(uint8_t bit) {
+  key_state_ |= bit;
+}
+
+void InputDevice::set_key_up(uint8_t bit) {
+  key_state_ &= ~bit;
 }
 
 void InputDevice::TickControl() {

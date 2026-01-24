@@ -143,16 +143,31 @@ int DemoRunner::Run() {
 }
 
 void DemoRunner::HandleEvent(const SDL_Event& event) {
-  if (event.type != SDL_KEYDOWN || event.key.repeat) {
+  // Handle key down events
+  if (event.type == SDL_KEYDOWN) {
+    // Update key state bitmask for continuous input detection
+    const uint8_t state_bit = MapKeyToState(event.key.keysym.sym);
+    if (state_bit != 0 && input_device_) {
+      input_device_->set_key_down(state_bit);
+    }
+
+    // Queue key press events (but not repeats)
+    if (!event.key.repeat) {
+      const uint8_t code = MapKey(event.key.keysym.sym);
+      if (code != 0x00 && input_device_) {
+        input_device_->inject_key(code);
+      }
+    }
     return;
   }
 
-  const uint8_t code = MapKey(event.key.keysym.sym);
-  if (code == 0x00) {
+  // Handle key up events for key state tracking
+  if (event.type == SDL_KEYUP) {
+    const uint8_t state_bit = MapKeyToState(event.key.keysym.sym);
+    if (state_bit != 0 && input_device_) {
+      input_device_->set_key_up(state_bit);
+    }
     return;
-  }
-  if (input_device_) {
-    input_device_->inject_key(code);
   }
 }
 
@@ -210,6 +225,23 @@ uint8_t DemoRunner::MapKey(SDL_Keycode key) {
   }
 
   return 0x00;
+}
+
+uint8_t DemoRunner::MapKeyToState(SDL_Keycode key) {
+  switch (key) {
+    case SDLK_UP:
+      return sim::io::key_state_bits::UP;
+    case SDLK_DOWN:
+      return sim::io::key_state_bits::DOWN;
+    case SDLK_LEFT:
+      return sim::io::key_state_bits::LEFT;
+    case SDLK_RIGHT:
+      return sim::io::key_state_bits::RIGHT;
+    case SDLK_SPACE:
+      return sim::io::key_state_bits::SPACE;
+    default:
+      return 0;
+  }
 }
 
 }  // namespace irata2::frontend

@@ -45,6 +45,7 @@ class DemoRunner {
   void ShutdownSdl();
 
   static uint8_t MapKey(SDL_Keycode key);
+  static uint8_t MapKeyToState(SDL_Keycode key);
 };
 
 }  // namespace irata2::frontend

@@ -42,7 +42,7 @@ cd demos/asteroids
 - Fixed position at (48, 48)
 
 ### Input System
-- Continuous input support (hold keys)
+- Continuous input via KEY_STATE register (bitmask of held keys)
 - Rate-limited rotation (~15 rotations/second)
 - Rate-limited thrust for smooth acceleration
 - Fire cooldown based on bullet lifetime
@@ -139,13 +139,25 @@ Located in `bullet.asm`:
 
 ## Roadmap
 
-### Phase 1: Core Gameplay (Current)
+### Phase 0: Infrastructure
+- [x] **Key state register** - KEY_STATE ($4005) MMIO register with bitmask of held keys
+  - Bit 0 = up, Bit 1 = down, Bit 2 = left, Bit 3 = right, Bit 4 = space
+- [ ] **Unit tests as asm files** - Create tests/ subdirectory with .asm test files
+  - Run as part of integration test suite
+  - Test individual module features in isolation
+- [ ] **Rendering tests** - Graphics module tests that verify rendered output
+  - Generate images from VGC output
+  - Compare against expected reference images
+
+### Phase 1: Core Gameplay
 - [x] Ship movement with momentum
 - [x] 16-direction rotation
 - [x] Thrust with visual flame
 - [x] Single bullet firing
-- [x] Continuous input handling
+- [x] Continuous input handling via KEY_STATE register
 - [x] Rate-limited controls
+- [ ] **Slower acceleration** - Reduce thrust table values for smoother control
+- [ ] **More accurate angular movement** - Movement velocity respects ship direction in all 16 angles
 - [ ] Asteroid collision detection
 - [ ] Bullet-asteroid collision
 

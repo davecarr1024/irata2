@@ -201,7 +201,8 @@ TEST_F(InputDeviceTest, CountRegister) {
 }
 
 TEST_F(InputDeviceTest, ReservedRegistersReturnZero) {
-  for (uint8_t offset = 5; offset < InputDevice::MMIO_SIZE; ++offset) {
+  // Offset 5 is KEY_STATE, reserved starts at 6
+  for (uint8_t offset = 6; offset < InputDevice::MMIO_SIZE; ++offset) {
     EXPECT_EQ(device_->Read(Word{offset}).value(), 0x00);
   }
 }
@@ -255,8 +256,8 @@ TEST_F(InputDeviceTest, WritesToReadOnlyRegistersIgnored) {
 TEST_F(InputDeviceTest, WritesToReservedRegistersIgnored) {
   device_->inject_key(0x41);
 
-  // Write to reserved registers
-  for (uint8_t offset = 5; offset < InputDevice::MMIO_SIZE; ++offset) {
+  // Write to reserved registers (offset 6+, KEY_STATE at 5 is also read-only)
+  for (uint8_t offset = 6; offset < InputDevice::MMIO_SIZE; ++offset) {
     device_->Write(Word{offset}, Byte{0xFF});
   }
 
@@ -349,4 +350,94 @@ TEST_F(InputDeviceTest, MmioReadCountViaMemory) {
 
   Byte count = cpu_->memory().ReadAt(Word{io::INPUT_DEVICE_BASE + input_reg::COUNT});
   EXPECT_EQ(count.value(), 3);
+}
+
+// --- Key state register tests ---
+
+TEST_F(InputDeviceTest, KeyStateStartsAtZero) {
+  EXPECT_EQ(device_->key_state(), 0);
+  EXPECT_EQ(device_->Read(Word{input_reg::KEY_STATE}).value(), 0);
+}
+
+TEST_F(InputDeviceTest, SetKeyDownSetsbit) {
+  device_->set_key_down(key_state_bits::UP);
+  EXPECT_EQ(device_->key_state(), key_state_bits::UP);
+
+  device_->set_key_down(key_state_bits::LEFT);
+  EXPECT_EQ(device_->key_state(), key_state_bits::UP | key_state_bits::LEFT);
+}
+
+TEST_F(InputDeviceTest, SetKeyUpClearsBit) {
+  device_->set_key_down(key_state_bits::UP);
+  device_->set_key_down(key_state_bits::LEFT);
+  EXPECT_EQ(device_->key_state(), key_state_bits::UP | key_state_bits::LEFT);
+
+  device_->set_key_up(key_state_bits::UP);
+  EXPECT_EQ(device_->key_state(), key_state_bits::LEFT);
+
+  device_->set_key_up(key_state_bits::LEFT);
+  EXPECT_EQ(device_->key_state(), 0);
+}
+
+TEST_F(InputDeviceTest, KeyStateRegisterReadsKeyState) {
+  device_->set_key_down(key_state_bits::RIGHT);
+  device_->set_key_down(key_state_bits::SPACE);
+
+  EXPECT_EQ(device_->Read(Word{input_reg::KEY_STATE}).value(),
+            key_state_bits::RIGHT | key_state_bits::SPACE);
+}
+
+TEST_F(InputDeviceTest, KeyStateViaMemoryMap) {
+  device_->set_key_down(key_state_bits::UP);
+  device_->set_key_down(key_state_bits::DOWN);
+
+  Byte state = cpu_->memory().ReadAt(Word{io::INPUT_DEVICE_BASE + input_reg::KEY_STATE});
+  EXPECT_EQ(state.value(), key_state_bits::UP | key_state_bits::DOWN);
+}
+
+TEST_F(InputDeviceTest, KeyStateIndependentOfQueue) {
+  // Key state and queue are independent
+  device_->inject_key(0x01);  // Queue an up key event
+  device_->set_key_down(key_state_bits::LEFT);  // Set left as held
+
+  // Queue should have the event
+  EXPECT_EQ(device_->count(), 1);
+  EXPECT_EQ(device_->Read(Word{input_reg::DATA}).value(), 0x01);
+
+  // Key state should still show left held
+  EXPECT_EQ(device_->key_state(), key_state_bits::LEFT);
+}
+
+TEST_F(InputDeviceTest, AllKeyStateBits) {
+  // Set all bits
+  device_->set_key_down(key_state_bits::UP);
+  device_->set_key_down(key_state_bits::DOWN);
+  device_->set_key_down(key_state_bits::LEFT);
+  device_->set_key_down(key_state_bits::RIGHT);
+  device_->set_key_down(key_state_bits::SPACE);
+
+  uint8_t expected = key_state_bits::UP | key_state_bits::DOWN |
+                     key_state_bits::LEFT | key_state_bits::RIGHT |
+                     key_state_bits::SPACE;
+  EXPECT_EQ(device_->key_state(), expected);
+
+  // Clear all bits one by one
+  device_->set_key_up(key_state_bits::UP);
+  expected &= ~key_state_bits::UP;
+  EXPECT_EQ(device_->key_state(), expected);
+
+  device_->set_key_up(key_state_bits::DOWN);
+  expected &= ~key_state_bits::DOWN;
+  EXPECT_EQ(device_->key_state(), expected);
+
+  device_->set_key_up(key_state_bits::LEFT);
+  expected &= ~key_state_bits::LEFT;
+  EXPECT_EQ(device_->key_state(), expected);
+
+  device_->set_key_up(key_state_bits::RIGHT);
+  expected &= ~key_state_bits::RIGHT;
+  EXPECT_EQ(device_->key_state(), expected);
+
+  device_->set_key_up(key_state_bits::SPACE);
+  EXPECT_EQ(device_->key_state(), 0);
 }
