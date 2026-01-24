@@ -10,6 +10,7 @@
 ;   input_is_right  - Check if right arrow is held, Z=1 if true
 ;   input_is_thrust - Check if up arrow is held, Z=1 if true
 ;   input_is_fire   - Check if space is held, Z=1 if true
+;   input_is_esc    - Check if escape is held, Z=1 if true
 ;
 ; Uses: cached_key variable (stores KEY_STATE bitmask)
 ; Modifies: A
@@ -79,4 +80,16 @@ input_is_fire:
     LDA cached_key
     AND #STATE_SPACE
     EOR #STATE_SPACE
+    RTS
+
+; ----------------------------------------------------------------------------
+; input_is_esc - Check if escape is held
+; ----------------------------------------------------------------------------
+; Output: Z=1 if escape is currently held
+; Modifies: A
+; ----------------------------------------------------------------------------
+input_is_esc:
+    LDA cached_key
+    AND #STATE_ESC
+    EOR #STATE_ESC
     RTS

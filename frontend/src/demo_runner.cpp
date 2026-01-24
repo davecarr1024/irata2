@@ -239,6 +239,8 @@ uint8_t DemoRunner::MapKeyToState(SDL_Keycode key) {
       return sim::io::key_state_bits::RIGHT;
     case SDLK_SPACE:
       return sim::io::key_state_bits::SPACE;
+    case SDLK_ESCAPE:
+      return sim::io::key_state_bits::ESC;
     default:
       return 0;
   }

@@ -48,6 +48,7 @@
 .equ KEY_LEFT,      $03     ; Left arrow / rotate CCW
 .equ KEY_RIGHT,     $04     ; Right arrow / rotate CW
 .equ KEY_SPACE,     $20     ; Space bar / fire
+.equ KEY_ESC,       $1B     ; Escape key / exit
 
 ; Key State Bits (for KEY_STATE register)
 .equ STATE_UP,      $01     ; Bit 0: up arrow held
@@ -55,6 +56,7 @@
 .equ STATE_LEFT,    $04     ; Bit 2: left arrow held
 .equ STATE_RIGHT,   $08     ; Bit 3: right arrow held
 .equ STATE_SPACE,   $10     ; Bit 4: space held
+.equ STATE_ESC,     $20     ; Bit 5: escape held
 
 ; ----------------------------------------------------------------------------
 ; Screen Dimensions

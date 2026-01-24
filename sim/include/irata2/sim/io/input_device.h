@@ -33,6 +33,7 @@ constexpr uint8_t DOWN = 0x02;  // Bit 1: down arrow held
 constexpr uint8_t LEFT = 0x04;  // Bit 2: left arrow held
 constexpr uint8_t RIGHT = 0x08; // Bit 3: right arrow held
 constexpr uint8_t SPACE = 0x10; // Bit 4: space held
+constexpr uint8_t ESC = 0x20;   // Bit 5: escape held
 }  // namespace key_state_bits
 
 /// Status register bit positions.

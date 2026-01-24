@@ -8,6 +8,7 @@
 ;   Right Arrow - Rotate clockwise
 ;   Up Arrow    - Thrust
 ;   Space       - Fire
+;   Escape      - Exit game
 ;
 ; Modules:
 ;   hardware.asm  - Hardware register constants
@@ -94,6 +95,12 @@ thrust_timer_done:
     JSR input_poll
     BEQ handle_input_done   ; No input available
 
+    ; --- Check escape (exit game) ---
+    JSR input_is_esc
+    BNE check_rotation
+    HLT                     ; Exit game
+
+check_rotation:
     ; --- Check rotation (left/right) ---
     ; Only rotate if timer is 0
     LDA rotate_timer
