@@ -53,6 +53,7 @@ main_loop:
 
     ; --- Render Phase ---
     JSR gfx_clear
+    JSR debug_draw_input
     JSR ship_draw
     JSR bullet_draw
     JSR asteroid_draw
@@ -142,6 +143,106 @@ check_fire:
     JSR bullet_fire
 
 handle_input_done:
+    RTS
+
+; ============================================================================
+; Debug Input Overlay
+; ============================================================================
+; Draws a small set of points that light up when keys are held.
+; Positions are fixed near the top-left corner.
+; Uses: cached_key
+; Modifies: A
+; ============================================================================
+debug_draw_input:
+    ; Control line (always visible)
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$04
+    STA draw_x0
+    LDA #$06
+    STA draw_y0
+    LDA #$2C
+    STA draw_x1
+    LDA #$06
+    STA draw_y1
+    JSR gfx_line
+
+    ; Left
+    LDA cached_key
+    AND #STATE_LEFT
+    BEQ debug_right
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$08
+    STA draw_x0
+    STA draw_x1
+    LDA #$06
+    STA draw_y0
+    LDA #$0E
+    STA draw_y1
+    JSR gfx_line
+
+debug_right:
+    LDA cached_key
+    AND #STATE_RIGHT
+    BEQ debug_up
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$10
+    STA draw_x0
+    STA draw_x1
+    LDA #$06
+    STA draw_y0
+    LDA #$0E
+    STA draw_y1
+    JSR gfx_line
+
+debug_up:
+    LDA cached_key
+    AND #STATE_UP
+    BEQ debug_space
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$18
+    STA draw_x0
+    STA draw_x1
+    LDA #$06
+    STA draw_y0
+    LDA #$0E
+    STA draw_y1
+    JSR gfx_line
+
+debug_space:
+    LDA cached_key
+    AND #STATE_SPACE
+    BEQ debug_esc
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$20
+    STA draw_x0
+    STA draw_x1
+    LDA #$06
+    STA draw_y0
+    LDA #$0E
+    STA draw_y1
+    JSR gfx_line
+
+debug_esc:
+    LDA cached_key
+    AND #STATE_ESC
+    BEQ debug_done
+    LDA #COLOR_WHITE
+    STA draw_color
+    LDA #$28
+    STA draw_x0
+    STA draw_x1
+    LDA #$06
+    STA draw_y0
+    LDA #$0E
+    STA draw_y1
+    JSR gfx_line
+
+debug_done:
     RTS
 
 ; ============================================================================

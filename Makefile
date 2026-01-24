@@ -38,5 +38,5 @@ asteroids:
 	cmake -B $(BUILD_DIR) -DBUILD_TESTING=ON -DIRATA2_ENABLE_SDL=ON
 	cmake --build $(BUILD_DIR) --target irata2_asm irata2_demo --parallel $(JOBS)
 	mkdir -p $(BUILD_DIR)/demos
-	./$(BUILD_DIR)/assembler/irata2_asm demos/asteroids.asm $(BUILD_DIR)/demos/asteroids.bin $(BUILD_DIR)/demos/asteroids.json
+	./$(BUILD_DIR)/assembler/irata2_asm demos/asteroids/main.asm $(BUILD_DIR)/demos/asteroids.bin $(BUILD_DIR)/demos/asteroids.json
 	./$(BUILD_DIR)/frontend/irata2_demo --rom $(BUILD_DIR)/demos/asteroids.bin --fps 30 --scale 3

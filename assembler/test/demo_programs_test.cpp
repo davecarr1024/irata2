@@ -21,6 +21,6 @@ TEST(DemoProgramsTest, AssemblesMoveSpriteDemo) {
 }
 
 TEST(DemoProgramsTest, AssemblesAsteroidsDemo) {
-  auto result = AssembleFile(DemoPath("asteroids.asm"));
+  auto result = AssembleFile(DemoPath("asteroids/main.asm"));
   EXPECT_FALSE(result.rom.empty());
 }
