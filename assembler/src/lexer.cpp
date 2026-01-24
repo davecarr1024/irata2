@@ -138,7 +138,19 @@ Token Lexer::NextToken() {
     return LexIdentifierOrDirective();
   }
 
-  if (ch == '#' || ch == '$' || ch == '%' || std::isdigit(static_cast<unsigned char>(ch))) {
+  if (ch == '#') {
+    // Check if # is followed by an identifier (immediate constant)
+    char next = PeekNext();
+    if (IsIdentifierStart(next)) {
+      // Emit Hash token for immediate addressing with identifier
+      Advance();
+      return MakeToken(TokenKind::Hash, 1);
+    }
+    // Otherwise treat as numeric literal (e.g., #$FF, #42)
+    return LexNumber();
+  }
+
+  if (ch == '$' || ch == '%' || std::isdigit(static_cast<unsigned char>(ch))) {
     return LexNumber();
   }
 

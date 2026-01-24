@@ -18,6 +18,7 @@ enum class TokenKind {
   LeftParen,
   RightParen,
   Colon,
+  Hash,  // # prefix for immediate addressing
   Newline,
   EndOfFile,
 };

@@ -103,6 +103,20 @@ bool Parser::Check(TokenKind kind) const {
 }
 
 Operand Parser::ParseOperand() {
+  // Handle # prefix for immediate addressing with identifier
+  if (Match(TokenKind::Hash)) {
+    if (!Check(TokenKind::Identifier)) {
+      throw AssemblerError(Peek().span, "expected identifier after #");
+    }
+    Token token = Advance();
+    Operand operand;
+    operand.kind = Operand::Kind::Label;
+    operand.label = token.text;
+    operand.immediate = true;
+    operand.span = token.span;
+    return operand;
+  }
+
   if (Match(TokenKind::LeftParen)) {
     Operand operand = ParseOperand();
     if (operand.immediate) {
